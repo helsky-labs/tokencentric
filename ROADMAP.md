@@ -132,17 +132,17 @@
 ## Phase 9: Analytics & Settings
 **Goal**: Track usage (opt-in) and configurable settings.
 
-- [ ] 9.1 Umami integration (analytics.helsky-labs.com)
-- [ ] 9.2 Analytics opt-out toggle in settings
-- [ ] 9.3 Settings page UI:
+- [x] 9.1 Umami integration (analytics.helsky-labs.com)
+- [x] 9.2 Analytics opt-out toggle in settings
+- [x] 9.3 Settings page UI:
       - Scan paths management
       - Exclusion patterns
       - Theme (system/light/dark)
       - Editor font size
       - Enable/disable tool profiles
-- [ ] 9.4 "About" section with version, links
+- [x] 9.4 "About" section with version, links
 
-**Checkpoint**: Settings persist, analytics working (when enabled).
+**Checkpoint**: Settings persist, analytics working (when enabled). ✅ COMPLETE
 
 ---
 
@@ -182,8 +182,8 @@
 
 ## Current Status
 
-**Phase**: 9 - Analytics & Settings
-**Next Task**: 9.1 Umami integration
+**Phase**: 10 - Distribution
+**Next Task**: 10.1 App icon design
 
 **Progress Summary**:
 - Phase 1: ✅ COMPLETE
@@ -194,3 +194,4 @@
 - Phase 6: ✅ COMPLETE (file management, context menu, dialogs)
 - Phase 7: ✅ COMPLETE (7 templates with variable substitution + preview)
 - Phase 8: ✅ COMPLETE (onboarding wizard, toast notifications, error boundary)
+- Phase 9: ✅ COMPLETE (analytics, privacy settings, about dialog)
