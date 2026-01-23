@@ -8,13 +8,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "outDir": "dist/preload",
-    "rootDir": "src/preload",
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["src/shared/*"]
-    }
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": "."
   },
   "include": ["src/preload/**/*", "src/shared/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/renderer/**/*", "src/main/**/*"]
 }
