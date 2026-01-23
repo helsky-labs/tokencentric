@@ -10,12 +10,12 @@
 ## Phase 1: Project Foundation
 **Goal**: Working Electron app that opens a window.
 
-- [ ] 1.1 Initialize Electron + React + TypeScript + Vite project
-- [ ] 1.2 Configure electron-builder for macOS + Windows
-- [ ] 1.3 Set up ESLint + Prettier
-- [ ] 1.4 Create basic app shell (window, menu bar)
-- [ ] 1.5 Add electron-store for settings
-- [ ] 1.6 Implement dark mode (system preference)
+- [x] 1.1 Initialize Electron + React + TypeScript + Vite project
+- [x] 1.2 Configure electron-builder for macOS + Windows
+- [x] 1.3 Set up ESLint + Prettier
+- [x] 1.4 Create basic app shell (window, menu bar)
+- [x] 1.5 Add electron-store for settings
+- [x] 1.6 Implement dark mode (system preference)
 
 **Checkpoint**: App launches, shows empty window, respects system theme.
 
@@ -24,12 +24,12 @@
 ## Phase 2: File Discovery
 **Goal**: Scan directories and find AI context files.
 
-- [ ] 2.1 Define ToolProfile interface and default profiles
-- [ ] 2.2 Implement file scanner with chokidar
-- [ ] 2.3 Add exclusion patterns (node_modules, .git, etc.)
+- [x] 2.1 Define ToolProfile interface and default profiles
+- [x] 2.2 Implement file scanner with chokidar
+- [x] 2.3 Add exclusion patterns (node_modules, .git, etc.)
 - [ ] 2.4 Create settings UI for scan paths
-- [ ] 2.5 Cache discovered files to electron-store
-- [ ] 2.6 Add "Scan Now" button and progress indicator
+- [x] 2.5 Cache discovered files to electron-store
+- [x] 2.6 Add "Scan Now" button and progress indicator
 
 **Checkpoint**: Can scan a directory, find CLAUDE.md/.cursorrules/etc files.
 
@@ -38,12 +38,12 @@
 ## Phase 3: Tree View
 **Goal**: Display discovered files in a navigable tree.
 
-- [ ] 3.1 Create sidebar component
-- [ ] 3.2 Build tree view with folder hierarchy
-- [ ] 3.3 Add tool icons (Claude, Cursor, Copilot, etc.)
-- [ ] 3.4 Implement file selection (click to select)
+- [x] 3.1 Create sidebar component
+- [x] 3.2 Build tree view with folder hierarchy
+- [x] 3.3 Add tool icons (Claude, Cursor, Copilot, etc.)
+- [x] 3.4 Implement file selection (click to select)
 - [ ] 3.5 Add tool filter dropdown
-- [ ] 3.6 Show empty state when no files found
+- [x] 3.6 Show empty state when no files found
 
 **Checkpoint**: Tree view shows all discovered files with icons, clickable.
 
@@ -56,8 +56,8 @@
 - [ ] 4.2 Integrate tiktoken (OpenAI)
 - [ ] 4.3 Create token counting service (picks tokenizer based on tool)
 - [ ] 4.4 Display token count per file in tree view
-- [ ] 4.5 Add bottom status bar with selected file tokens
-- [ ] 4.6 Show model compatibility (fits in 200k context)
+- [x] 4.5 Add bottom status bar with selected file tokens
+- [x] 4.6 Show model compatibility (fits in 200k context)
 
 **Checkpoint**: Each file shows token count, correct tokenizer per tool.
 
@@ -178,5 +178,12 @@
 
 ## Current Status
 
-**Phase**: 1 - Project Foundation
-**Next Task**: 1.1 Initialize Electron + React + TypeScript + Vite project
+**Phase**: 4 - Token Analysis
+**Next Task**: 4.1 Integrate @anthropic-ai/tokenizer
+
+**Progress Summary**:
+- Phase 1: COMPLETE
+- Phase 2: 5/6 tasks done (missing: settings UI for scan paths)
+- Phase 3: 5/6 tasks done (missing: tool filter dropdown)
+- Phase 4: 2/6 tasks done (need actual tokenizers)
+- Phase 5+: Not started
