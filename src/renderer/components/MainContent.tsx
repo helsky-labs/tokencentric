@@ -163,6 +163,7 @@ export function MainContent({ selectedFile, settings, isDark }: MainContentProps
               onChange={(value) => setContent(value || '')}
               onMount={handleEditorMount}
               theme={isDark ? 'vs-dark' : 'vs'}
+              loading={<div className="flex items-center justify-center h-full text-gray-500">Loading editor...</div>}
               options={{
                 fontSize: settings?.editorFontSize || 14,
                 wordWrap: 'on',
