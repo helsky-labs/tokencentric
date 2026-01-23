@@ -149,14 +149,14 @@
 ## Phase 10: Distribution
 **Goal**: Ship it.
 
-- [ ] 10.1 App icon design
+- [ ] 10.1 App icon design (external - design task)
 - [ ] 10.2 Configure auto-update (electron-updater)
-- [ ] 10.3 Code signing for macOS (if available)
+- [ ] 10.3 Code signing for macOS (external - requires Apple Developer)
 - [ ] 10.4 Build macOS .dmg
 - [ ] 10.5 Build Windows installer
 - [ ] 10.6 Create GitHub releases workflow
-- [ ] 10.7 Landing page (tokencentric.app)
-- [ ] 10.8 "Buy me a coffee" + Helsky Labs links in app
+- [ ] 10.7 Landing page (external - tokencentric.app)
+- [x] 10.8 "Buy me a coffee" + Helsky Labs links in app (done in About dialog)
 - [ ] 10.9 README with screenshots
 
 **Checkpoint**: v1.0 released, downloadable, auto-updates work.
