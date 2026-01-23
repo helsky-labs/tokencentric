@@ -7,6 +7,7 @@ import { EmptyState } from './components/EmptyState';
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
 import { ContextMenu, ContextMenuAction } from './components/ContextMenu';
 import { NewFileDialog } from './components/NewFileDialog';
+import { SettingsDialog } from './components/SettingsDialog';
 
 interface ContextMenuState {
   file: ContextFile;
@@ -25,6 +26,7 @@ function App() {
   const [fileToDelete, setFileToDelete] = useState<ContextFile | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Initialize app
   useEffect(() => {
@@ -69,6 +71,11 @@ function App() {
     // Listen for new file command (Cmd+N)
     window.electronAPI.onNewFile(() => {
       setIsNewFileDialogOpen(true);
+    });
+
+    // Listen for open settings command (Cmd+,)
+    window.electronAPI.onOpenSettings(() => {
+      setIsSettingsOpen(true);
     });
   }, []);
 
@@ -154,6 +161,24 @@ function App() {
     }
   };
 
+  // Save settings handler
+  const handleSaveSettings = async (newSettings: Partial<AppSettings>) => {
+    try {
+      await window.electronAPI.setSettings(newSettings);
+      setSettings((prev) => (prev ? { ...prev, ...newSettings } : prev));
+
+      // Apply theme change if changed
+      if (newSettings.theme) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const shouldBeDark = newSettings.theme === 'dark' || (newSettings.theme === 'system' && prefersDark);
+        setIsDark(shouldBeDark);
+        document.documentElement.classList.toggle('dark', shouldBeDark);
+      }
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-white dark:bg-gray-900">
@@ -180,6 +205,7 @@ function App() {
               onScanDirectory={handleScanDirectory}
               onContextMenu={handleContextMenu}
               settings={settings}
+              onOpenSettings={() => setIsSettingsOpen(true)}
             />
             <MainContent selectedFile={selectedFile} settings={settings} isDark={isDark} />
           </>
@@ -215,6 +241,14 @@ function App() {
         onClose={() => setIsNewFileDialogOpen(false)}
         onCreateFile={handleCreateFile}
         settings={settings}
+      />
+
+      {/* Settings dialog */}
+      <SettingsDialog
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={settings}
+        onSaveSettings={handleSaveSettings}
       />
     </div>
   );

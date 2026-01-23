@@ -27,11 +27,11 @@
 - [x] 2.1 Define ToolProfile interface and default profiles
 - [x] 2.2 Implement file scanner with chokidar
 - [x] 2.3 Add exclusion patterns (node_modules, .git, etc.)
-- [ ] 2.4 Create settings UI for scan paths
+- [x] 2.4 Create settings UI for scan paths
 - [x] 2.5 Cache discovered files to electron-store
 - [x] 2.6 Add "Scan Now" button and progress indicator
 
-**Checkpoint**: Can scan a directory, find CLAUDE.md/.cursorrules/etc files.
+**Checkpoint**: Can scan a directory, find CLAUDE.md/.cursorrules/etc files. ✅ COMPLETE
 
 ---
 
@@ -42,10 +42,10 @@
 - [x] 3.2 Build tree view with folder hierarchy
 - [x] 3.3 Add tool icons (Claude, Cursor, Copilot, etc.)
 - [x] 3.4 Implement file selection (click to select)
-- [ ] 3.5 Add tool filter dropdown
+- [x] 3.5 Add tool filter dropdown
 - [x] 3.6 Show empty state when no files found
 
-**Checkpoint**: Tree view shows all discovered files with icons, clickable.
+**Checkpoint**: Tree view shows all discovered files with icons, clickable. ✅ COMPLETE
 
 ---
 
@@ -187,8 +187,8 @@
 
 **Progress Summary**:
 - Phase 1: ✅ COMPLETE
-- Phase 2: 5/6 tasks done (missing: settings UI for scan paths)
-- Phase 3: 5/6 tasks done (missing: tool filter dropdown)
+- Phase 2: ✅ COMPLETE (settings UI for scan paths)
+- Phase 3: ✅ COMPLETE (tool filter dropdown)
 - Phase 4: ✅ COMPLETE (tokenizers + color-coded sidebar)
 - Phase 5: ✅ COMPLETE (Monaco editor + preview + save)
 - Phase 6: ✅ COMPLETE (file management, context menu, dialogs)
