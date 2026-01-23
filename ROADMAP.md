@@ -84,13 +84,13 @@
 ## Phase 6: File Management
 **Goal**: Create, delete, and manage files.
 
-- [ ] 6.1 "New File" dialog with location picker
-- [ ] 6.2 Delete file with confirmation modal
-- [ ] 6.3 Right-click context menu (edit, delete, reveal in Finder)
-- [ ] 6.4 "Open in Finder/Explorer" action
-- [ ] 6.5 Duplicate file functionality
+- [x] 6.1 "New File" dialog with location picker
+- [x] 6.2 Delete file with confirmation modal
+- [x] 6.3 Right-click context menu (edit, delete, reveal in Finder)
+- [x] 6.4 "Open in Finder/Explorer" action
+- [x] 6.5 Duplicate file functionality
 
-**Checkpoint**: Full CRUD operations on context files.
+**Checkpoint**: Full CRUD operations on context files. ✅ COMPLETE
 
 ---
 
@@ -182,8 +182,8 @@
 
 ## Current Status
 
-**Phase**: 6 - File Management
-**Next Task**: 6.1 "New File" dialog with location picker
+**Phase**: 7 - Templates
+**Next Task**: 7.1 Create template data structure
 
 **Progress Summary**:
 - Phase 1: ✅ COMPLETE
@@ -191,3 +191,4 @@
 - Phase 3: 5/6 tasks done (missing: tool filter dropdown)
 - Phase 4: ✅ COMPLETE (tokenizers + color-coded sidebar)
 - Phase 5: ✅ COMPLETE (Monaco editor + preview + save)
+- Phase 6: ✅ COMPLETE (file management, context menu, dialogs)
