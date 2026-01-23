@@ -32,6 +32,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('create-file', dirPath, fileName, toolId, content),
   duplicateFile: (path: string): Promise<ContextFile> => ipcRenderer.invoke('duplicate-file', path),
 
+  // App info
+  getAppInfo: (): Promise<{
+    version: string;
+    platform: string;
+    electron: string;
+    node: string;
+    chrome: string;
+  }> => ipcRenderer.invoke('get-app-info'),
+
+  // Analytics
+  trackEvent: (name: string, data?: Record<string, string | number | boolean>): Promise<void> =>
+    ipcRenderer.invoke('track-event', name, data),
+
   // Events from main process
   onThemeChanged: (callback: (isDark: boolean) => void) => {
     ipcRenderer.on('theme-changed', (_event, isDark) => callback(isDark));
@@ -47,6 +60,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   onScanDirectory: (callback: () => void) => {
     ipcRenderer.on('scan-directory', () => callback());
+  },
+  onShowAbout: (callback: () => void) => {
+    ipcRenderer.on('show-about', () => callback());
   },
 });
 
@@ -68,11 +84,20 @@ declare global {
       deleteFile: (path: string) => Promise<void>;
       createFile: (dirPath: string, fileName: string, toolId: string, content?: string) => Promise<ContextFile>;
       duplicateFile: (path: string) => Promise<ContextFile>;
+      getAppInfo: () => Promise<{
+        version: string;
+        platform: string;
+        electron: string;
+        node: string;
+        chrome: string;
+      }>;
+      trackEvent: (name: string, data?: Record<string, string | number | boolean>) => Promise<void>;
       onThemeChanged: (callback: (isDark: boolean) => void) => void;
       onOpenSettings: (callback: () => void) => void;
       onNewFile: (callback: () => void) => void;
       onSaveFile: (callback: () => void) => void;
       onScanDirectory: (callback: () => void) => void;
+      onShowAbout: (callback: () => void) => void;
     };
   }
 }

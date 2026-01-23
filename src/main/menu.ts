@@ -9,7 +9,12 @@ export function createMenu() {
           {
             label: app.name,
             submenu: [
-              { role: 'about' as const },
+              {
+                label: 'About Tokencentric',
+                click: () => {
+                  BrowserWindow.getFocusedWindow()?.webContents.send('show-about');
+                },
+              },
               { type: 'separator' as const },
               {
                 label: 'Settings',

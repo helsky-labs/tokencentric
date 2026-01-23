@@ -1,9 +1,10 @@
-import { ipcMain, dialog, shell } from 'electron';
+import { ipcMain, dialog, shell, app } from 'electron';
 import fs from 'fs/promises';
 import path from 'path';
 import Store from 'electron-store';
 import { AppSettings, ContextFile, ToolProfile, TokenizerType } from '../shared/types';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
+import { trackEvent } from './analytics';
 
 // Tokenizer imports
 import { countTokens as countAnthropicTokens } from '@anthropic-ai/tokenizer';
@@ -305,4 +306,28 @@ export function setupIpcHandlers() {
     store.set('files', files);
     return files;
   });
+
+  // Get app info (for About dialog)
+  ipcMain.handle('get-app-info', () => {
+    return {
+      version: app.getVersion(),
+      platform: process.platform,
+      electron: process.versions.electron,
+      node: process.versions.node,
+      chrome: process.versions.chrome,
+    };
+  });
+
+  // Track analytics event
+  ipcMain.handle(
+    'track-event',
+    async (_event, name: string, data?: Record<string, string | number | boolean>) => {
+      // Check if analytics is enabled before tracking
+      const settings = store.get('settings');
+      if (!settings.analyticsEnabled) {
+        return;
+      }
+      await trackEvent({ name, data });
+    }
+  );
 }

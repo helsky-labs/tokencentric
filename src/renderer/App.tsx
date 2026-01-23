@@ -8,6 +8,7 @@ import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
 import { ContextMenu, ContextMenuAction } from './components/ContextMenu';
 import { NewFileDialog } from './components/NewFileDialog';
 import { SettingsDialog } from './components/SettingsDialog';
+import { AboutDialog } from './components/AboutDialog';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer, useToast } from './components/Toast';
@@ -31,6 +32,7 @@ function App() {
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   // Toast notifications
   const toast = useToast();
@@ -60,6 +62,11 @@ function App() {
         if (shouldBeDark) {
           document.documentElement.classList.add('dark');
         }
+        // Track app launch
+        window.electronAPI.trackEvent('app_launch', {
+          theme: loadedSettings.theme,
+          filesCount: loadedFiles.length,
+        });
       } catch (error) {
         console.error('Failed to initialize:', error);
       } finally {
@@ -86,6 +93,11 @@ function App() {
     window.electronAPI.onOpenSettings(() => {
       setIsSettingsOpen(true);
     });
+
+    // Listen for show about command (from menu)
+    window.electronAPI.onShowAbout(() => {
+      setIsAboutOpen(true);
+    });
   }, []);
 
   const handleScanDirectory = async () => {
@@ -95,6 +107,10 @@ function App() {
       try {
         const scannedFiles = await window.electronAPI.scanDirectory(path);
         setFiles(scannedFiles);
+        // Track scan completed
+        window.electronAPI.trackEvent('scan_completed', {
+          filesFound: scannedFiles.length,
+        });
       } catch (error) {
         console.error('Scan failed:', error);
       } finally {
@@ -151,6 +167,10 @@ function App() {
         setSelectedFile(null);
       }
       toast.success('File deleted', fileToDelete.name);
+      // Track file deletion
+      window.electronAPI.trackEvent('file_deleted', {
+        toolId: fileToDelete.toolId,
+      });
     } catch (error) {
       console.error('Failed to delete file:', error);
       toast.error('Failed to delete file', error instanceof Error ? error.message : 'Unknown error');
@@ -167,6 +187,11 @@ function App() {
       setSelectedFile(newFile);
       setIsNewFileDialogOpen(false);
       toast.success('File created', fileName);
+      // Track file creation (content presence indicates template usage)
+      window.electronAPI.trackEvent('file_created', {
+        toolId,
+        usedTemplate: !!content,
+      });
     } catch (error) {
       console.error('Failed to create file:', error);
       toast.error('Failed to create file', error instanceof Error ? error.message : 'Unknown error');
@@ -295,6 +320,12 @@ function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onSaveSettings={handleSaveSettings}
+      />
+
+      {/* About dialog */}
+      <AboutDialog
+        isOpen={isAboutOpen}
+        onClose={() => setIsAboutOpen(false)}
       />
 
       {/* Toast notifications */}

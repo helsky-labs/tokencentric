@@ -9,7 +9,7 @@ interface SettingsDialogProps {
   onSaveSettings: (settings: Partial<AppSettings>) => void;
 }
 
-type Tab = 'scan' | 'tools' | 'appearance';
+type Tab = 'scan' | 'tools' | 'appearance' | 'privacy';
 
 export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<Tab>('scan');
@@ -18,6 +18,7 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
   const [newExclusion, setNewExclusion] = useState('');
   const [theme, setTheme] = useState<'system' | 'light' | 'dark'>('system');
   const [editorFontSize, setEditorFontSize] = useState(14);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Load settings when dialog opens
@@ -27,6 +28,7 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
       setExclusions(settings.exclusions || []);
       setTheme(settings.theme);
       setEditorFontSize(settings.editorFontSize);
+      setAnalyticsEnabled(settings.analyticsEnabled ?? true);
       setHasChanges(false);
     }
   }, [isOpen, settings]);
@@ -68,12 +70,18 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
     setHasChanges(true);
   };
 
+  const handleAnalyticsChange = (enabled: boolean) => {
+    setAnalyticsEnabled(enabled);
+    setHasChanges(true);
+  };
+
   const handleSave = () => {
     onSaveSettings({
       scanPaths,
       exclusions,
       theme,
       editorFontSize,
+      analyticsEnabled,
     });
     setHasChanges(false);
     onClose();
@@ -83,6 +91,7 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
     { id: 'scan', label: 'Scan Paths' },
     { id: 'tools', label: 'Exclusions' },
     { id: 'appearance', label: 'Appearance' },
+    { id: 'privacy', label: 'Privacy' },
   ];
 
   return (
@@ -245,6 +254,66 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
                     {editorFontSize}px
                   </span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'privacy' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Usage Analytics
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                  Help improve Tokencentric by sending anonymous usage data. We collect only
+                  basic usage statistics like feature usage counts. No personal data or file
+                  contents are ever transmitted.
+                </p>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={analyticsEnabled}
+                    onClick={() => handleAnalyticsChange(!analyticsEnabled)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      analyticsEnabled
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        analyticsEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Send anonymous usage data
+                  </span>
+                </label>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  What We Collect
+                </h3>
+                <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1 list-disc list-inside">
+                  <li>App launches and session duration</li>
+                  <li>Features used (file creation, deletion, scanning)</li>
+                  <li>Error counts (not error content)</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  What We Never Collect
+                </h3>
+                <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1 list-disc list-inside">
+                  <li>File contents or names</li>
+                  <li>Directory paths</li>
+                  <li>Personal information</li>
+                  <li>IP addresses (anonymized by analytics provider)</li>
+                </ul>
               </div>
             </div>
           )}
