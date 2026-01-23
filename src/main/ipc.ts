@@ -95,6 +95,115 @@ export function setupIpcHandlers() {
     shell.showItemInFolder(filePath);
   });
 
+  // Delete file
+  ipcMain.handle('delete-file', async (_event, filePath: string) => {
+    await fs.unlink(filePath);
+    // Remove from store cache
+    const files = store.get('files');
+    store.set('files', files.filter((f) => f.path !== filePath));
+  });
+
+  // Create file
+  ipcMain.handle(
+    'create-file',
+    async (_event, dirPath: string, fileName: string, toolId: string): Promise<ContextFile> => {
+      const fullPath = path.join(dirPath, fileName);
+
+      // Handle nested paths (e.g., .github/copilot-instructions.md)
+      const fileDir = path.dirname(fullPath);
+      await fs.mkdir(fileDir, { recursive: true });
+
+      // Check if file exists
+      try {
+        await fs.access(fullPath);
+        throw new Error('File already exists');
+      } catch (e: unknown) {
+        if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
+      }
+
+      // Create with minimal template
+      const settings = store.get('settings');
+      const profile = settings.toolProfiles.find((p) => p.id === toolId);
+      const tokenizer = profile?.tokenizer || 'openai';
+
+      const initialContent = `# ${fileName}\n\n`;
+      await fs.writeFile(fullPath, initialContent, 'utf-8');
+
+      const stats = await fs.stat(fullPath);
+      const tokens = countTokensForContent(initialContent, tokenizer);
+
+      const newFile: ContextFile = {
+        id: fullPath,
+        path: fullPath,
+        name: fileName,
+        toolId,
+        lastModified: stats.mtimeMs,
+        size: stats.size,
+        tokens,
+      };
+
+      // Add to cache
+      const files = store.get('files');
+      store.set('files', [...files, newFile]);
+
+      return newFile;
+    }
+  );
+
+  // Duplicate file
+  ipcMain.handle('duplicate-file', async (_event, filePath: string): Promise<ContextFile> => {
+    const dir = path.dirname(filePath);
+    const ext = path.extname(filePath);
+    const base = path.basename(filePath, ext);
+
+    // Find unique name: file-copy.md, file-copy-2.md, etc.
+    let copyPath = path.join(dir, `${base}-copy${ext}`);
+    let counter = 2;
+
+    const fileExists = async (p: string): Promise<boolean> => {
+      try {
+        await fs.access(p);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    while (await fileExists(copyPath)) {
+      copyPath = path.join(dir, `${base}-copy-${counter}${ext}`);
+      counter++;
+    }
+
+    await fs.copyFile(filePath, copyPath);
+
+    // Find original file to get toolId
+    const files = store.get('files');
+    const originalFile = files.find((f) => f.path === filePath);
+    const toolId = originalFile?.toolId || 'claude';
+
+    const stats = await fs.stat(copyPath);
+    const content = await fs.readFile(copyPath, 'utf-8');
+    const settings = store.get('settings');
+    const profile = settings.toolProfiles.find((p) => p.id === toolId);
+    const tokenizer = profile?.tokenizer || 'openai';
+    const tokens = countTokensForContent(content, tokenizer);
+
+    const newFile: ContextFile = {
+      id: copyPath,
+      path: copyPath,
+      name: path.basename(copyPath),
+      toolId,
+      lastModified: stats.mtimeMs,
+      size: stats.size,
+      tokens,
+    };
+
+    // Add to cache
+    store.set('files', [...files, newFile]);
+
+    return newFile;
+  });
+
   // Select directory
   ipcMain.handle('select-directory', async () => {
     const result = await dialog.showOpenDialog({

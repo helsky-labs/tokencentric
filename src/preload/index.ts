@@ -23,6 +23,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // System
   showInFolder: (path: string): Promise<void> => ipcRenderer.invoke('show-in-folder', path),
   selectDirectory: (): Promise<string | null> => ipcRenderer.invoke('select-directory'),
+  deleteFile: (path: string): Promise<void> => ipcRenderer.invoke('delete-file', path),
+  createFile: (dirPath: string, fileName: string, toolId: string): Promise<ContextFile> =>
+    ipcRenderer.invoke('create-file', dirPath, fileName, toolId),
+  duplicateFile: (path: string): Promise<ContextFile> => ipcRenderer.invoke('duplicate-file', path),
 
   // Events from main process
   onThemeChanged: (callback: (isDark: boolean) => void) => {
@@ -55,6 +59,9 @@ declare global {
       countTokens: (content: string, tokenizer: TokenizerType) => Promise<number>;
       showInFolder: (path: string) => Promise<void>;
       selectDirectory: () => Promise<string | null>;
+      deleteFile: (path: string) => Promise<void>;
+      createFile: (dirPath: string, fileName: string, toolId: string) => Promise<ContextFile>;
+      duplicateFile: (path: string) => Promise<ContextFile>;
       onThemeChanged: (callback: (isDark: boolean) => void) => void;
       onOpenSettings: (callback: () => void) => void;
       onNewFile: (callback: () => void) => void;

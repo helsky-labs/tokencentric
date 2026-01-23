@@ -5,6 +5,7 @@ interface SidebarProps {
   selectedFile: ContextFile | null;
   onSelectFile: (file: ContextFile) => void;
   onScanDirectory: () => void;
+  onContextMenu: (file: ContextFile, x: number, y: number) => void;
   settings: AppSettings | null;
 }
 
@@ -43,6 +44,7 @@ export function Sidebar({
   selectedFile,
   onSelectFile,
   onScanDirectory,
+  onContextMenu,
   settings,
 }: SidebarProps) {
   const getToolIcon = (toolId: string) => {
@@ -92,6 +94,10 @@ export function Sidebar({
               <div
                 key={file.id}
                 onClick={() => onSelectFile(file)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  onContextMenu(file, e.clientX, e.clientY);
+                }}
                 className={`tree-item ${selectedFile?.id === file.id ? 'selected' : ''}`}
               >
                 <span>{getToolIcon(file.toolId)}</span>

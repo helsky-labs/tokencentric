@@ -4,6 +4,15 @@ import { Sidebar } from './components/Sidebar';
 import { MainContent } from './components/MainContent';
 import { StatusBar } from './components/StatusBar';
 import { EmptyState } from './components/EmptyState';
+import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
+import { ContextMenu, ContextMenuAction } from './components/ContextMenu';
+import { NewFileDialog } from './components/NewFileDialog';
+
+interface ContextMenuState {
+  file: ContextFile;
+  x: number;
+  y: number;
+}
 
 function App() {
   const [isDark, setIsDark] = useState(false);
@@ -11,6 +20,11 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<ContextFile | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // File management state
+  const [fileToDelete, setFileToDelete] = useState<ContextFile | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
 
   // Initialize app
   useEffect(() => {
@@ -51,6 +65,11 @@ function App() {
         document.documentElement.classList.toggle('dark', dark);
       }
     });
+
+    // Listen for new file command (Cmd+N)
+    window.electronAPI.onNewFile(() => {
+      setIsNewFileDialogOpen(true);
+    });
   }, []);
 
   const handleScanDirectory = async () => {
@@ -65,6 +84,73 @@ function App() {
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  // Context menu handler
+  const handleContextMenu = (file: ContextFile, x: number, y: number) => {
+    setContextMenu({ file, x, y });
+  };
+
+  // Context menu action handler
+  const handleContextMenuAction = async (action: ContextMenuAction) => {
+    if (!contextMenu) return;
+
+    const file = contextMenu.file;
+
+    switch (action) {
+      case 'edit':
+        setSelectedFile(file);
+        break;
+      case 'delete':
+        setFileToDelete(file);
+        break;
+      case 'reveal':
+        await window.electronAPI.showInFolder(file.path);
+        break;
+      case 'duplicate':
+        try {
+          const newFile = await window.electronAPI.duplicateFile(file.path);
+          setFiles((prev) => [...prev, newFile]);
+          setSelectedFile(newFile);
+        } catch (error) {
+          console.error('Failed to duplicate file:', error);
+        }
+        break;
+    }
+
+    setContextMenu(null);
+  };
+
+  // Delete file handler
+  const handleDeleteFile = async () => {
+    if (!fileToDelete) return;
+
+    try {
+      await window.electronAPI.deleteFile(fileToDelete.path);
+      setFiles((prev) => prev.filter((f) => f.id !== fileToDelete.id));
+
+      // Clear selection if deleted file was selected
+      if (selectedFile?.id === fileToDelete.id) {
+        setSelectedFile(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+    } finally {
+      setFileToDelete(null);
+    }
+  };
+
+  // Create new file handler
+  const handleCreateFile = async (dirPath: string, fileName: string, toolId: string) => {
+    try {
+      const newFile = await window.electronAPI.createFile(dirPath, fileName, toolId);
+      setFiles((prev) => [...prev, newFile]);
+      setSelectedFile(newFile);
+      setIsNewFileDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to create file:', error);
+      // Error handling is done in the dialog component
     }
   };
 
@@ -92,6 +178,7 @@ function App() {
               selectedFile={selectedFile}
               onSelectFile={setSelectedFile}
               onScanDirectory={handleScanDirectory}
+              onContextMenu={handleContextMenu}
               settings={settings}
             />
             <MainContent selectedFile={selectedFile} settings={settings} isDark={isDark} />
@@ -103,6 +190,32 @@ function App() {
 
       {/* Status bar */}
       <StatusBar selectedFile={selectedFile} settings={settings} />
+
+      {/* Context menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          file={contextMenu.file}
+          onAction={handleContextMenuAction}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmDialog
+        file={fileToDelete}
+        onConfirm={handleDeleteFile}
+        onCancel={() => setFileToDelete(null)}
+      />
+
+      {/* New file dialog */}
+      <NewFileDialog
+        isOpen={isNewFileDialogOpen}
+        onClose={() => setIsNewFileDialogOpen(false)}
+        onCreateFile={handleCreateFile}
+        settings={settings}
+      />
     </div>
   );
 }
