@@ -55,11 +55,15 @@
 - [ ] 4.1 Integrate @anthropic-ai/tokenizer
 - [ ] 4.2 Integrate tiktoken (OpenAI)
 - [ ] 4.3 Create token counting service (picks tokenizer based on tool)
-- [ ] 4.4 Display token count per file in tree view
-- [x] 4.5 Add bottom status bar with selected file tokens
-- [x] 4.6 Show model compatibility (fits in 200k context)
+- [ ] 4.4 Count tokens for ALL files during/after scan (background)
+- [ ] 4.5 Display token count per file in sidebar with color coding:
+      - 🟢 Green: < 5,000 tokens (light)
+      - 🟡 Yellow: 5,000 - 20,000 tokens (medium)
+      - 🔴 Red: > 20,000 tokens (heavy)
+- [x] 4.6 Add bottom status bar with selected file tokens
+- [x] 4.7 Show model compatibility (fits in 200k context)
 
-**Checkpoint**: Each file shows token count, correct tokenizer per tool.
+**Checkpoint**: Each file shows color-coded token count in sidebar, correct tokenizer per tool.
 
 ---
 
@@ -178,12 +182,14 @@
 
 ## Current Status
 
-**Phase**: 4 - Token Analysis
-**Next Task**: 4.1 Integrate @anthropic-ai/tokenizer
+**Phase**: 4 & 5 (parallel)
+**Active Work**:
+- Agent 1: Tokenizer integration (4.1-4.5)
+- Agent 2: Monaco editor (5.1-5.4)
 
 **Progress Summary**:
 - Phase 1: COMPLETE
 - Phase 2: 5/6 tasks done (missing: settings UI for scan paths)
 - Phase 3: 5/6 tasks done (missing: tool filter dropdown)
-- Phase 4: 2/6 tasks done (need actual tokenizers)
-- Phase 5+: Not started
+- Phase 4: 2/7 tasks done (tokenizers + color-coded sidebar in progress)
+- Phase 5: Not started (Monaco editor in progress)
