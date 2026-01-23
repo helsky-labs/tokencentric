@@ -20,7 +20,7 @@ function getTiktokenEncoder() {
 }
 
 // Initialize store with defaults
-const store = new Store<{ settings: AppSettings; files: ContextFile[] }>({
+const store = new Store<{ settings: AppSettings; files: ContextFile[]; hasCompletedOnboarding: boolean }>({
   defaults: {
     settings: {
       scanPaths: [],
@@ -31,6 +31,7 @@ const store = new Store<{ settings: AppSettings; files: ContextFile[] }>({
       toolProfiles: defaultToolProfiles,
     },
     files: [],
+    hasCompletedOnboarding: false,
   },
 });
 
@@ -56,6 +57,16 @@ function countTokensForContent(content: string, tokenizer: TokenizerType): numbe
 }
 
 export function setupIpcHandlers() {
+  // Get onboarding status
+  ipcMain.handle('get-onboarding-status', () => {
+    return store.get('hasCompletedOnboarding');
+  });
+
+  // Set onboarding complete
+  ipcMain.handle('set-onboarding-complete', () => {
+    store.set('hasCompletedOnboarding', true);
+  });
+
   // Get settings
   ipcMain.handle('get-settings', () => {
     return store.get('settings');

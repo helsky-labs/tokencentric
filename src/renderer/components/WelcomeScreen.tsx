@@ -1,0 +1,247 @@
+import { useState } from 'react';
+
+interface WelcomeScreenProps {
+  onComplete: () => void;
+  onScanDirectory: () => void;
+  onCreateFile: () => void;
+}
+
+type Step = 'welcome' | 'scan' | 'ready';
+
+export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: WelcomeScreenProps) {
+  const [step, setStep] = useState<Step>('welcome');
+  const [hasScanned, setHasScanned] = useState(false);
+
+  const handleScanDirectory = async () => {
+    onScanDirectory();
+    setHasScanned(true);
+    setStep('ready');
+  };
+
+  const handleSkipScan = () => {
+    setStep('ready');
+  };
+
+  const handleCreateFile = () => {
+    onCreateFile();
+    onComplete();
+  };
+
+  const handleFinish = () => {
+    onComplete();
+  };
+
+  return (
+    <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-lg w-full mx-4">
+        {/* Progress indicator */}
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center gap-2">
+            {(['welcome', 'scan', 'ready'] as const).map((s, i) => (
+              <div key={s} className="flex items-center">
+                <div
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    step === s
+                      ? 'bg-blue-500'
+                      : ['welcome', 'scan', 'ready'].indexOf(step) > i
+                        ? 'bg-blue-300'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                />
+                {i < 2 && (
+                  <div
+                    className={`w-8 h-0.5 mx-1 ${
+                      ['welcome', 'scan', 'ready'].indexOf(step) > i
+                        ? 'bg-blue-300'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+          {step === 'welcome' && (
+            <div className="text-center">
+              <div className="text-5xl mb-4">
+                <span role="img" aria-label="waving hand">
+                  Welcome
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                Welcome to Tokencentric
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Manage your AI coding assistant context files in one place.
+                Track token counts, edit with live preview, and create from templates.
+              </p>
+
+              <div className="space-y-3 text-left mb-8">
+                <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <span className="text-xl">🔍</span>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">Discover Files</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Scan directories for CLAUDE.md, .cursorrules, and more
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <span className="text-xl">📊</span>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">Track Tokens</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      See accurate token counts with color-coded indicators
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <span className="text-xl">📝</span>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">Edit & Preview</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Monaco editor with markdown preview
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setStep('scan')}
+                className="w-full px-6 py-3 text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+              >
+                Get Started
+              </button>
+            </div>
+          )}
+
+          {step === 'scan' && (
+            <div className="text-center">
+              <div className="text-5xl mb-4">📂</div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                Add Your First Directory
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Point Tokencentric at a folder containing your projects.
+                It will find all AI context files automatically.
+              </p>
+
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6 text-left">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  We'll look for:
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-2 py-1 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded">
+                    CLAUDE.md
+                  </span>
+                  <span className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                    .cursorrules
+                  </span>
+                  <span className="px-2 py-1 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded">
+                    copilot-instructions.md
+                  </span>
+                  <span className="px-2 py-1 text-xs bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded">
+                    .windsurfrules
+                  </span>
+                  <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded">
+                    AGENTS.md
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleScanDirectory}
+                  className="w-full px-6 py-3 text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                >
+                  Choose Directory
+                </button>
+                <button
+                  onClick={handleSkipScan}
+                  className="w-full px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                >
+                  Skip for now
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 'ready' && (
+            <div className="text-center">
+              <div className="text-5xl mb-4">🎉</div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                {hasScanned ? "You're All Set!" : "Ready When You Are"}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                {hasScanned
+                  ? "Your files have been discovered. Start editing or create a new context file."
+                  : "You can scan for files or create a new one anytime from the sidebar."}
+              </p>
+
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6 text-left">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Quick tips:
+                </div>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li className="flex items-center gap-2">
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">⌘N</kbd>
+                    <span>Create new file</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">⌘S</kbd>
+                    <span>Save current file</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">⌘,</kbd>
+                    <span>Open settings</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">⌘⇧O</kbd>
+                    <span>Scan directory</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                {!hasScanned && (
+                  <button
+                    onClick={handleCreateFile}
+                    className="w-full px-6 py-3 text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                  >
+                    Create Your First File
+                  </button>
+                )}
+                <button
+                  onClick={handleFinish}
+                  className={`w-full px-6 py-3 font-medium rounded-lg transition-colors ${
+                    hasScanned
+                      ? 'text-lg text-white bg-blue-500 hover:bg-blue-600'
+                      : 'text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {hasScanned ? 'Start Using Tokencentric' : 'Skip for now'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
+          Made with ❤️ by{' '}
+          <a
+            href="https://helsky-labs.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            Helsky Labs
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

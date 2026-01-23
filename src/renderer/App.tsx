@@ -8,6 +8,9 @@ import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
 import { ContextMenu, ContextMenuAction } from './components/ContextMenu';
 import { NewFileDialog } from './components/NewFileDialog';
 import { SettingsDialog } from './components/SettingsDialog';
+import { WelcomeScreen } from './components/WelcomeScreen';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ToastContainer, useToast } from './components/Toast';
 
 interface ContextMenuState {
   file: ContextFile;
@@ -21,12 +24,16 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<ContextFile | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // File management state
   const [fileToDelete, setFileToDelete] = useState<ContextFile | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Toast notifications
+  const toast = useToast();
 
   // Initialize app
   useEffect(() => {
@@ -36,14 +43,16 @@ function App() {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         setIsDark(prefersDark);
 
-        // Load settings and files
-        const [loadedSettings, loadedFiles] = await Promise.all([
+        // Load settings, files, and onboarding status
+        const [loadedSettings, loadedFiles, hasCompletedOnboarding] = await Promise.all([
           window.electronAPI.getSettings(),
           window.electronAPI.getFiles(),
+          window.electronAPI.getOnboardingStatus(),
         ]);
 
         setSettings(loadedSettings);
         setFiles(loadedFiles);
+        setShowWelcome(!hasCompletedOnboarding);
 
         // Apply theme
         const shouldBeDark = loadedSettings.theme === 'dark' || (loadedSettings.theme === 'system' && prefersDark);
@@ -141,8 +150,10 @@ function App() {
       if (selectedFile?.id === fileToDelete.id) {
         setSelectedFile(null);
       }
+      toast.success('File deleted', fileToDelete.name);
     } catch (error) {
       console.error('Failed to delete file:', error);
+      toast.error('Failed to delete file', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setFileToDelete(null);
     }
@@ -155,9 +166,10 @@ function App() {
       setFiles((prev) => [...prev, newFile]);
       setSelectedFile(newFile);
       setIsNewFileDialogOpen(false);
+      toast.success('File created', fileName);
     } catch (error) {
       console.error('Failed to create file:', error);
-      // Error handling is done in the dialog component
+      toast.error('Failed to create file', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
@@ -179,10 +191,44 @@ function App() {
     }
   };
 
+  // Complete onboarding
+  const handleCompleteOnboarding = async () => {
+    await window.electronAPI.setOnboardingComplete();
+    setShowWelcome(false);
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show welcome screen for first-time users
+  if (showWelcome) {
+    return (
+      <div className="h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        {/* Title bar area (for macOS traffic lights) */}
+        <div className="h-8 titlebar-drag bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700" />
+        <div className="flex-1">
+          <WelcomeScreen
+            onComplete={handleCompleteOnboarding}
+            onScanDirectory={handleScanDirectory}
+            onCreateFile={() => setIsNewFileDialogOpen(true)}
+          />
+        </div>
+
+        {/* New file dialog (can be triggered from welcome screen) */}
+        <NewFileDialog
+          isOpen={isNewFileDialogOpen}
+          onClose={() => setIsNewFileDialogOpen(false)}
+          onCreateFile={handleCreateFile}
+          settings={settings}
+        />
       </div>
     );
   }
@@ -250,8 +296,19 @@ function App() {
         settings={settings}
         onSaveSettings={handleSaveSettings}
       />
+
+      {/* Toast notifications */}
+      <ToastContainer toasts={toast.toasts} onDismiss={toast.dismissToast} />
     </div>
   );
 }
 
-export default App;
+function AppWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}
+
+export default AppWithErrorBoundary;

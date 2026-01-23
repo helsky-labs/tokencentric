@@ -3,6 +3,10 @@ import { AppSettings, ContextFile, TokenizerType } from '../shared/types';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
+  // Onboarding
+  getOnboardingStatus: (): Promise<boolean> => ipcRenderer.invoke('get-onboarding-status'),
+  setOnboardingComplete: (): Promise<void> => ipcRenderer.invoke('set-onboarding-complete'),
+
   // Settings
   getSettings: (): Promise<AppSettings> => ipcRenderer.invoke('get-settings'),
   setSettings: (settings: Partial<AppSettings>): Promise<void> =>
@@ -50,6 +54,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 declare global {
   interface Window {
     electronAPI: {
+      getOnboardingStatus: () => Promise<boolean>;
+      setOnboardingComplete: () => Promise<void>;
       getSettings: () => Promise<AppSettings>;
       setSettings: (settings: Partial<AppSettings>) => Promise<void>;
       getFiles: () => Promise<ContextFile[]>;

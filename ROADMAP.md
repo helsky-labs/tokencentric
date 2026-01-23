@@ -117,15 +117,15 @@
 ## Phase 8: Onboarding & UX Polish
 **Goal**: Great first-run experience and polished UI.
 
-- [ ] 8.1 First-run detection
-- [ ] 8.2 Welcome screen with setup wizard
-- [ ] 8.3 "Add scan directory" step
-- [ ] 8.4 "Create your first file" prompt (if none found)
-- [ ] 8.5 Keyboard shortcuts (Cmd+N, Cmd+S, Cmd+,, etc.)
-- [ ] 8.6 Loading states and skeleton screens
-- [ ] 8.7 Error handling with clear messages
+- [x] 8.1 First-run detection
+- [x] 8.2 Welcome screen with setup wizard
+- [x] 8.3 "Add scan directory" step
+- [x] 8.4 "Create your first file" prompt (if none found)
+- [x] 8.5 Keyboard shortcuts (Cmd+N, Cmd+S, Cmd+,, etc.)
+- [x] 8.6 Loading states and skeleton screens
+- [x] 8.7 Error handling with clear messages
 
-**Checkpoint**: New users have guided experience, power users have shortcuts.
+**Checkpoint**: New users have guided experience, power users have shortcuts. ✅ COMPLETE
 
 ---
 
@@ -182,8 +182,8 @@
 
 ## Current Status
 
-**Phase**: 8 - Onboarding & UX Polish
-**Next Task**: 8.1 First-run detection
+**Phase**: 9 - Analytics & Settings
+**Next Task**: 9.1 Umami integration
 
 **Progress Summary**:
 - Phase 1: ✅ COMPLETE
@@ -193,3 +193,4 @@
 - Phase 5: ✅ COMPLETE (Monaco editor + preview + save)
 - Phase 6: ✅ COMPLETE (file management, context menu, dialogs)
 - Phase 7: ✅ COMPLETE (7 templates with variable substitution + preview)
+- Phase 8: ✅ COMPLETE (onboarding wizard, toast notifications, error boundary)
