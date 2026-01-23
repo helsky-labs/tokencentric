@@ -30,7 +30,9 @@ function App() {
         setFiles(loadedFiles);
 
         // Apply theme
-        if (loadedSettings.theme === 'dark' || (loadedSettings.theme === 'system' && prefersDark)) {
+        const shouldBeDark = loadedSettings.theme === 'dark' || (loadedSettings.theme === 'system' && prefersDark);
+        setIsDark(shouldBeDark);
+        if (shouldBeDark) {
           document.documentElement.classList.add('dark');
         }
       } catch (error) {
@@ -92,7 +94,7 @@ function App() {
               onScanDirectory={handleScanDirectory}
               settings={settings}
             />
-            <MainContent selectedFile={selectedFile} settings={settings} />
+            <MainContent selectedFile={selectedFile} settings={settings} isDark={isDark} />
           </>
         ) : (
           <EmptyState onScanDirectory={handleScanDirectory} />
