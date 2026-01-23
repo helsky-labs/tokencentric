@@ -1,0 +1,67 @@
+import { ToolProfile } from './types';
+
+export const defaultToolProfiles: ToolProfile[] = [
+  {
+    id: 'claude',
+    name: 'Claude Code',
+    patterns: ['CLAUDE.md', 'claude.md', '.claude/CLAUDE.md'],
+    tokenizer: 'anthropic',
+    icon: '🟠',
+    color: '#D97706',
+    docsUrl: 'https://docs.anthropic.com/en/docs/claude-code',
+    enabled: true,
+  },
+  {
+    id: 'cursor',
+    name: 'Cursor',
+    patterns: ['.cursorrules'],
+    tokenizer: 'openai',
+    icon: '⬛',
+    color: '#1F2937',
+    docsUrl: 'https://docs.cursor.com/',
+    enabled: true,
+  },
+  {
+    id: 'copilot',
+    name: 'GitHub Copilot',
+    patterns: ['.github/copilot-instructions.md'],
+    tokenizer: 'openai',
+    icon: '🐙',
+    color: '#6366F1',
+    docsUrl: 'https://docs.github.com/en/copilot',
+    enabled: true,
+  },
+  {
+    id: 'windsurf',
+    name: 'Windsurf',
+    patterns: ['.windsurfrules'],
+    tokenizer: 'openai',
+    icon: '🌊',
+    color: '#0EA5E9',
+    enabled: true,
+  },
+  {
+    id: 'openai',
+    name: 'ChatGPT / OpenAI',
+    patterns: ['AGENTS.md', 'agents.md'],
+    tokenizer: 'openai',
+    icon: '🟢',
+    color: '#10B981',
+    enabled: true,
+  },
+];
+
+export const defaultExclusions = [
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  '.next',
+  '.nuxt',
+  'vendor',
+  '__pycache__',
+  '.venv',
+  'venv',
+  '.cache',
+  'coverage',
+];
