@@ -31,6 +31,24 @@ export interface FileTreeNode {
   file?: ContextFile;
 }
 
+// Template types
+export interface TemplateVariable {
+  name: string; // e.g., "PROJECT_NAME"
+  label: string; // e.g., "Project Name"
+  placeholder: string; // e.g., "my-awesome-project"
+  required: boolean;
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  toolId: string; // 'claude' | 'cursor' | 'copilot' | 'all'
+  category: 'minimal' | 'fullstack' | 'backend' | 'mobile' | 'safety' | 'general';
+  content: string;
+  variables: TemplateVariable[];
+}
+
 // Settings types
 export interface AppSettings {
   scanPaths: string[];

@@ -106,7 +106,7 @@ export function setupIpcHandlers() {
   // Create file
   ipcMain.handle(
     'create-file',
-    async (_event, dirPath: string, fileName: string, toolId: string): Promise<ContextFile> => {
+    async (_event, dirPath: string, fileName: string, toolId: string, content?: string): Promise<ContextFile> => {
       const fullPath = path.join(dirPath, fileName);
 
       // Handle nested paths (e.g., .github/copilot-instructions.md)
@@ -121,12 +121,12 @@ export function setupIpcHandlers() {
         if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
       }
 
-      // Create with minimal template
+      // Create with provided content or minimal template
       const settings = store.get('settings');
       const profile = settings.toolProfiles.find((p) => p.id === toolId);
       const tokenizer = profile?.tokenizer || 'openai';
 
-      const initialContent = `# ${fileName}\n\n`;
+      const initialContent = content || `# ${fileName}\n\n`;
       await fs.writeFile(fullPath, initialContent, 'utf-8');
 
       const stats = await fs.stat(fullPath);

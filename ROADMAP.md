@@ -97,8 +97,8 @@
 ## Phase 7: Templates
 **Goal**: Create files from pre-built templates.
 
-- [ ] 7.1 Create template data structure
-- [ ] 7.2 Build 7 default templates:
+- [x] 7.1 Create template data structure
+- [x] 7.2 Build 7 default templates:
       - Minimal
       - Full-Stack JS
       - Python
@@ -106,11 +106,11 @@
       - API Project
       - Mobile (React Native)
       - "Careful AI" (safety rules)
-- [ ] 7.3 Template picker UI in "New File" flow
-- [ ] 7.4 Template variable substitution ({{PROJECT_NAME}}, etc.)
-- [ ] 7.5 Template preview before creation
+- [x] 7.3 Template picker UI in "New File" flow
+- [x] 7.4 Template variable substitution ({{PROJECT_NAME}}, etc.)
+- [x] 7.5 Template preview before creation
 
-**Checkpoint**: Can create new files from any template.
+**Checkpoint**: Can create new files from any template. ✅ COMPLETE
 
 ---
 
@@ -182,8 +182,8 @@
 
 ## Current Status
 
-**Phase**: 7 - Templates
-**Next Task**: 7.1 Create template data structure
+**Phase**: 8 - Onboarding & UX Polish
+**Next Task**: 8.1 First-run detection
 
 **Progress Summary**:
 - Phase 1: ✅ COMPLETE
@@ -192,3 +192,4 @@
 - Phase 4: ✅ COMPLETE (tokenizers + color-coded sidebar)
 - Phase 5: ✅ COMPLETE (Monaco editor + preview + save)
 - Phase 6: ✅ COMPLETE (file management, context menu, dialogs)
+- Phase 7: ✅ COMPLETE (7 templates with variable substitution + preview)

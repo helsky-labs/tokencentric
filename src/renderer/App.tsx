@@ -142,9 +142,9 @@ function App() {
   };
 
   // Create new file handler
-  const handleCreateFile = async (dirPath: string, fileName: string, toolId: string) => {
+  const handleCreateFile = async (dirPath: string, fileName: string, toolId: string, content: string) => {
     try {
-      const newFile = await window.electronAPI.createFile(dirPath, fileName, toolId);
+      const newFile = await window.electronAPI.createFile(dirPath, fileName, toolId, content || undefined);
       setFiles((prev) => [...prev, newFile]);
       setSelectedFile(newFile);
       setIsNewFileDialogOpen(false);
