@@ -52,32 +52,32 @@
 ## Phase 4: Token Analysis
 **Goal**: Show accurate token counts for each file.
 
-- [ ] 4.1 Integrate @anthropic-ai/tokenizer
-- [ ] 4.2 Integrate tiktoken (OpenAI)
-- [ ] 4.3 Create token counting service (picks tokenizer based on tool)
-- [ ] 4.4 Count tokens for ALL files during/after scan (background)
-- [ ] 4.5 Display token count per file in sidebar with color coding:
+- [x] 4.1 Integrate @anthropic-ai/tokenizer
+- [x] 4.2 Integrate tiktoken (OpenAI)
+- [x] 4.3 Create token counting service (picks tokenizer based on tool)
+- [x] 4.4 Count tokens for ALL files during/after scan (background)
+- [x] 4.5 Display token count per file in sidebar with color coding:
       - 🟢 Green: < 5,000 tokens (light)
       - 🟡 Yellow: 5,000 - 20,000 tokens (medium)
       - 🔴 Red: > 20,000 tokens (heavy)
 - [x] 4.6 Add bottom status bar with selected file tokens
 - [x] 4.7 Show model compatibility (fits in 200k context)
 
-**Checkpoint**: Each file shows color-coded token count in sidebar, correct tokenizer per tool.
+**Checkpoint**: Each file shows color-coded token count in sidebar, correct tokenizer per tool. ✅ COMPLETE
 
 ---
 
 ## Phase 5: Editor
 **Goal**: View and edit files with markdown preview.
 
-- [ ] 5.1 Integrate Monaco editor
-- [ ] 5.2 Create split view (editor + preview)
-- [ ] 5.3 Add markdown preview renderer
-- [ ] 5.4 Implement file saving (Cmd+S / Ctrl+S)
-- [ ] 5.5 Show unsaved changes indicator
-- [ ] 5.6 Add toggle for editor/preview/split modes
+- [x] 5.1 Integrate Monaco editor
+- [x] 5.2 Create split view (editor + preview)
+- [x] 5.3 Add markdown preview renderer
+- [x] 5.4 Implement file saving (Cmd+S / Ctrl+S)
+- [x] 5.5 Show unsaved changes indicator
+- [x] 5.6 Add toggle for editor/preview/split modes
 
-**Checkpoint**: Can open, edit, preview, and save any context file.
+**Checkpoint**: Can open, edit, preview, and save any context file. ✅ COMPLETE
 
 ---
 
@@ -182,14 +182,12 @@
 
 ## Current Status
 
-**Phase**: 4 & 5 (parallel)
-**Active Work**:
-- Agent 1: Tokenizer integration (4.1-4.5)
-- Agent 2: Monaco editor (5.1-5.4)
+**Phase**: 6 - File Management
+**Next Task**: 6.1 "New File" dialog with location picker
 
 **Progress Summary**:
-- Phase 1: COMPLETE
+- Phase 1: ✅ COMPLETE
 - Phase 2: 5/6 tasks done (missing: settings UI for scan paths)
 - Phase 3: 5/6 tasks done (missing: tool filter dropdown)
-- Phase 4: 2/7 tasks done (tokenizers + color-coded sidebar in progress)
-- Phase 5: Not started (Monaco editor in progress)
+- Phase 4: ✅ COMPLETE (tokenizers + color-coded sidebar)
+- Phase 5: ✅ COMPLETE (Monaco editor + preview + save)
