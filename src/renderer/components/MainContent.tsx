@@ -1,7 +1,14 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor, { OnMount, loader } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import { ContextFile, AppSettings } from '../../shared/types';
+
+// Configure Monaco to load from CDN (more reliable in Electron)
+loader.config({
+  paths: {
+    vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs'
+  }
+});
 
 type ViewMode = 'editor' | 'preview' | 'split';
 
