@@ -279,7 +279,13 @@ function App() {
               settings={settings}
               onOpenSettings={() => setIsSettingsOpen(true)}
             />
-            <MainContent selectedFile={selectedFile} settings={settings} isDark={isDark} />
+            <MainContent
+              selectedFile={selectedFile}
+              allFiles={files}
+              onSelectFile={setSelectedFile}
+              settings={settings}
+              isDark={isDark}
+            />
           </>
         ) : (
           <EmptyState onScanDirectory={handleScanDirectory} />

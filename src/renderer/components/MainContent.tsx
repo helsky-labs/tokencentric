@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Editor, { OnMount, loader } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import { ContextFile, AppSettings } from '../../shared/types';
+import { Breadcrumb } from './Breadcrumb';
 
 // Configure Monaco to load from CDN (more reliable in Electron)
 loader.config({
@@ -14,11 +15,13 @@ type ViewMode = 'editor' | 'preview' | 'split';
 
 interface MainContentProps {
   selectedFile: ContextFile | null;
+  allFiles: ContextFile[];
+  onSelectFile: (file: ContextFile) => void;
   settings: AppSettings | null;
   isDark: boolean;
 }
 
-export function MainContent({ selectedFile, settings, isDark }: MainContentProps) {
+export function MainContent({ selectedFile, allFiles, onSelectFile, settings, isDark }: MainContentProps) {
   const [originalContent, setOriginalContent] = useState('');
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -105,10 +108,19 @@ export function MainContent({ selectedFile, settings, isDark }: MainContentProps
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Breadcrumb - inheritance chain */}
+      <div className="px-4 py-1.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+        <Breadcrumb
+          selectedFile={selectedFile}
+          allFiles={allFiles}
+          onSelectFile={onSelectFile}
+        />
+      </div>
+
       {/* File header */}
       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-sm font-medium truncate">{selectedFile.path}</div>
+          <div className="text-sm font-medium truncate">{selectedFile.name}</div>
           {hasChanges && (
             <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex-shrink-0">
               unsaved
