@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 import { EditorTab } from './EditorTab';
+import { TabContextMenu, TabContextMenuAction } from './TabContextMenu';
+import { CloseConfirmationDialog, CloseConfirmationResult } from './CloseConfirmationDialog';
 import { useEditorStore, EditorTab as EditorTabType } from '../../store/editorStore';
 
 interface EditorTabsProps {
@@ -8,10 +10,23 @@ interface EditorTabsProps {
   activeTabId: string | null;
 }
 
+interface ContextMenuState {
+  x: number;
+  y: number;
+  tab: EditorTabType;
+}
+
+interface CloseConfirmationState {
+  tabs: EditorTabType[];
+  onConfirm: () => void;
+}
+
 export function EditorTabs({ paneId, tabs, activeTabId }: EditorTabsProps) {
-  const { setActiveTab, closeTab, reorderTabs } = useEditorStore();
+  const { setActiveTab, closeTab, closeOtherTabs, closeAllTabs, closeSavedTabs, saveTab, reorderTabs } = useEditorStore();
   const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [closeConfirmation, setCloseConfirmation] = useState<CloseConfirmationState | null>(null);
 
   // Handle drag start
   const handleDragStart = useCallback((e: React.DragEvent, tabId: string) => {
@@ -52,10 +67,90 @@ export function EditorTabs({ paneId, tabs, activeTabId }: EditorTabsProps) {
     setActiveTab(tabId, paneId);
   }, [setActiveTab, paneId]);
 
+  // Request close with confirmation if needed
+  const requestCloseWithConfirmation = useCallback((
+    unsavedTabs: EditorTabType[],
+    onConfirm: () => void
+  ) => {
+    if (unsavedTabs.length > 0) {
+      setCloseConfirmation({ tabs: unsavedTabs, onConfirm });
+    } else {
+      onConfirm();
+    }
+  }, []);
+
   // Handle tab close
   const handleCloseTab = useCallback((tabId: string) => {
-    closeTab(tabId, paneId);
-  }, [closeTab, paneId]);
+    const tab = tabs.find(t => t.id === tabId);
+    if (tab?.isDirty) {
+      requestCloseWithConfirmation([tab], () => closeTab(tabId, paneId));
+    } else {
+      closeTab(tabId, paneId);
+    }
+  }, [tabs, closeTab, paneId, requestCloseWithConfirmation]);
+
+  // Handle context menu open
+  const handleContextMenu = useCallback((e: React.MouseEvent, tab: EditorTabType) => {
+    setContextMenu({ x: e.clientX, y: e.clientY, tab });
+  }, []);
+
+  // Handle context menu action
+  const handleContextMenuAction = useCallback((action: TabContextMenuAction) => {
+    if (!contextMenu) return;
+
+    const { tab } = contextMenu;
+
+    switch (action) {
+      case 'close':
+        handleCloseTab(tab.id);
+        break;
+
+      case 'closeOthers': {
+        const otherTabs = tabs.filter(t => t.id !== tab.id);
+        const unsavedOthers = otherTabs.filter(t => t.isDirty);
+        requestCloseWithConfirmation(unsavedOthers, () => closeOtherTabs(tab.id, paneId));
+        break;
+      }
+
+      case 'closeAll': {
+        const unsavedTabs = tabs.filter(t => t.isDirty);
+        requestCloseWithConfirmation(unsavedTabs, () => closeAllTabs(paneId));
+        break;
+      }
+
+      case 'closeSaved':
+        closeSavedTabs(paneId);
+        break;
+
+      case 'copyPath':
+        navigator.clipboard.writeText(tab.file.path);
+        break;
+    }
+  }, [contextMenu, tabs, paneId, handleCloseTab, closeOtherTabs, closeAllTabs, closeSavedTabs, requestCloseWithConfirmation]);
+
+  // Handle close confirmation result
+  const handleCloseConfirmationResult = useCallback(async (result: CloseConfirmationResult) => {
+    if (!closeConfirmation) return;
+
+    const { tabs: unsavedTabs, onConfirm } = closeConfirmation;
+
+    if (result === 'save') {
+      // Save all unsaved tabs, then proceed
+      try {
+        await Promise.all(unsavedTabs.map(tab => saveTab(tab.id)));
+        onConfirm();
+      } catch (error) {
+        console.error('Failed to save tabs:', error);
+        // Don't close if save failed
+      }
+    } else if (result === 'discard') {
+      // Proceed without saving
+      onConfirm();
+    }
+    // 'cancel' - just close the dialog
+
+    setCloseConfirmation(null);
+  }, [closeConfirmation, saveTab]);
 
   if (tabs.length === 0) {
     return null;
@@ -80,6 +175,7 @@ export function EditorTabs({ paneId, tabs, activeTabId }: EditorTabsProps) {
             isActive={tab.id === activeTabId}
             onSelect={() => handleSelectTab(tab.id)}
             onClose={() => handleCloseTab(tab.id)}
+            onContextMenu={handleContextMenu}
             onDragStart={handleDragStart}
             onDrop={handleDrop}
             index={index}
@@ -103,6 +199,25 @@ export function EditorTabs({ paneId, tabs, activeTabId }: EditorTabsProps) {
           setDraggedTabId(null);
           setDropTargetIndex(null);
         }}
+      />
+
+      {/* Tab Context Menu */}
+      {contextMenu && (
+        <TabContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          tab={contextMenu.tab}
+          totalTabs={tabs.length}
+          onAction={handleContextMenuAction}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Close Confirmation Dialog */}
+      <CloseConfirmationDialog
+        isOpen={closeConfirmation !== null}
+        tabs={closeConfirmation?.tabs ?? []}
+        onResult={handleCloseConfirmationResult}
       />
     </div>
   );

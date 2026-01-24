@@ -6,6 +6,7 @@ interface EditorTabProps {
   isActive: boolean;
   onSelect: () => void;
   onClose: () => void;
+  onContextMenu?: (e: React.MouseEvent, tab: EditorTabType) => void;
   onDragStart?: (e: React.DragEvent, tabId: string) => void;
   onDragOver?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent, tabId: string) => void;
@@ -17,6 +18,7 @@ export function EditorTab({
   isActive,
   onSelect,
   onClose,
+  onContextMenu,
   onDragStart,
   onDragOver,
   onDrop,
@@ -43,6 +45,13 @@ export function EditorTab({
     e.stopPropagation();
     onClose();
   }, [onClose]);
+
+  // Handle context menu (right-click)
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onContextMenu?.(e, tab);
+  }, [tab, onContextMenu]);
 
   // Handle drag start
   const handleDragStart = useCallback((e: React.DragEvent) => {
@@ -104,6 +113,7 @@ export function EditorTab({
       draggable
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onContextMenu={handleContextMenu}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}

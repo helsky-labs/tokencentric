@@ -32,6 +32,9 @@ interface EditorState {
   // Actions
   openFile: (file: ContextFile) => Promise<void>;
   closeTab: (tabId: string, paneId?: string) => void;
+  closeOtherTabs: (tabId: string, paneId?: string) => void;
+  closeAllTabs: (paneId?: string) => void;
+  closeSavedTabs: (paneId?: string) => void;
   setActiveTab: (tabId: string, paneId?: string) => void;
   updateTabContent: (tabId: string, content: string) => void;
   saveTab: (tabId: string) => Promise<void>;
@@ -42,6 +45,7 @@ interface EditorState {
   closeActiveTab: (paneId?: string) => void;
   getActiveTab: (paneId?: string) => EditorTab | null;
   getActivePane: () => EditorPane | null;
+  getUnsavedTabs: (paneId?: string) => EditorTab[];
 }
 
 // Default pane for initial state
@@ -148,6 +152,103 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       panes: panes.map(p =>
         p.id === targetPaneId
           ? { ...p, tabIds: newTabIds, activeTabId: newActiveTabId }
+          : p
+      ),
+    });
+  },
+
+  // Close all tabs except the specified one
+  closeOtherTabs: (tabId: string, paneId?: string) => {
+    const { tabs, panes, activePaneId } = get();
+
+    const targetPaneId = paneId || activePaneId;
+    const targetPane = panes.find(p => p.id === targetPaneId);
+
+    if (!targetPane || !targetPane.tabIds.includes(tabId)) return;
+
+    // Get tabs to remove (all except the specified one)
+    const tabsToRemove = targetPane.tabIds.filter(id => id !== tabId);
+
+    // Remove tabs from map
+    const newTabs = new Map(tabs);
+    tabsToRemove.forEach(id => newTabs.delete(id));
+
+    set({
+      tabs: newTabs,
+      panes: panes.map(p =>
+        p.id === targetPaneId
+          ? { ...p, tabIds: [tabId], activeTabId: tabId }
+          : p
+      ),
+    });
+  },
+
+  // Close all tabs in a pane
+  closeAllTabs: (paneId?: string) => {
+    const { tabs, panes, activePaneId } = get();
+
+    const targetPaneId = paneId || activePaneId;
+    const targetPane = panes.find(p => p.id === targetPaneId);
+
+    if (!targetPane) return;
+
+    // Remove all tabs in this pane from the map
+    const newTabs = new Map(tabs);
+    targetPane.tabIds.forEach(id => newTabs.delete(id));
+
+    set({
+      tabs: newTabs,
+      panes: panes.map(p =>
+        p.id === targetPaneId
+          ? { ...p, tabIds: [], activeTabId: null }
+          : p
+      ),
+    });
+  },
+
+  // Close only saved (non-dirty) tabs in a pane
+  closeSavedTabs: (paneId?: string) => {
+    const { tabs, panes, activePaneId } = get();
+
+    const targetPaneId = paneId || activePaneId;
+    const targetPane = panes.find(p => p.id === targetPaneId);
+
+    if (!targetPane) return;
+
+    // Get tabs to keep (dirty ones) and remove (saved ones)
+    const tabsToKeep: string[] = [];
+    const tabsToRemove: string[] = [];
+
+    targetPane.tabIds.forEach(id => {
+      const tab = tabs.get(id);
+      if (tab?.isDirty) {
+        tabsToKeep.push(id);
+      } else {
+        tabsToRemove.push(id);
+      }
+    });
+
+    // Remove saved tabs from map
+    const newTabs = new Map(tabs);
+    tabsToRemove.forEach(id => newTabs.delete(id));
+
+    // Determine new active tab
+    let newActiveTabId: string | null = null;
+    if (tabsToKeep.length > 0) {
+      // If current active tab is being kept, keep it active
+      if (targetPane.activeTabId && tabsToKeep.includes(targetPane.activeTabId)) {
+        newActiveTabId = targetPane.activeTabId;
+      } else {
+        // Otherwise select the first remaining tab
+        newActiveTabId = tabsToKeep[0];
+      }
+    }
+
+    set({
+      tabs: newTabs,
+      panes: panes.map(p =>
+        p.id === targetPaneId
+          ? { ...p, tabIds: tabsToKeep, activeTabId: newActiveTabId }
           : p
       ),
     });
@@ -314,5 +415,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   getActivePane: () => {
     const { panes, activePaneId } = get();
     return panes.find(p => p.id === activePaneId) || null;
+  },
+
+  // Get all unsaved tabs in a pane
+  getUnsavedTabs: (paneId?: string) => {
+    const { tabs, panes, activePaneId } = get();
+    const targetPaneId = paneId || activePaneId;
+    const targetPane = panes.find(p => p.id === targetPaneId);
+
+    if (!targetPane) return [];
+
+    return targetPane.tabIds
+      .map(id => tabs.get(id))
+      .filter((tab): tab is EditorTab => tab !== undefined && tab.isDirty);
   },
 }));
