@@ -64,6 +64,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onShowAbout: (callback: () => void) => {
     ipcRenderer.on('show-about', () => callback());
   },
+
+  // Auto-update methods
+  checkForUpdates: (): Promise<void> => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: (): Promise<void> => ipcRenderer.invoke('download-update'),
+  installUpdate: (): Promise<void> => ipcRenderer.invoke('install-update'),
+
+  // Auto-update events
+  onUpdateAvailable: (callback: (info: { version: string; releaseNotes?: string }) => void) => {
+    ipcRenderer.on('update-available', (_event, info) => callback(info));
+  },
+  onUpdateDownloadProgress: (callback: (progress: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => {
+    ipcRenderer.on('update-download-progress', (_event, progress) => callback(progress));
+  },
+  onUpdateDownloaded: (callback: (info: { version: string }) => void) => {
+    ipcRenderer.on('update-downloaded', (_event, info) => callback(info));
+  },
+  onUpdateError: (callback: (error: { message: string }) => void) => {
+    ipcRenderer.on('update-error', (_event, error) => callback(error));
+  },
 });
 
 // Type declaration for renderer
@@ -98,6 +117,14 @@ declare global {
       onSaveFile: (callback: () => void) => void;
       onScanDirectory: (callback: () => void) => void;
       onShowAbout: (callback: () => void) => void;
+      // Auto-update
+      checkForUpdates: () => Promise<void>;
+      downloadUpdate: () => Promise<void>;
+      installUpdate: () => Promise<void>;
+      onUpdateAvailable: (callback: (info: { version: string; releaseNotes?: string }) => void) => void;
+      onUpdateDownloadProgress: (callback: (progress: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => void;
+      onUpdateDownloaded: (callback: (info: { version: string }) => void) => void;
+      onUpdateError: (callback: (error: { message: string }) => void) => void;
     };
   }
 }

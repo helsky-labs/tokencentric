@@ -5,6 +5,7 @@ import Store from 'electron-store';
 import { AppSettings, ContextFile, ToolProfile, TokenizerType } from '../shared/types';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
 import { trackEvent } from './analytics';
+import { checkForUpdates, downloadUpdate, installUpdate } from './updater';
 
 // Tokenizer imports
 import { countTokens as countAnthropicTokens } from '@anthropic-ai/tokenizer';
@@ -330,4 +331,22 @@ export function setupIpcHandlers() {
       await trackEvent({ name, data });
     }
   );
+}
+
+// Setup updater-specific IPC handlers (separate to avoid circular dependency issues)
+export function setupUpdaterIpcHandlers() {
+  // Check for updates manually
+  ipcMain.handle('check-for-updates', () => {
+    checkForUpdates();
+  });
+
+  // Download the available update
+  ipcMain.handle('download-update', () => {
+    downloadUpdate();
+  });
+
+  // Install update and restart
+  ipcMain.handle('install-update', () => {
+    installUpdate();
+  });
 }

@@ -12,6 +12,7 @@ import { AboutDialog } from './components/AboutDialog';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer, useToast } from './components/Toast';
+import { UpdateNotification } from './components/UpdateNotification';
 
 interface ContextMenuState {
   file: ContextFile;
@@ -327,6 +328,9 @@ function App() {
         isOpen={isAboutOpen}
         onClose={() => setIsAboutOpen(false)}
       />
+
+      {/* Update notification */}
+      <UpdateNotification />
 
       {/* Toast notifications */}
       <ToastContainer toasts={toast.toasts} onDismiss={toast.dismissToast} />
