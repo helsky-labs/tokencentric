@@ -79,14 +79,8 @@
         "dmg",
         "zip"
       ],
-      "icon": "resources/icon.icns",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist",
-      "notarize": true
+      "icon": "resources/icon.icns"
     },
-    "afterSign": "scripts/notarize.js",
     "win": {
       "target": [
         "nsis",
