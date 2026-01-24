@@ -88,6 +88,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onShowAbout: (callback: () => void) => {
     ipcRenderer.on('show-about', () => callback());
   },
+  onCloseTab: (callback: () => void) => {
+    ipcRenderer.on('close-tab', () => callback());
+  },
+  onNextTab: (callback: () => void) => {
+    ipcRenderer.on('next-tab', () => callback());
+  },
+  onPreviousTab: (callback: () => void) => {
+    ipcRenderer.on('previous-tab', () => callback());
+  },
 
   // Auto-update methods
   checkForUpdates: (): Promise<void> => ipcRenderer.invoke('check-for-updates'),
@@ -153,6 +162,9 @@ declare global {
       onSaveFile: (callback: () => void) => void;
       onScanDirectory: (callback: () => void) => void;
       onShowAbout: (callback: () => void) => void;
+      onCloseTab: (callback: () => void) => void;
+      onNextTab: (callback: () => void) => void;
+      onPreviousTab: (callback: () => void) => void;
       // Auto-update
       checkForUpdates: () => Promise<void>;
       downloadUpdate: () => Promise<void>;

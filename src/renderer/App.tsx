@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ContextFile, AppSettings } from '../shared/types';
 import { Sidebar } from './components/Sidebar';
-import { MainContent } from './components/MainContent';
+import { EditorContainer } from './components/editor';
 import { StatusBar } from './components/StatusBar';
 import { EmptyState } from './components/EmptyState';
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
@@ -14,6 +14,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer, useToast } from './components/Toast';
 import { UpdateNotification } from './components/UpdateNotification';
+import { useEditorStore } from './store/editorStore';
 
 interface ContextMenuState {
   file: ContextFile;
@@ -31,10 +32,24 @@ interface FolderContextMenuState {
 function App() {
   const [isDark, setIsDark] = useState(false);
   const [files, setFiles] = useState<ContextFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<ContextFile | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // Editor store
+  const { openFile, closeActiveTab, nextTab, previousTab, tabs, panes, activePaneId } = useEditorStore();
+
+  // Get selected file from active tab for backwards compatibility
+  const activePane = panes.find(p => p.id === activePaneId);
+  const activeTab = activePane?.activeTabId ? tabs.get(activePane.activeTabId) : null;
+  const selectedFile = activeTab?.file || null;
+
+  // Wrapper to handle file selection via the store
+  const handleSelectFile = useCallback((file: ContextFile | null) => {
+    if (file) {
+      openFile(file);
+    }
+  }, [openFile]);
 
   // File management state
   const [fileToDelete, setFileToDelete] = useState<ContextFile | null>(null);
@@ -109,7 +124,22 @@ function App() {
     window.electronAPI.onShowAbout(() => {
       setIsAboutOpen(true);
     });
-  }, []);
+
+    // Listen for close tab command (Cmd+W)
+    window.electronAPI.onCloseTab?.(() => {
+      closeActiveTab();
+    });
+
+    // Listen for next tab command (Cmd+Shift+])
+    window.electronAPI.onNextTab?.(() => {
+      nextTab();
+    });
+
+    // Listen for previous tab command (Cmd+Shift+[)
+    window.electronAPI.onPreviousTab?.(() => {
+      previousTab();
+    });
+  }, [closeActiveTab, nextTab, previousTab]);
 
   const handleScanDirectory = async () => {
     const path = await window.electronAPI.selectDirectory();
@@ -143,7 +173,7 @@ function App() {
 
     switch (action) {
       case 'edit':
-        setSelectedFile(file);
+        handleSelectFile(file);
         break;
       case 'delete':
         setFileToDelete(file);
@@ -155,7 +185,7 @@ function App() {
         try {
           const newFile = await window.electronAPI.duplicateFile(file.path);
           setFiles((prev) => [...prev, newFile]);
-          setSelectedFile(newFile);
+          handleSelectFile(newFile);
         } catch (error) {
           console.error('Failed to duplicate file:', error);
         }
@@ -183,9 +213,9 @@ function App() {
       case 'remove':
         // Remove all files within this folder from the scan
         setFiles((prev) => prev.filter((f) => !f.path.startsWith(folderPath + '/')));
-        // Clear selection if selected file was in removed folder
+        // Close tabs for files in removed folder
         if (selectedFile?.path.startsWith(folderPath + '/')) {
-          setSelectedFile(null);
+          closeActiveTab();
         }
         toast.success('Folder removed', `Removed ${folderPath.split('/').pop()} from scan`);
         break;
@@ -213,9 +243,9 @@ function App() {
       await window.electronAPI.deleteFile(fileToDelete.path);
       setFiles((prev) => prev.filter((f) => f.id !== fileToDelete.id));
 
-      // Clear selection if deleted file was selected
+      // Close tab if deleted file was open
       if (selectedFile?.id === fileToDelete.id) {
-        setSelectedFile(null);
+        closeActiveTab();
       }
       toast.success('File deleted', fileToDelete.name);
       // Track file deletion
@@ -235,7 +265,7 @@ function App() {
     try {
       const newFile = await window.electronAPI.createFile(dirPath, fileName, toolId, content || undefined);
       setFiles((prev) => [...prev, newFile]);
-      setSelectedFile(newFile);
+      handleSelectFile(newFile);
       setIsNewFileDialogOpen(false);
       toast.success('File created', fileName);
       // Track file creation (content presence indicates template usage)
@@ -323,7 +353,7 @@ function App() {
             <Sidebar
               files={files}
               selectedFile={selectedFile}
-              onSelectFile={setSelectedFile}
+              onSelectFile={handleSelectFile}
               onScanDirectory={handleScanDirectory}
               onContextMenu={handleContextMenu}
               onFolderContextMenu={handleFolderContextMenu}
@@ -331,10 +361,8 @@ function App() {
               settings={settings}
               onOpenSettings={() => setIsSettingsOpen(true)}
             />
-            <MainContent
-              selectedFile={selectedFile}
+            <EditorContainer
               allFiles={files}
-              onSelectFile={setSelectedFile}
               settings={settings}
               isDark={isDark}
             />

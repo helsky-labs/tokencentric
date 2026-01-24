@@ -50,6 +50,13 @@ export function createMenu() {
             BrowserWindow.getFocusedWindow()?.webContents.send('save-file');
           },
         },
+        {
+          label: 'Close Tab',
+          accelerator: 'CmdOrCtrl+W',
+          click: () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send('close-tab');
+          },
+        },
         { type: 'separator' },
         {
           label: 'Scan Directory',
@@ -80,6 +87,21 @@ export function createMenu() {
         { role: 'reload' },
         { role: 'forceReload' },
         { role: 'toggleDevTools' },
+        { type: 'separator' },
+        {
+          label: 'Next Tab',
+          accelerator: 'CmdOrCtrl+Shift+]',
+          click: () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send('next-tab');
+          },
+        },
+        {
+          label: 'Previous Tab',
+          accelerator: 'CmdOrCtrl+Shift+[',
+          click: () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send('previous-tab');
+          },
+        },
         { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
