@@ -1,16 +1,78 @@
-# Tokencentric
+# TokenCentric
 
-A desktop app for managing AI coding assistant context files. Scan your projects, edit context files, and track token counts across multiple AI tools.
+> The dashboard for your AI coding assistants
+
+A free desktop app for managing AI coding assistant context files. Scan your projects, edit context files, and track token counts across Claude Code, Cursor, GitHub Copilot, Windsurf, and more.
+
+[![Download](https://img.shields.io/github/v/release/helrabelo/tokencentric?label=Download&style=for-the-badge)](https://github.com/helrabelo/tokencentric/releases)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/helrabelo)
+
+---
+
+## Why TokenCentric?
+
+If you use AI coding assistants, you know the pain:
+
+- **Context chaos**: CLAUDE.md here, .cursorrules there, copilot-instructions.md somewhere else
+- **Token mystery**: Is your context file too long? Too short? You have no idea
+- **Project sprawl**: Dozens of projects, each with different AI configurations
+- **Tool switching**: Different AI tools need different file formats
+
+**TokenCentric solves all of this** with a single, beautiful desktop app.
+
+---
 
 ## Features
 
-- **Multi-tool support**: Claude Code (CLAUDE.md), Cursor (.cursorrules), GitHub Copilot (copilot-instructions.md), Windsurf (.windsurfrules), ChatGPT/OpenAI (AGENTS.md)
-- **Token counting**: Real-time token counts using official Anthropic and OpenAI tokenizers
-- **Monaco Editor**: Full-featured code editor with syntax highlighting and markdown preview
-- **File management**: Create, edit, duplicate, and delete context files
-- **Directory scanning**: Recursively scan projects to find all context files
-- **Dark mode**: Automatic theme detection with manual override
-- **Auto-updates**: Automatic updates via GitHub Releases
+### Multi-Tool Support
+Manage context files for all major AI coding assistants in one place:
+
+| Tool | File Pattern |
+|------|--------------|
+| Claude Code | `CLAUDE.md` |
+| Cursor | `.cursorrules` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Windsurf | `.windsurfrules` |
+| ChatGPT/OpenAI | `AGENTS.md` |
+
+### Token Counting
+Real-time, accurate token counts using official tokenizers:
+- **Anthropic tokenizer** for Claude files
+- **tiktoken (OpenAI)** for Cursor, Copilot, Windsurf, and OpenAI files
+
+Color-coded indicators show when files are getting too large.
+
+### Monaco Editor
+Full-featured code editor with:
+- Syntax highlighting
+- Markdown preview (side-by-side or toggle)
+- Keyboard shortcuts (Cmd+S to save)
+- Unsaved changes indicator
+
+### File Management
+- **Scan** directories to find all context files
+- **Create** new files from 7 built-in templates
+- **Edit**, **duplicate**, and **delete** files
+- **Reveal in Finder/Explorer** for quick access
+
+### Templates
+Start new projects fast with pre-built templates:
+- Minimal
+- Full-Stack JS (Node, React, TypeScript)
+- Python
+- Monorepo
+- API Project
+- Mobile (React Native/Expo)
+- Careful AI (safety-focused rules)
+
+### Dark Mode
+Automatic theme detection with manual override. Looks great day and night.
+
+### Auto-Updates
+Always stay up to date with automatic updates via GitHub Releases.
+
+---
 
 ## Installation
 
@@ -18,10 +80,12 @@ A desktop app for managing AI coding assistant context files. Scan your projects
 
 Download the latest release for your platform:
 
-- **macOS**: Download `.dmg` from [Releases](https://github.com/helrabelo/tokencentric/releases)
-- **Windows**: Download `.exe` installer from [Releases](https://github.com/helrabelo/tokencentric/releases)
+| Platform | Download |
+|----------|----------|
+| **macOS** | [Download .dmg](https://github.com/helrabelo/tokencentric/releases/latest) |
+| **Windows** | [Download .exe](https://github.com/helrabelo/tokencentric/releases/latest) |
 
-### Build from source
+### Build from Source
 
 ```bash
 # Clone the repository
@@ -35,20 +99,22 @@ npm install
 npm run dist
 ```
 
+---
+
 ## Development
 
 ```bash
 # Install dependencies
 npm install
 
-# Run in development mode (terminal 1)
+# Run in development mode
 npm run dev
 
-# Start Electron (terminal 2)
+# In a separate terminal, start Electron
 npm start
 ```
 
-### Development scripts
+### Scripts
 
 | Script | Description |
 |--------|-------------|
@@ -61,26 +127,51 @@ npm start
 | `npm run lint` | Run ESLint |
 | `npm run format` | Format code with Prettier |
 
+---
+
 ## Tech Stack
 
 - **Framework**: Electron 28
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: Tailwind CSS
 - **Editor**: Monaco Editor
-- **Tokenizers**: @anthropic-ai/tokenizer, tiktoken (OpenAI)
+- **Tokenizers**: @anthropic-ai/tokenizer, tiktoken
 - **Storage**: electron-store
 - **Updates**: electron-updater
 
-## Supported Context Files
+---
 
-| Tool | File Pattern |
-|------|--------------|
-| Claude Code | `CLAUDE.md` |
-| Cursor | `.cursorrules` |
-| GitHub Copilot | `.github/copilot-instructions.md` |
-| Windsurf | `.windsurfrules` |
-| ChatGPT/OpenAI | `AGENTS.md` |
+## Support
+
+TokenCentric is **free and open source**. If you find it useful, consider:
+
+- Starring the repo
+- [Buying me a coffee](https://buymeacoffee.com/helrabelo)
+- Sharing with friends who use AI coding assistants
+
+---
+
+## Roadmap
+
+### v1.1
+- [ ] File watching (auto-refresh on external changes)
+- [ ] Combined token count for inheritance chains
+- [ ] Search/filter files
+- [ ] Custom template creation
+
+### v2.0
+- [ ] Custom tool profile creation
+- [ ] Template import/export
+- [ ] "What context does AI see here?" visualization
+
+---
 
 ## License
 
 MIT
+
+---
+
+## More from Helsky Labs
+
+TokenCentric is a [Helsky Labs](https://helsky-labs.com) project. Check out our other tools for developers and creators.
