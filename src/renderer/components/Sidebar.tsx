@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ContextFile, AppSettings } from '../../shared/types';
+import { buildFileTree, getExpandedPathsForFile } from '../utils/buildFileTree';
+import { TreeNode } from './TreeNode';
 
 interface SidebarProps {
   files: ContextFile[];
@@ -51,16 +53,7 @@ export function Sidebar({
   onOpenSettings,
 }: SidebarProps) {
   const [toolFilter, setToolFilter] = useState<string>('all');
-
-  const getToolIcon = (toolId: string) => {
-    const profile = settings?.toolProfiles.find((p) => p.id === toolId);
-    return profile?.icon || '?';
-  };
-
-  const getToolColor = (toolId: string) => {
-    const profile = settings?.toolProfiles.find((p) => p.id === toolId);
-    return profile?.color || '#6B7280';
-  };
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
 
   // Get unique tools from files
   const availableTools = useMemo(() => {
@@ -74,16 +67,64 @@ export function Sidebar({
     return files.filter((f) => f.toolId === toolFilter);
   }, [files, toolFilter]);
 
-  // Group files by directory
-  const groupedFiles = filteredFiles.reduce(
-    (acc, file) => {
-      const dir = file.path.substring(0, file.path.lastIndexOf('/'));
-      if (!acc[dir]) acc[dir] = [];
-      acc[dir].push(file);
-      return acc;
-    },
-    {} as Record<string, ContextFile[]>
-  );
+  // Build tree from filtered files
+  const fileTree = useMemo(() => {
+    return buildFileTree(filteredFiles);
+  }, [filteredFiles]);
+
+  // Get all directory paths for expand/collapse all
+  const allDirectoryPaths = useMemo(() => {
+    const paths = new Set<string>();
+    function collectPaths(nodes: ReturnType<typeof buildFileTree>) {
+      for (const node of nodes) {
+        if (node.isDirectory) {
+          paths.add(node.path);
+          if (node.children) {
+            collectPaths(node.children);
+          }
+        }
+      }
+    }
+    collectPaths(fileTree);
+    return paths;
+  }, [fileTree]);
+
+  // Auto-expand parents when a file is selected
+  useEffect(() => {
+    if (selectedFile) {
+      const pathsToExpand = getExpandedPathsForFile(selectedFile.path);
+      setExpandedPaths((prev) => {
+        const next = new Set(prev);
+        for (const path of pathsToExpand) {
+          next.add(path);
+        }
+        return next;
+      });
+    }
+  }, [selectedFile]);
+
+  // Toggle expand/collapse for a directory
+  const handleToggleExpand = useCallback((path: string) => {
+    setExpandedPaths((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }, []);
+
+  // Expand all directories
+  const handleExpandAll = useCallback(() => {
+    setExpandedPaths(new Set(allDirectoryPaths));
+  }, [allDirectoryPaths]);
+
+  // Collapse all directories
+  const handleCollapseAll = useCallback(() => {
+    setExpandedPaths(new Set());
+  }, []);
 
   // Calculate total tokens (for filtered files)
   const totalTokens = filteredFiles.reduce((sum, file) => sum + (file.tokens || 0), 0);
@@ -129,40 +170,53 @@ export function Sidebar({
             })}
           </select>
         )}
+
+        {/* Expand/Collapse buttons */}
+        {fileTree.length > 0 && allDirectoryPaths.size > 0 && (
+          <div className="flex gap-1">
+            <button
+              onClick={handleExpandAll}
+              className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors"
+              title="Expand all directories"
+            >
+              Expand All
+            </button>
+            <button
+              onClick={handleCollapseAll}
+              className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors"
+              title="Collapse all directories"
+            >
+              Collapse All
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* File list */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {Object.entries(groupedFiles).map(([dir, dirFiles]) => (
-          <div key={dir} className="mb-3">
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 px-2 py-1 truncate">
-              {dir.split('/').slice(-2).join('/')}
-            </div>
-            {dirFiles.map((file) => (
-              <div
-                key={file.id}
-                onClick={() => onSelectFile(file)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  onContextMenu(file, e.clientX, e.clientY);
-                }}
-                className={`tree-item ${selectedFile?.id === file.id ? 'selected' : ''}`}
-              >
-                <span>{getToolIcon(file.toolId)}</span>
-                <span className="flex-1 truncate text-sm">{file.name}</span>
-                {file.tokens !== undefined && (
-                  <span
-                    className="text-xs font-medium ml-1 tabular-nums"
-                    style={{ color: getTokenColor(file.tokens) }}
-                    title={`${file.tokens.toLocaleString()} tokens`}
-                  >
-                    {formatTokenCount(file.tokens)}
-                  </span>
-                )}
-              </div>
+      {/* File tree */}
+      <div className="flex-1 overflow-y-auto py-2">
+        {fileTree.length === 0 ? (
+          <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
+            No files found.
+            <br />
+            Click &quot;Scan Directory&quot; to find context files.
+          </div>
+        ) : (
+          <div className="tree-root">
+            {fileTree.map((node) => (
+              <TreeNode
+                key={node.path}
+                node={node}
+                depth={0}
+                expandedPaths={expandedPaths}
+                selectedFile={selectedFile}
+                settings={settings}
+                onToggleExpand={handleToggleExpand}
+                onSelectFile={onSelectFile}
+                onContextMenu={onContextMenu}
+              />
             ))}
           </div>
-        ))}
+        )}
       </div>
 
       {/* Footer */}

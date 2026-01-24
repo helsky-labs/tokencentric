@@ -64,3 +64,83 @@
 .tree-item.selected {
   @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300;
 }
+
+/* Tree view - directories */
+.tree-root {
+  @apply px-1;
+}
+
+.tree-directory-header {
+  @apply flex items-center gap-1.5 py-1 pr-2 rounded-md cursor-pointer transition-colors;
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+.tree-directory-header:hover {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.tree-folder-icon {
+  @apply text-gray-400 dark:text-gray-500 flex-shrink-0;
+}
+
+/* Tree view - chevron */
+.tree-chevron {
+  @apply w-4 h-4 flex items-center justify-center flex-shrink-0;
+  @apply text-gray-400 dark:text-gray-500;
+  transition: transform 0.15s ease;
+}
+
+.tree-chevron.expanded {
+  transform: rotate(90deg);
+}
+
+/* Tree view - files */
+.tree-file {
+  @apply flex items-center gap-2 py-1.5 pr-2 rounded-md cursor-pointer transition-colors;
+}
+
+.tree-file:hover {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.tree-file.selected {
+  @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300;
+}
+
+/* Tree children container */
+.tree-children {
+  @apply overflow-hidden;
+}
+
+/* Breadcrumb */
+.breadcrumb-container {
+  @apply flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 overflow-x-auto;
+}
+
+.breadcrumb-label {
+  @apply text-gray-400 dark:text-gray-500 flex-shrink-0 mr-1;
+}
+
+.breadcrumb-path {
+  @apply truncate;
+}
+
+.breadcrumb-separator {
+  @apply text-gray-300 dark:text-gray-600 flex-shrink-0;
+}
+
+.breadcrumb-arrow {
+  @apply text-gray-300 dark:text-gray-600 flex-shrink-0 mx-0.5;
+}
+
+.breadcrumb-item-wrapper {
+  @apply flex items-center flex-shrink-0;
+}
+
+.breadcrumb-item {
+  @apply px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors;
+}
+
+.breadcrumb-current {
+  @apply font-medium text-gray-700 dark:text-gray-300 flex-shrink-0;
+}
