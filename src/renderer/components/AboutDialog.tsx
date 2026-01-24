@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Modal } from './Modal';
+import { Logo } from './Logo';
 
 interface AboutDialogProps {
   isOpen: boolean;
@@ -71,10 +72,8 @@ export function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
     <Modal isOpen={isOpen} onClose={onClose} title="About Tokencentric" width="sm">
       <div className="flex flex-col items-center text-center">
         {/* App icon */}
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
-          <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
+        <div className="mb-4">
+          <Logo size={80} />
         </div>
 
         {/* App name and version */}

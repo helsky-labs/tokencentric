@@ -5,6 +5,13 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Brand colors
+        brand: {
+          slate: '#5B6770',
+          teal: '#14B8A6',
+          'teal-light': '#2DD4BF',
+          'slate-dark': '#475569',
+        },
         // Tool colors
         claude: '#D97706',
         cursor: '#1F2937',
