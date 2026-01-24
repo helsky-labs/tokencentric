@@ -23,7 +23,9 @@ interface EditorPaneProps {
   isActive: boolean;
   onSplitHorizontal?: () => void;
   onSplitVertical?: () => void;
+  onUnsplit?: () => void;
   canSplit: boolean;
+  canUnsplit: boolean;
 }
 
 // Helper function to detect language from filename
@@ -83,7 +85,9 @@ export function EditorPane({
   isActive,
   onSplitHorizontal,
   onSplitVertical,
+  onUnsplit,
   canSplit,
+  canUnsplit,
 }: EditorPaneProps) {
   const editorRef = useRef<ReturnType<OnMount> | null>(null);
   const {
@@ -196,6 +200,7 @@ export function EditorPane({
           activeTabId={null}
           onSplitHorizontal={canSplit ? onSplitHorizontal : undefined}
           onSplitVertical={canSplit ? onSplitVertical : undefined}
+          onUnsplit={canUnsplit ? onUnsplit : undefined}
         />
 
         {/* Empty state */}
@@ -230,6 +235,7 @@ export function EditorPane({
         activeTabId={pane.activeTabId}
         onSplitHorizontal={canSplit ? onSplitHorizontal : undefined}
         onSplitVertical={canSplit ? onSplitVertical : undefined}
+        onUnsplit={canUnsplit ? onUnsplit : undefined}
       />
 
       {/* Breadcrumb - inheritance chain */}

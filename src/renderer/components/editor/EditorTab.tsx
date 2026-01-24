@@ -3,11 +3,12 @@ import { EditorTab as EditorTabType } from '../../store/editorStore';
 
 interface EditorTabProps {
   tab: EditorTabType;
+  paneId: string;
   isActive: boolean;
   onSelect: () => void;
   onClose: () => void;
   onContextMenu?: (e: React.MouseEvent, tab: EditorTabType) => void;
-  onDragStart?: (e: React.DragEvent, tabId: string) => void;
+  onDragStart?: (e: React.DragEvent, tabId: string, paneId: string) => void;
   onDragOver?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent, tabId: string) => void;
   index: number;
@@ -15,6 +16,7 @@ interface EditorTabProps {
 
 export function EditorTab({
   tab,
+  paneId,
   isActive,
   onSelect,
   onClose,
@@ -58,8 +60,9 @@ export function EditorTab({
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', tab.id);
     e.dataTransfer.setData('tab-index', String(index));
-    onDragStart?.(e, tab.id);
-  }, [tab.id, index, onDragStart]);
+    e.dataTransfer.setData('source-pane-id', paneId);
+    onDragStart?.(e, tab.id, paneId);
+  }, [tab.id, index, paneId, onDragStart]);
 
   // Handle drag over
   const handleDragOver = useCallback((e: React.DragEvent) => {

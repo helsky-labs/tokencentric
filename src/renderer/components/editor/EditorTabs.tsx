@@ -10,6 +10,7 @@ interface EditorTabsProps {
   activeTabId: string | null;
   onSplitHorizontal?: () => void;
   onSplitVertical?: () => void;
+  onUnsplit?: () => void;
 }
 
 interface ContextMenuState {
@@ -23,16 +24,18 @@ interface CloseConfirmationState {
   onConfirm: () => void;
 }
 
-export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSplitVertical }: EditorTabsProps) {
-  const { setActiveTab, closeTab, closeOtherTabs, closeAllTabs, closeSavedTabs, saveTab, reorderTabs } = useEditorStore();
+export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSplitVertical, onUnsplit }: EditorTabsProps) {
+  const { setActiveTab, closeTab, closeOtherTabs, closeAllTabs, closeSavedTabs, saveTab, reorderTabs, moveTabToPane } = useEditorStore();
   const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
+  const [draggedFromPaneId, setDraggedFromPaneId] = useState<string | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [closeConfirmation, setCloseConfirmation] = useState<CloseConfirmationState | null>(null);
 
   // Handle drag start
-  const handleDragStart = useCallback((e: React.DragEvent, tabId: string) => {
+  const handleDragStart = useCallback((e: React.DragEvent, tabId: string, sourcePaneId: string) => {
     setDraggedTabId(tabId);
+    setDraggedFromPaneId(sourcePaneId);
   }, []);
 
   // Handle drag over a tab
@@ -43,24 +46,41 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
     }
   }, [dropTargetIndex]);
 
-  // Handle drop on a tab
-  const handleDrop = useCallback((e: React.DragEvent, targetTabId: string) => {
+  // Handle drop on a tab or empty space
+  const handleDrop = useCallback((e: React.DragEvent, targetTabId?: string) => {
     e.preventDefault();
 
+    const tabId = e.dataTransfer.getData('text/plain');
+    const sourcePaneId = e.dataTransfer.getData('source-pane-id');
     const sourceIndex = parseInt(e.dataTransfer.getData('tab-index'), 10);
-    const targetIndex = tabs.findIndex(t => t.id === targetTabId);
 
-    if (!isNaN(sourceIndex) && targetIndex !== -1 && sourceIndex !== targetIndex) {
-      reorderTabs(paneId, sourceIndex, targetIndex);
+    // Cross-pane drop
+    if (sourcePaneId && sourcePaneId !== paneId && tabId) {
+      moveTabToPane(tabId, sourcePaneId, paneId);
+    }
+    // Same-pane reorder to specific position
+    else if (targetTabId && !isNaN(sourceIndex)) {
+      const targetIndex = tabs.findIndex(t => t.id === targetTabId);
+      if (targetIndex !== -1 && sourceIndex !== targetIndex) {
+        reorderTabs(paneId, sourceIndex, targetIndex);
+      }
+    }
+    // Same-pane reorder to end (dropped on empty space)
+    else if (!targetTabId && !isNaN(sourceIndex) && sourcePaneId === paneId) {
+      if (sourceIndex !== tabs.length - 1) {
+        reorderTabs(paneId, sourceIndex, tabs.length - 1);
+      }
     }
 
     setDraggedTabId(null);
+    setDraggedFromPaneId(null);
     setDropTargetIndex(null);
-  }, [tabs, paneId, reorderTabs]);
+  }, [tabs, paneId, reorderTabs, moveTabToPane]);
 
   // Handle drag end
   const handleDragEnd = useCallback(() => {
     setDraggedTabId(null);
+    setDraggedFromPaneId(null);
     setDropTargetIndex(null);
   }, []);
 
@@ -154,7 +174,7 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
     setCloseConfirmation(null);
   }, [closeConfirmation, saveTab]);
 
-  const showSplitButtons = onSplitHorizontal || onSplitVertical;
+  const showSplitButtons = onSplitHorizontal || onSplitVertical || onUnsplit;
 
   if (tabs.length === 0 && !showSplitButtons) {
     return null;
@@ -176,12 +196,13 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
         >
           <EditorTab
             tab={tab}
+            paneId={paneId}
             isActive={tab.id === activeTabId}
             onSelect={() => handleSelectTab(tab.id)}
             onClose={() => handleCloseTab(tab.id)}
             onContextMenu={handleContextMenu}
             onDragStart={handleDragStart}
-            onDrop={handleDrop}
+            onDrop={(e) => handleDrop(e, tab.id)}
             index={index}
           />
         </div>
@@ -194,15 +215,7 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
           e.preventDefault();
           setDropTargetIndex(tabs.length);
         }}
-        onDrop={(e) => {
-          e.preventDefault();
-          const sourceIndex = parseInt(e.dataTransfer.getData('tab-index'), 10);
-          if (!isNaN(sourceIndex) && sourceIndex !== tabs.length - 1) {
-            reorderTabs(paneId, sourceIndex, tabs.length - 1);
-          }
-          setDraggedTabId(null);
-          setDropTargetIndex(null);
-        }}
+        onDrop={(e) => handleDrop(e)}
       />
 
       {/* Split buttons */}
@@ -227,6 +240,17 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 9h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+              </svg>
+            </button>
+          )}
+          {onUnsplit && (
+            <button
+              onClick={onUnsplit}
+              className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Close Split"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           )}

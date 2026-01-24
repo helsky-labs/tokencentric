@@ -109,6 +109,9 @@ export function EditorContainer({ allFiles, settings, isDark }: EditorContainerP
   // Can split if only one pane exists
   const canSplit = panes.length < 2;
 
+  // Can unsplit if more than one pane exists
+  const canUnsplit = panes.length > 1;
+
   // Render panes
   const paneElements = useMemo(() =>
     panes.map(pane => (
@@ -121,10 +124,12 @@ export function EditorContainer({ allFiles, settings, isDark }: EditorContainerP
         isActive={pane.id === activePaneId}
         onSplitHorizontal={handleSplitHorizontal}
         onSplitVertical={handleSplitVertical}
+        onUnsplit={unsplit}
         canSplit={canSplit}
+        canUnsplit={canUnsplit}
       />
     )),
-    [panes, allFiles, settings, isDark, activePaneId, handleSplitHorizontal, handleSplitVertical, canSplit]
+    [panes, allFiles, settings, isDark, activePaneId, handleSplitHorizontal, handleSplitVertical, unsplit, canSplit, canUnsplit]
   );
 
   return (
