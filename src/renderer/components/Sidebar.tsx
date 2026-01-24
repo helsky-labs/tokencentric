@@ -233,10 +233,10 @@ export function Sidebar({
             </div>
           ) : (
             <>
-              <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+              <div className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-800/30">
                 Project Files
               </div>
-              <div className="tree-root">
+              <div className="tree-root px-1 py-1">
                 {fileTree.map((node) => (
                   <TreeNode
                     key={node.path}

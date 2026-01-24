@@ -71,12 +71,13 @@
 }
 
 .tree-directory-header {
-  @apply flex items-center gap-1.5 py-1.5 pr-2 rounded-lg cursor-pointer transition-colors;
-  @apply text-gray-600 dark:text-gray-400;
+  @apply flex items-center gap-1.5 py-2 pr-2 rounded-lg cursor-pointer transition-colors;
+  @apply text-gray-700 dark:text-gray-300;
+  margin: 2px 0;
 }
 
 .tree-directory-header:hover {
-  @apply bg-slate-50 dark:bg-slate-800;
+  @apply bg-slate-200/50 dark:bg-slate-700/40;
 }
 
 .tree-folder-icon {
@@ -96,15 +97,17 @@
 
 /* Tree view - files */
 .tree-file {
-  @apply flex items-center gap-2 py-1.5 pr-2 rounded-lg cursor-pointer transition-colors;
+  @apply flex items-center gap-2 py-2 px-2 rounded-lg cursor-pointer transition-colors;
+  @apply bg-slate-100/50 dark:bg-slate-800/30;
+  margin: 2px 4px;
 }
 
 .tree-file:hover {
-  @apply bg-slate-50 dark:bg-slate-800;
+  @apply bg-slate-200/70 dark:bg-slate-700/50;
 }
 
 .tree-file.selected {
-  @apply bg-emerald-50 dark:bg-emerald-900/20;
+  @apply bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200;
 }
 
 /* Tree children container */
@@ -148,30 +151,34 @@
 /* Global Config Section */
 .global-config-section {
   @apply border-b border-gray-200 dark:border-gray-700;
+  @apply bg-purple-50/30 dark:bg-purple-950/20;
 }
 
 .global-config-header {
-  @apply flex items-center gap-2 px-3 py-2 cursor-pointer;
-  @apply text-gray-600 dark:text-gray-400;
-  @apply bg-purple-50/50 dark:bg-purple-900/10;
-  @apply hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors;
+  @apply flex items-center gap-2 px-3 py-2.5 cursor-pointer;
+  @apply text-purple-700 dark:text-purple-300;
+  @apply bg-purple-100/50 dark:bg-purple-900/30;
+  @apply hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors;
+  @apply text-xs font-semibold uppercase tracking-wider;
 }
 
 .global-config-content {
-  @apply pb-2;
+  @apply pb-2 px-1;
 }
 
 .global-config-item {
-  @apply flex items-center gap-2 py-1.5 pr-2 mx-1 rounded-lg cursor-pointer transition-colors;
-  @apply text-gray-600 dark:text-gray-400;
+  @apply flex items-center gap-2 py-2 px-2 mx-1 rounded-lg cursor-pointer transition-colors;
+  @apply text-gray-700 dark:text-gray-300;
+  @apply bg-purple-50/50 dark:bg-purple-900/20;
+  margin-bottom: 2px;
 }
 
 .global-config-item:hover {
-  @apply bg-purple-50 dark:bg-purple-900/20;
+  @apply bg-purple-100 dark:bg-purple-900/40;
 }
 
 .global-config-item.selected {
-  @apply bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300;
+  @apply bg-purple-200 dark:bg-purple-800/50 text-purple-800 dark:text-purple-200;
 }
 
 .global-config-item.read-only {

@@ -136,8 +136,8 @@ export function GlobalConfigSection({ onSelectFile, selectedFile }: GlobalConfig
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </span>
-        <span className="text-sm font-medium">Global Config</span>
-        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">~/.claude</span>
+        <span>Config Global</span>
+        <span className="text-purple-500 dark:text-purple-400 ml-auto font-normal">(~/.claude)</span>
       </div>
 
       {/* Config files */}
