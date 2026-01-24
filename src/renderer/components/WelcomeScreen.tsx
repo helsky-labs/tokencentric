@@ -42,9 +42,9 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
                 <div
                   className={`w-3 h-3 rounded-full transition-colors ${
                     step === s
-                      ? 'bg-blue-500'
+                      ? 'bg-brand-teal'
                       : ['welcome', 'scan', 'ready'].indexOf(step) > i
-                        ? 'bg-blue-300'
+                        ? 'bg-teal-300'
                         : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 />
@@ -52,7 +52,7 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
                   <div
                     className={`w-8 h-0.5 mx-1 ${
                       ['welcome', 'scan', 'ready'].indexOf(step) > i
-                        ? 'bg-blue-300'
+                        ? 'bg-teal-300'
                         : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   />
@@ -111,7 +111,7 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
 
               <button
                 onClick={() => setStep('scan')}
-                className="w-full px-6 py-3 text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                className="w-full px-6 py-3 text-lg font-medium text-white bg-brand-teal hover:bg-teal-500 rounded-lg transition-colors"
               >
                 Get Started
               </button>
@@ -155,7 +155,7 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
               <div className="space-y-3">
                 <button
                   onClick={handleScanDirectory}
-                  className="w-full px-6 py-3 text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                  className="w-full px-6 py-3 text-lg font-medium text-white bg-brand-teal hover:bg-teal-500 rounded-lg transition-colors"
                 >
                   Choose Directory
                 </button>
@@ -209,7 +209,7 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
                 {!hasScanned && (
                   <button
                     onClick={handleCreateFile}
-                    className="w-full px-6 py-3 text-lg font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                    className="w-full px-6 py-3 text-lg font-medium text-white bg-brand-teal hover:bg-teal-500 rounded-lg transition-colors"
                   >
                     Create Your First File
                   </button>
@@ -218,7 +218,7 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
                   onClick={handleFinish}
                   className={`w-full px-6 py-3 font-medium rounded-lg transition-colors ${
                     hasScanned
-                      ? 'text-lg text-white bg-blue-500 hover:bg-blue-600'
+                      ? 'text-lg text-white bg-brand-teal hover:bg-teal-500'
                       : 'text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                   }`}
                 >
@@ -236,7 +236,7 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
             href="https://helsky-labs.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 hover:underline"
+            className="text-brand-teal hover:underline"
           >
             Helsky Labs
           </a>

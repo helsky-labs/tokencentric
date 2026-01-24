@@ -22,13 +22,13 @@ export function EmptyState({ onScanDirectory, onNewFile }: EmptyStateProps) {
         <div className="flex gap-3 justify-center">
           <button
             onClick={onScanDirectory}
-            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-3 bg-brand-teal hover:bg-teal-500 text-white rounded-lg font-medium transition-colors"
           >
             Scan Directory
           </button>
           <button
             onClick={onNewFile}
-            className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-3 bg-brand-slate hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
           >
             Create New File
           </button>

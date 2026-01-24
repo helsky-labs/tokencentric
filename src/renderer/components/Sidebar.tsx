@@ -150,13 +150,13 @@ export function Sidebar({
         <div className="flex gap-2">
           <button
             onClick={onScanDirectory}
-            className="flex-1 px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+            className="flex-1 px-3 py-2 text-sm bg-brand-teal hover:bg-teal-500 text-white rounded-md transition-colors"
           >
             Scan Directory
           </button>
           <button
             onClick={onNewFile}
-            className="px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors"
+            className="px-3 py-2 text-sm bg-brand-slate hover:bg-gray-600 text-white rounded-md transition-colors"
             title="New File (⌘N)"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
