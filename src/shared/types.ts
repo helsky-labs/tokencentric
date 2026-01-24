@@ -31,6 +31,21 @@ export interface FileTreeNode {
   file?: ContextFile;
 }
 
+// Global config types (for ~/.claude)
+export type GlobalConfigFileType = 'markdown' | 'json' | 'directory' | 'unknown';
+
+export interface GlobalConfigFile {
+  id: string;
+  path: string;
+  name: string;
+  type: GlobalConfigFileType;
+  description?: string; // Human-readable description of what this file does
+  readOnly?: boolean; // Whether the file should be read-only in editor
+  lastModified?: number;
+  size?: number;
+  children?: GlobalConfigFile[]; // For directories
+}
+
 // Template types
 export interface TemplateVariable {
   name: string; // e.g., "PROJECT_NAME"

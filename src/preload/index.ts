@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { AppSettings, ContextFile, TokenizerType } from '../shared/types';
+import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile } from '../shared/types';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -40,6 +40,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     node: string;
     chrome: string;
   }> => ipcRenderer.invoke('get-app-info'),
+
+  // Global config (~/.claude)
+  getGlobalConfigPath: (): Promise<string> => ipcRenderer.invoke('get-global-config-path'),
+  getGlobalConfigFiles: (): Promise<GlobalConfigFile[]> => ipcRenderer.invoke('get-global-config-files'),
 
   // Analytics
   trackEvent: (name: string, data?: Record<string, string | number | boolean>): Promise<void> =>
@@ -111,6 +115,9 @@ declare global {
         chrome: string;
       }>;
       trackEvent: (name: string, data?: Record<string, string | number | boolean>) => Promise<void>;
+      // Global config
+      getGlobalConfigPath: () => Promise<string>;
+      getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;
       onThemeChanged: (callback: (isDark: boolean) => void) => void;
       onOpenSettings: (callback: () => void) => void;
       onNewFile: (callback: () => void) => void;

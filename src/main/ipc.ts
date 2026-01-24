@@ -1,8 +1,9 @@
 import { ipcMain, dialog, shell, app } from 'electron';
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 import Store from 'electron-store';
-import { AppSettings, ContextFile, ToolProfile, TokenizerType } from '../shared/types';
+import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType } from '../shared/types';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
 import { trackEvent } from './analytics';
 import { checkForUpdates, downloadUpdate, installUpdate } from './updater';
@@ -317,6 +318,118 @@ export function setupIpcHandlers() {
       node: process.versions.node,
       chrome: process.versions.chrome,
     };
+  });
+
+  // Get global config path (~/.claude)
+  ipcMain.handle('get-global-config-path', () => {
+    return path.join(os.homedir(), '.claude');
+  });
+
+  // Get global config files
+  ipcMain.handle('get-global-config-files', async (): Promise<GlobalConfigFile[]> => {
+    const configPath = path.join(os.homedir(), '.claude');
+    const files: GlobalConfigFile[] = [];
+
+    // Check if ~/.claude exists
+    try {
+      await fs.access(configPath);
+    } catch {
+      // ~/.claude doesn't exist
+      return [];
+    }
+
+    // Helper to determine file type
+    const getFileType = (name: string): GlobalConfigFileType => {
+      const ext = path.extname(name).toLowerCase();
+      if (ext === '.md' || ext === '.markdown') return 'markdown';
+      if (ext === '.json') return 'json';
+      return 'unknown';
+    };
+
+    // Helper to get file description
+    const getFileDescription = (name: string, isDir: boolean): string | undefined => {
+      const descriptions: Record<string, string> = {
+        'CLAUDE.md': 'Global instructions for Claude Code',
+        'settings.json': 'Claude Code settings',
+        'settings.local.json': 'Local settings overrides',
+        'commands': 'Custom slash commands',
+        'todos': 'Todo storage',
+      };
+      return descriptions[name];
+    };
+
+    // Scan the config directory
+    async function scanConfigDir(dir: string, depth = 0): Promise<GlobalConfigFile[]> {
+      const result: GlobalConfigFile[] = [];
+
+      // Limit depth to prevent deep recursion
+      if (depth > 2) return result;
+
+      try {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+
+          // Skip hidden files except specific ones we want
+          if (entry.name.startsWith('.') && entry.name !== '.claude') {
+            continue;
+          }
+
+          try {
+            const stats = await fs.stat(fullPath);
+
+            if (entry.isDirectory()) {
+              // Only include specific directories we care about
+              const includeDirs = ['commands', 'todos'];
+              if (depth === 0 || includeDirs.includes(entry.name)) {
+                const children = await scanConfigDir(fullPath, depth + 1);
+                result.push({
+                  id: fullPath,
+                  path: fullPath,
+                  name: entry.name,
+                  type: 'directory',
+                  description: getFileDescription(entry.name, true),
+                  lastModified: stats.mtimeMs,
+                  children: children.length > 0 ? children : undefined,
+                });
+              }
+            } else if (entry.isFile()) {
+              const fileType = getFileType(entry.name);
+              // Include md and json files
+              if (fileType === 'markdown' || fileType === 'json') {
+                result.push({
+                  id: fullPath,
+                  path: fullPath,
+                  name: entry.name,
+                  type: fileType,
+                  description: getFileDescription(entry.name, false),
+                  readOnly: fileType === 'json', // JSON files are read-only
+                  lastModified: stats.mtimeMs,
+                  size: stats.size,
+                });
+              }
+            }
+          } catch (err) {
+            // Skip files we can't stat
+            console.error(`Cannot stat: ${fullPath}`, err);
+          }
+        }
+      } catch (err) {
+        console.error(`Cannot read directory: ${dir}`, err);
+      }
+
+      // Sort: directories first, then alphabetically
+      result.sort((a, b) => {
+        if (a.type === 'directory' && b.type !== 'directory') return -1;
+        if (a.type !== 'directory' && b.type === 'directory') return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      return result;
+    }
+
+    return await scanConfigDir(configPath);
   });
 
   // Track analytics event
