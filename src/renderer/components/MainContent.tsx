@@ -3,6 +3,7 @@ import Editor, { OnMount, loader } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import { ContextFile, AppSettings } from '../../shared/types';
 import { Breadcrumb } from './Breadcrumb';
+import { AIActionsToolbar } from './AIActionsToolbar';
 
 // Configure Monaco to load from CDN (more reliable in Electron)
 loader.config({
@@ -92,6 +93,14 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
 
   // Detect if file is markdown
   const isMarkdown = selectedFile?.name.match(/\.(md|mdx|markdown)$/i);
+
+  // Handle AI-generated content
+  const handleAIContent = useCallback((newContent: string) => {
+    setContent(newContent);
+  }, []);
+
+  // Get project directory for AI context
+  const projectDir = selectedFile?.path ? selectedFile.path.substring(0, selectedFile.path.lastIndexOf('/')) : undefined;
 
   if (!selectedFile) {
     return (
@@ -183,6 +192,16 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
           </div>
         )}
       </div>
+
+      {/* AI Actions Toolbar - only for markdown files that are not read-only */}
+      {isMarkdown && !isReadOnly && (
+        <AIActionsToolbar
+          content={content}
+          projectInfo={projectDir}
+          onContentGenerated={handleAIContent}
+          disabled={isSaving}
+        />
+      )}
 
       {/* Editor/Preview area */}
       <div className="flex-1 flex overflow-hidden">
