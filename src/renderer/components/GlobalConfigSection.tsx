@@ -11,7 +11,7 @@ interface GlobalConfigSectionProps {
  * Shows CLAUDE.md, commands, and settings files
  */
 export function GlobalConfigSection({ onSelectFile, selectedFile }: GlobalConfigSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [configFiles, setConfigFiles] = useState<GlobalConfigFile[]>([]);
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
