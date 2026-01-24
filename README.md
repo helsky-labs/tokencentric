@@ -6,7 +6,7 @@ A free desktop app for managing AI coding assistant context files. Scan your pro
 
 [![Download](https://img.shields.io/github/v/release/helrabelo/tokencentric?label=Download&style=for-the-badge)](https://github.com/helrabelo/tokencentric/releases)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/helrabelo)
+[![Support via PIX](https://img.shields.io/badge/Support%20via%20PIX-00D4AA?style=for-the-badge)](https://tokencentric.dev/#support)
 
 ---
 
@@ -146,7 +146,10 @@ npm start
 TokenCentric is **free and open source**. If you find it useful, consider:
 
 - Starring the repo
-- [Buying me a coffee](https://buymeacoffee.com/helrabelo)
+- Supporting via PIX (Brazilian instant payment):
+  ```
+  772337c9-12fc-47fa-8849-32fb5f696129
+  ```
 - Sharing with friends who use AI coding assistants
 
 ---
