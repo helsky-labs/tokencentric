@@ -180,6 +180,15 @@ function App() {
       case 'reveal':
         await window.electronAPI.showInFolder(folderPath);
         break;
+      case 'remove':
+        // Remove all files within this folder from the scan
+        setFiles((prev) => prev.filter((f) => !f.path.startsWith(folderPath + '/')));
+        // Clear selection if selected file was in removed folder
+        if (selectedFile?.path.startsWith(folderPath + '/')) {
+          setSelectedFile(null);
+        }
+        toast.success('Folder removed', `Removed ${folderPath.split('/').pop()} from scan`);
+        break;
     }
     setFolderContextMenu(null);
   };
