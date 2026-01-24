@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile } from '../shared/types';
+import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig } from '../shared/types';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -44,6 +44,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Global config (~/.claude)
   getGlobalConfigPath: (): Promise<string> => ipcRenderer.invoke('get-global-config-path'),
   getGlobalConfigFiles: (): Promise<GlobalConfigFile[]> => ipcRenderer.invoke('get-global-config-files'),
+
+  // AI
+  testAiConnection: (provider: AIProvider, config: AIProviderConfig): Promise<{ success: boolean; message: string }> =>
+    ipcRenderer.invoke('test-ai-connection', provider, config),
 
   // Analytics
   trackEvent: (name: string, data?: Record<string, string | number | boolean>): Promise<void> =>
@@ -118,6 +122,8 @@ declare global {
       // Global config
       getGlobalConfigPath: () => Promise<string>;
       getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;
+      // AI
+      testAiConnection: (provider: AIProvider, config: AIProviderConfig) => Promise<{ success: boolean; message: string }>;
       onThemeChanged: (callback: (isDark: boolean) => void) => void;
       onOpenSettings: (callback: () => void) => void;
       onNewFile: (callback: () => void) => void;

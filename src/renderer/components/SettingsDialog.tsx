@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Modal } from './Modal';
-import { AppSettings } from '../../shared/types';
+import { AppSettings, AISettings, AIProvider, defaultAISettings } from '../../shared/types';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -9,7 +9,7 @@ interface SettingsDialogProps {
   onSaveSettings: (settings: Partial<AppSettings>) => void;
 }
 
-type Tab = 'scan' | 'tools' | 'appearance' | 'privacy';
+type Tab = 'scan' | 'tools' | 'appearance' | 'ai' | 'privacy';
 
 export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<Tab>('scan');
@@ -19,6 +19,9 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
   const [theme, setTheme] = useState<'system' | 'light' | 'dark'>('system');
   const [editorFontSize, setEditorFontSize] = useState(14);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
+  const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
+  const [testingProvider, setTestingProvider] = useState<AIProvider | null>(null);
+  const [testResult, setTestResult] = useState<{ provider: AIProvider; success: boolean; message: string } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Load settings when dialog opens
@@ -29,6 +32,8 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
       setTheme(settings.theme);
       setEditorFontSize(settings.editorFontSize);
       setAnalyticsEnabled(settings.analyticsEnabled ?? true);
+      setAiSettings(settings.ai || defaultAISettings);
+      setTestResult(null);
       setHasChanges(false);
     }
   }, [isOpen, settings]);
@@ -75,6 +80,88 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
     setHasChanges(true);
   };
 
+  // AI Settings handlers
+  const handleAiProviderToggle = (provider: AIProvider, enabled: boolean) => {
+    setAiSettings((prev) => ({
+      ...prev,
+      providers: {
+        ...prev.providers,
+        [provider]: {
+          ...prev.providers[provider],
+          enabled,
+        },
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleAiApiKeyChange = (provider: AIProvider, apiKey: string) => {
+    setAiSettings((prev) => ({
+      ...prev,
+      providers: {
+        ...prev.providers,
+        [provider]: {
+          ...prev.providers[provider],
+          apiKey,
+        },
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleAiModelChange = (provider: AIProvider, model: string) => {
+    setAiSettings((prev) => ({
+      ...prev,
+      providers: {
+        ...prev.providers,
+        [provider]: {
+          ...prev.providers[provider],
+          model,
+        },
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleAiBaseUrlChange = (provider: AIProvider, baseUrl: string) => {
+    setAiSettings((prev) => ({
+      ...prev,
+      providers: {
+        ...prev.providers,
+        [provider]: {
+          ...prev.providers[provider],
+          baseUrl,
+        },
+      },
+    }));
+    setHasChanges(true);
+  };
+
+  const handleDefaultProviderChange = (provider: AIProvider) => {
+    setAiSettings((prev) => ({
+      ...prev,
+      defaultProvider: provider,
+    }));
+    setHasChanges(true);
+  };
+
+  const handleTestConnection = async (provider: AIProvider) => {
+    setTestingProvider(provider);
+    setTestResult(null);
+    try {
+      const result = await window.electronAPI.testAiConnection(provider, aiSettings.providers[provider]);
+      setTestResult({ provider, success: result.success, message: result.message });
+    } catch (error) {
+      setTestResult({
+        provider,
+        success: false,
+        message: error instanceof Error ? error.message : 'Connection test failed'
+      });
+    } finally {
+      setTestingProvider(null);
+    }
+  };
+
   const handleSave = () => {
     onSaveSettings({
       scanPaths,
@@ -82,6 +169,7 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
       theme,
       editorFontSize,
       analyticsEnabled,
+      ai: aiSettings,
     });
     setHasChanges(false);
     onClose();
@@ -91,8 +179,16 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
     { id: 'scan', label: 'Scan Paths' },
     { id: 'tools', label: 'Exclusions' },
     { id: 'appearance', label: 'Appearance' },
+    { id: 'ai', label: 'AI Providers' },
     { id: 'privacy', label: 'Privacy' },
   ];
+
+  // Model options for each provider
+  const modelOptions: Record<AIProvider, string[]> = {
+    anthropic: ['claude-sonnet-4-20250514', 'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022'],
+    openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+    ollama: ['llama3.2', 'llama3.1', 'codellama', 'mistral', 'mixtral'],
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Settings" width="lg">
@@ -254,6 +350,231 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
                     {editorFontSize}px
                   </span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'ai' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  AI Providers
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                  Configure AI providers to generate, improve, and summarize context files.
+                  Your API keys are stored locally and never sent to our servers.
+                </p>
+              </div>
+
+              {/* Default Provider Selection */}
+              <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  Default Provider
+                </label>
+                <select
+                  value={aiSettings.defaultProvider}
+                  onChange={(e) => handleDefaultProviderChange(e.target.value as AIProvider)}
+                  className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                >
+                  <option value="anthropic">Anthropic (Claude)</option>
+                  <option value="openai">OpenAI (GPT)</option>
+                  <option value="ollama">Ollama (Local)</option>
+                </select>
+              </div>
+
+              {/* Anthropic */}
+              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🟠</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Anthropic</span>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={aiSettings.providers.anthropic.enabled}
+                    onClick={() => handleAiProviderToggle('anthropic', !aiSettings.providers.anthropic.enabled)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      aiSettings.providers.anthropic.enabled
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        aiSettings.providers.anthropic.enabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {aiSettings.providers.anthropic.enabled && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">API Key</label>
+                      <input
+                        type="password"
+                        value={aiSettings.providers.anthropic.apiKey || ''}
+                        onChange={(e) => handleAiApiKeyChange('anthropic', e.target.value)}
+                        placeholder="sk-ant-..."
+                        className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Model</label>
+                      <select
+                        value={aiSettings.providers.anthropic.model}
+                        onChange={(e) => handleAiModelChange('anthropic', e.target.value)}
+                        className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                      >
+                        {modelOptions.anthropic.map((model) => (
+                          <option key={model} value={model}>{model}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      onClick={() => handleTestConnection('anthropic')}
+                      disabled={testingProvider === 'anthropic' || !aiSettings.providers.anthropic.apiKey}
+                      className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {testingProvider === 'anthropic' ? 'Testing...' : 'Test Connection'}
+                    </button>
+                    {testResult?.provider === 'anthropic' && (
+                      <p className={`text-xs ${testResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {testResult.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* OpenAI */}
+              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🟢</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">OpenAI</span>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={aiSettings.providers.openai.enabled}
+                    onClick={() => handleAiProviderToggle('openai', !aiSettings.providers.openai.enabled)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      aiSettings.providers.openai.enabled
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        aiSettings.providers.openai.enabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {aiSettings.providers.openai.enabled && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">API Key</label>
+                      <input
+                        type="password"
+                        value={aiSettings.providers.openai.apiKey || ''}
+                        onChange={(e) => handleAiApiKeyChange('openai', e.target.value)}
+                        placeholder="sk-..."
+                        className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Model</label>
+                      <select
+                        value={aiSettings.providers.openai.model}
+                        onChange={(e) => handleAiModelChange('openai', e.target.value)}
+                        className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                      >
+                        {modelOptions.openai.map((model) => (
+                          <option key={model} value={model}>{model}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      onClick={() => handleTestConnection('openai')}
+                      disabled={testingProvider === 'openai' || !aiSettings.providers.openai.apiKey}
+                      className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {testingProvider === 'openai' ? 'Testing...' : 'Test Connection'}
+                    </button>
+                    {testResult?.provider === 'openai' && (
+                      <p className={`text-xs ${testResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {testResult.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Ollama */}
+              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🦙</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Ollama (Local)</span>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={aiSettings.providers.ollama.enabled}
+                    onClick={() => handleAiProviderToggle('ollama', !aiSettings.providers.ollama.enabled)}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                      aiSettings.providers.ollama.enabled
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        aiSettings.providers.ollama.enabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {aiSettings.providers.ollama.enabled && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Base URL</label>
+                      <input
+                        type="text"
+                        value={aiSettings.providers.ollama.baseUrl || 'http://localhost:11434'}
+                        onChange={(e) => handleAiBaseUrlChange('ollama', e.target.value)}
+                        placeholder="http://localhost:11434"
+                        className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Model</label>
+                      <select
+                        value={aiSettings.providers.ollama.model}
+                        onChange={(e) => handleAiModelChange('ollama', e.target.value)}
+                        className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                      >
+                        {modelOptions.ollama.map((model) => (
+                          <option key={model} value={model}>{model}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      onClick={() => handleTestConnection('ollama')}
+                      disabled={testingProvider === 'ollama'}
+                      className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {testingProvider === 'ollama' ? 'Testing...' : 'Test Connection'}
+                    </button>
+                    {testResult?.provider === 'ollama' && (
+                      <p className={`text-xs ${testResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {testResult.message}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

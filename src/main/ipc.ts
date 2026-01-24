@@ -3,7 +3,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import Store from 'electron-store';
-import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings } from '../shared/types';
+import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig } from '../shared/types';
+import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
 import { trackEvent } from './analytics';
 import { checkForUpdates, downloadUpdate, installUpdate } from './updater';
@@ -432,6 +434,69 @@ export function setupIpcHandlers() {
 
     return await scanConfigDir(configPath);
   });
+
+  // Test AI connection
+  ipcMain.handle(
+    'test-ai-connection',
+    async (_event, provider: AIProvider, config: AIProviderConfig): Promise<{ success: boolean; message: string }> => {
+      try {
+        if (provider === 'anthropic') {
+          if (!config.apiKey) {
+            return { success: false, message: 'API key is required' };
+          }
+          const client = new Anthropic({ apiKey: config.apiKey });
+          // Make a minimal API call to verify the key
+          await client.messages.create({
+            model: config.model,
+            max_tokens: 10,
+            messages: [{ role: 'user', content: 'Hi' }],
+          });
+          return { success: true, message: 'Connection successful!' };
+        }
+
+        if (provider === 'openai') {
+          if (!config.apiKey) {
+            return { success: false, message: 'API key is required' };
+          }
+          const client = new OpenAI({ apiKey: config.apiKey });
+          // Make a minimal API call to verify the key
+          await client.chat.completions.create({
+            model: config.model,
+            max_tokens: 10,
+            messages: [{ role: 'user', content: 'Hi' }],
+          });
+          return { success: true, message: 'Connection successful!' };
+        }
+
+        if (provider === 'ollama') {
+          const baseUrl = config.baseUrl || 'http://localhost:11434';
+          // Check if Ollama is running by hitting the tags endpoint
+          const response = await fetch(`${baseUrl}/api/tags`);
+          if (!response.ok) {
+            return { success: false, message: `Ollama not responding (status ${response.status})` };
+          }
+          const data = await response.json();
+          const models = data.models || [];
+          if (models.length === 0) {
+            return { success: false, message: 'Ollama is running but no models are installed' };
+          }
+          const hasModel = models.some((m: { name: string }) => m.name.includes(config.model));
+          if (!hasModel) {
+            return {
+              success: true,
+              message: `Connected! Note: Model "${config.model}" not found. Available: ${models.map((m: { name: string }) => m.name).slice(0, 3).join(', ')}`,
+            };
+          }
+          return { success: true, message: 'Connection successful!' };
+        }
+
+        return { success: false, message: 'Unknown provider' };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Connection failed';
+        return { success: false, message };
+      }
+    }
+  );
 
   // Track analytics event
   ipcMain.handle(
