@@ -17,7 +17,7 @@ type ViewMode = 'editor' | 'preview' | 'split';
 interface MainContentProps {
   selectedFile: ContextFile | null;
   allFiles: ContextFile[];
-  onSelectFile: (file: ContextFile) => void;
+  onSelectFile: (file: ContextFile | null) => void;
   settings: AppSettings | null;
   isDark: boolean;
 }
@@ -86,6 +86,17 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
     });
   }, [handleSave]);
 
+  // Listen for Escape key to close file
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedFile && !hasChanges) {
+        onSelectFile(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedFile, hasChanges, onSelectFile]);
+
   // Handle editor mount
   const handleEditorMount: OnMount = (editor) => {
     editorRef.current = editor;
@@ -105,9 +116,18 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
   if (!selectedFile) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
-        <div className="text-center">
-          <div className="text-4xl mb-2">...</div>
-          <div>Select a file to view</div>
+        <div className="text-center max-w-xs">
+          <div className="text-4xl mb-3 opacity-50">
+            <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div className="font-medium mb-1">Select a file to view</div>
+          <div className="text-sm text-gray-400 dark:text-gray-500">
+            Choose from the sidebar, or click{' '}
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium">+</span>
+            {' '}to create from templates
+          </div>
         </div>
       </div>
     );
@@ -135,6 +155,16 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
       {/* File header */}
       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
+          {/* Close button */}
+          <button
+            onClick={() => onSelectFile(null)}
+            className="p-1 -ml-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            title="Close file (Esc)"
+          >
+            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
           <div className="text-sm font-medium truncate">{selectedFile.name}</div>
           {isReadOnly && (
             <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0 flex items-center gap-1">
