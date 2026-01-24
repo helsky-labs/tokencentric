@@ -1,10 +1,105 @@
-import { ContextFile } from '../../shared/types';
+import { ContextFile, InheritanceChainItem, TokenizerType } from '../../shared/types';
 
 export interface InheritanceItem {
   path: string;
   name: string;
   file?: ContextFile;
   isGlobal?: boolean;
+}
+
+/**
+ * Builds a complete inheritance chain with token counts for hierarchical cost display.
+ * Order: Global (~/.claude/CLAUDE.md) -> Parent files -> Current file
+ */
+export async function getInheritanceChainWithTokens(
+  currentFile: ContextFile,
+  allFiles: ContextFile[],
+  tokenizer: TokenizerType = 'anthropic'
+): Promise<InheritanceChainItem[]> {
+  const chain: InheritanceChainItem[] = [];
+
+  // 1. Get global context file (~/.claude/CLAUDE.md) if it exists
+  try {
+    const globalFile = await window.electronAPI.getGlobalContextFile(tokenizer);
+    if (globalFile) {
+      chain.push({
+        path: globalFile.path,
+        name: globalFile.name,
+        displayPath: '~/.claude/CLAUDE.md',
+        tokens: globalFile.tokens,
+        isGlobal: true,
+        isCurrent: false,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to get global context file:', error);
+  }
+
+  // 2. Get parent context files (sorted from root to deepest)
+  const parentFiles = getParentContextFiles(currentFile, allFiles);
+
+  // 3. Get token counts for all files in the chain (if not already cached)
+  const filesToCount = parentFiles.filter((f) => f.tokens === undefined);
+  if (filesToCount.length > 0) {
+    try {
+      const tokenCounts = await window.electronAPI.countTokensBatch(
+        filesToCount.map((f) => f.path),
+        tokenizer
+      );
+      // Update cached token counts
+      filesToCount.forEach((f) => {
+        if (tokenCounts[f.path] !== undefined) {
+          f.tokens = tokenCounts[f.path];
+        }
+      });
+    } catch (error) {
+      console.error('Failed to count tokens for parent files:', error);
+    }
+  }
+
+  // 4. Add parent files to chain
+  for (const file of parentFiles) {
+    chain.push({
+      path: file.path,
+      name: file.name,
+      displayPath: simplifyPath(file.path),
+      file,
+      tokens: file.tokens,
+      isGlobal: false,
+      isCurrent: false,
+    });
+  }
+
+  // 5. Add current file
+  // Get current file tokens if needed
+  let currentTokens = currentFile.tokens;
+  if (currentTokens === undefined) {
+    try {
+      const content = await window.electronAPI.readFile(currentFile.path);
+      currentTokens = await window.electronAPI.countTokens(content, tokenizer);
+    } catch (error) {
+      console.error('Failed to count tokens for current file:', error);
+    }
+  }
+
+  chain.push({
+    path: currentFile.path,
+    name: currentFile.name,
+    displayPath: simplifyPath(currentFile.path),
+    file: currentFile,
+    tokens: currentTokens,
+    isGlobal: false,
+    isCurrent: true,
+  });
+
+  return chain;
+}
+
+/**
+ * Calculate total tokens from an inheritance chain
+ */
+export function calculateTotalTokens(chain: InheritanceChainItem[]): number {
+  return chain.reduce((total, item) => total + (item.tokens || 0), 0);
 }
 
 /**

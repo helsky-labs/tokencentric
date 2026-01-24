@@ -43,7 +43,19 @@ export interface GlobalConfigFile {
   readOnly?: boolean; // Whether the file should be read-only in editor
   lastModified?: number;
   size?: number;
+  tokens?: number; // Token count for the file
   children?: GlobalConfigFile[]; // For directories
+}
+
+// Hierarchical cost display types
+export interface InheritanceChainItem {
+  path: string;
+  name: string;
+  displayPath: string; // Simplified path (~ for home)
+  file?: ContextFile;
+  tokens?: number;
+  isGlobal?: boolean; // True for ~/.claude/CLAUDE.md
+  isCurrent?: boolean; // True for the currently selected file
 }
 
 // Template types

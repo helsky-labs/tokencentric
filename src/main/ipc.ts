@@ -248,6 +248,34 @@ export function setupIpcHandlers() {
     return countTokensForContent(content, tokenizer);
   });
 
+  // Count tokens for multiple files at once
+  ipcMain.handle(
+    'count-tokens-batch',
+    async (_event, filePaths: string[], tokenizer: TokenizerType): Promise<Record<string, number>> => {
+      const results: Record<string, number> = {};
+
+      await Promise.all(
+        filePaths.map(async (filePath) => {
+          try {
+            const content = await fs.readFile(filePath, 'utf-8');
+            results[filePath] = countTokensForContent(content, tokenizer);
+          } catch (error) {
+            console.error(`Failed to count tokens for: ${filePath}`, error);
+            // Try to get file size for fallback estimate
+            try {
+              const stats = await fs.stat(filePath);
+              results[filePath] = Math.ceil(stats.size / 4);
+            } catch {
+              results[filePath] = 0;
+            }
+          }
+        })
+      );
+
+      return results;
+    }
+  );
+
   // Scan directory
   ipcMain.handle('scan-directory', async (_event, scanPath: string) => {
     const settings = store.get('settings');
@@ -341,6 +369,36 @@ export function setupIpcHandlers() {
   ipcMain.handle('get-global-config-path', () => {
     return path.join(os.homedir(), '.claude');
   });
+
+  // Get global context file (~/.claude/CLAUDE.md) with token count
+  ipcMain.handle(
+    'get-global-context-file',
+    async (_event, tokenizer: TokenizerType = 'anthropic'): Promise<GlobalConfigFile | null> => {
+      const claudeMdPath = path.join(os.homedir(), '.claude', 'CLAUDE.md');
+
+      try {
+        await fs.access(claudeMdPath);
+        const stats = await fs.stat(claudeMdPath);
+        const content = await fs.readFile(claudeMdPath, 'utf-8');
+        const tokens = countTokensForContent(content, tokenizer);
+
+        return {
+          id: claudeMdPath,
+          path: claudeMdPath,
+          name: 'CLAUDE.md',
+          type: 'markdown',
+          description: 'Global instructions for Claude Code',
+          readOnly: false,
+          lastModified: stats.mtimeMs,
+          size: stats.size,
+          tokens,
+        };
+      } catch {
+        // ~/.claude/CLAUDE.md doesn't exist
+        return null;
+      }
+    }
+  );
 
   // Get global config files
   ipcMain.handle('get-global-config-files', async (): Promise<GlobalConfigFile[]> => {

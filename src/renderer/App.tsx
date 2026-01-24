@@ -345,7 +345,7 @@ function App() {
       </div>
 
       {/* Status bar */}
-      <StatusBar selectedFile={selectedFile} settings={settings} />
+      <StatusBar selectedFile={selectedFile} allFiles={files} settings={settings} />
 
       {/* File context menu */}
       {contextMenu && (

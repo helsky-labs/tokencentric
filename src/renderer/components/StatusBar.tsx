@@ -1,45 +1,75 @@
 import { useEffect, useState } from 'react';
 import { ContextFile, AppSettings } from '../../shared/types';
+import { getInheritanceChainWithTokens, calculateTotalTokens } from '../utils/findInheritanceChain';
 
 interface StatusBarProps {
   selectedFile: ContextFile | null;
+  allFiles: ContextFile[];
   settings: AppSettings | null;
 }
 
-export function StatusBar({ selectedFile, settings }: StatusBarProps) {
+export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) {
   const [tokens, setTokens] = useState<number | null>(null);
+  const [totalTokens, setTotalTokens] = useState<number | null>(null);
+  const [inheritedCount, setInheritedCount] = useState<number>(0);
 
   useEffect(() => {
-    async function countTokens() {
+    async function loadTokenInfo() {
       if (!selectedFile) {
         setTokens(null);
+        setTotalTokens(null);
+        setInheritedCount(0);
         return;
       }
 
       try {
+        // Get current file tokens
         const content = await window.electronAPI.readFile(selectedFile.path);
         const profile = settings?.toolProfiles.find((p) => p.id === selectedFile.toolId);
-        const count = await window.electronAPI.countTokens(content, profile?.tokenizer || 'openai');
+        const tokenizer = profile?.tokenizer || 'anthropic';
+        const count = await window.electronAPI.countTokens(content, tokenizer);
         setTokens(count);
+
+        // Get full inheritance chain for total
+        const chain = await getInheritanceChainWithTokens(selectedFile, allFiles, tokenizer);
+        const total = calculateTotalTokens(chain);
+        setTotalTokens(total);
+        setInheritedCount(chain.length - 1); // Exclude current file
       } catch (error) {
         setTokens(null);
+        setTotalTokens(null);
+        setInheritedCount(0);
       }
     }
 
-    countTokens();
-  }, [selectedFile, settings]);
+    loadTokenInfo();
+  }, [selectedFile, allFiles, settings]);
 
   const getModelFit = (tokenCount: number) => {
     // All current models support 200k context
     if (tokenCount < 50000) return { status: 'good', text: 'Fits all models' };
     if (tokenCount < 100000) return { status: 'ok', text: 'Fits all models' };
-    if (tokenCount < 200000) return { status: 'warn', text: 'Large file' };
+    if (tokenCount < 200000) return { status: 'warn', text: 'Large context' };
     return { status: 'error', text: 'Exceeds 200k' };
   };
 
   const getToolName = (toolId: string) => {
     const profile = settings?.toolProfiles.find((p) => p.id === toolId);
     return profile?.name || 'Unknown';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'good':
+      case 'ok':
+        return 'text-green-600 dark:text-green-400';
+      case 'warn':
+        return 'text-yellow-600 dark:text-yellow-400';
+      case 'error':
+        return 'text-red-600 dark:text-red-400';
+      default:
+        return '';
+    }
   };
 
   return (
@@ -50,20 +80,18 @@ export function StatusBar({ selectedFile, settings }: StatusBarProps) {
           <span className="text-gray-300 dark:text-gray-600">|</span>
           {tokens !== null ? (
             <>
-              <span>Tokens: {tokens.toLocaleString()}</span>
+              <span>This file: {tokens.toLocaleString()}</span>
+              {totalTokens !== null && inheritedCount > 0 && (
+                <>
+                  <span className="text-gray-300 dark:text-gray-600">|</span>
+                  <span title={`Includes ${inheritedCount} inherited file${inheritedCount > 1 ? 's' : ''}`}>
+                    Total: {totalTokens.toLocaleString()}
+                  </span>
+                </>
+              )}
               <span className="text-gray-300 dark:text-gray-600">|</span>
-              <span
-                className={
-                  getModelFit(tokens).status === 'good'
-                    ? 'text-green-600 dark:text-green-400'
-                    : getModelFit(tokens).status === 'warn'
-                      ? 'text-yellow-600 dark:text-yellow-400'
-                      : getModelFit(tokens).status === 'error'
-                        ? 'text-red-600 dark:text-red-400'
-                        : ''
-                }
-              >
-                {getModelFit(tokens).text}
+              <span className={getStatusColor(getModelFit(totalTokens || tokens).status)}>
+                {getModelFit(totalTokens || tokens).text}
               </span>
             </>
           ) : (

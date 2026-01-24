@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { ContextFile, AppSettings } from '../../shared/types';
 import { Breadcrumb } from './Breadcrumb';
 import { AIActionsToolbar } from './AIActionsToolbar';
+import { HierarchicalCostPanel } from './HierarchicalCostPanel';
 
 // Configure Monaco to load from CDN (more reliable in Electron)
 loader.config({
@@ -151,6 +152,14 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
           onSelectFile={onSelectFile}
         />
       </div>
+
+      {/* Hierarchical Cost Panel - shows total context cost */}
+      <HierarchicalCostPanel
+        selectedFile={selectedFile}
+        allFiles={allFiles}
+        settings={settings}
+        onSelectFile={onSelectFile}
+      />
 
       {/* File header */}
       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">

@@ -23,6 +23,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Tokens
   countTokens: (content: string, tokenizer: TokenizerType): Promise<number> =>
     ipcRenderer.invoke('count-tokens', content, tokenizer),
+  countTokensBatch: (filePaths: string[], tokenizer: TokenizerType): Promise<Record<string, number>> =>
+    ipcRenderer.invoke('count-tokens-batch', filePaths, tokenizer),
 
   // System
   showInFolder: (path: string): Promise<void> => ipcRenderer.invoke('show-in-folder', path),
@@ -44,6 +46,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Global config (~/.claude)
   getGlobalConfigPath: (): Promise<string> => ipcRenderer.invoke('get-global-config-path'),
   getGlobalConfigFiles: (): Promise<GlobalConfigFile[]> => ipcRenderer.invoke('get-global-config-files'),
+  getGlobalContextFile: (tokenizer?: TokenizerType): Promise<GlobalConfigFile | null> =>
+    ipcRenderer.invoke('get-global-context-file', tokenizer),
 
   // AI
   testAiConnection: (provider: AIProvider, config: AIProviderConfig): Promise<{ success: boolean; message: string }> =>
@@ -118,6 +122,7 @@ declare global {
       writeFile: (path: string, content: string) => Promise<void>;
       scanDirectory: (path: string) => Promise<ContextFile[]>;
       countTokens: (content: string, tokenizer: TokenizerType) => Promise<number>;
+      countTokensBatch: (filePaths: string[], tokenizer: TokenizerType) => Promise<Record<string, number>>;
       showInFolder: (path: string) => Promise<void>;
       selectDirectory: () => Promise<string | null>;
       deleteFile: (path: string) => Promise<void>;
@@ -134,6 +139,7 @@ declare global {
       // Global config
       getGlobalConfigPath: () => Promise<string>;
       getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;
+      getGlobalContextFile: (tokenizer?: TokenizerType) => Promise<GlobalConfigFile | null>;
       // AI
       testAiConnection: (provider: AIProvider, config: AIProviderConfig) => Promise<{ success: boolean; message: string }>;
       aiExecute: (action: AIAction, content: string, projectInfo?: string, additionalInstructions?: string) => Promise<void>;
