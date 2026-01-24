@@ -37,6 +37,7 @@
     "tiktoken": "^1.0.15"
   },
   "devDependencies": {
+    "@electron/notarize": "^3.1.1",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.48",
@@ -62,7 +63,7 @@
     "productName": "Tokencentric",
     "publish": {
       "provider": "github",
-      "owner": "helrabelo",
+      "owner": "helsky-labs",
       "repo": "tokencentric"
     },
     "directories": {
@@ -77,8 +78,15 @@
       "target": [
         "dmg",
         "zip"
-      ]
+      ],
+      "icon": "resources/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true
     },
+    "afterSign": "scripts/notarize.js",
     "win": {
       "target": [
         "nsis",
