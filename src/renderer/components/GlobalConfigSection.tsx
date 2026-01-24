@@ -1,17 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GlobalConfigFile, ContextFile } from '../../shared/types';
+import { SidebarSection } from './sidebar/SidebarSection';
 
 interface GlobalConfigSectionProps {
   onSelectFile: (file: ContextFile) => void;
   selectedFile: ContextFile | null;
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
 /**
  * Displays the global Claude Code configuration from ~/.claude
  * Shows CLAUDE.md, commands, and settings files
  */
-export function GlobalConfigSection({ onSelectFile, selectedFile }: GlobalConfigSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export function GlobalConfigSection({
+  onSelectFile,
+  selectedFile,
+  isExpanded,
+  onToggle,
+}: GlobalConfigSectionProps) {
   const [configFiles, setConfigFiles] = useState<GlobalConfigFile[]>([]);
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
@@ -124,24 +131,18 @@ export function GlobalConfigSection({ onSelectFile, selectedFile }: GlobalConfig
     return null;
   }
 
+  // Shorten the config path for display
+  const displayPath = configPath.replace(/^\/Users\/[^/]+/, '~');
+
   return (
     <div className="global-config-section">
-      {/* Section header */}
-      <div
-        className="global-config-header"
-        onClick={() => setIsExpanded(!isExpanded)}
+      <SidebarSection
+        title="Global Config"
+        subtitle={`(${displayPath})`}
+        isExpanded={isExpanded}
+        onToggle={onToggle}
+        variant="purple"
       >
-        <span className={`tree-chevron ${isExpanded ? 'expanded' : ''}`}>
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </span>
-        <span>Config Global</span>
-        <span className="text-purple-500 dark:text-purple-400 ml-auto font-normal">(~/.claude)</span>
-      </div>
-
-      {/* Config files */}
-      {isExpanded && (
         <div className="global-config-content">
           {isLoading ? (
             <div className="px-4 py-2 text-xs text-gray-400 dark:text-gray-500">
@@ -151,7 +152,7 @@ export function GlobalConfigSection({ onSelectFile, selectedFile }: GlobalConfig
             configFiles.map((file) => renderConfigItem(file))
           )}
         </div>
-      )}
+      </SidebarSection>
     </div>
   );
 }

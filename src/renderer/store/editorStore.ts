@@ -31,6 +31,7 @@ interface EditorState {
 
   // Tab Actions
   openFile: (file: ContextFile) => Promise<void>;
+  openFileInPane: (file: ContextFile, targetPaneId: string) => Promise<void>;
   closeTab: (tabId: string, paneId?: string) => void;
   closeOtherTabs: (tabId: string, paneId?: string) => void;
   closeAllTabs: (paneId?: string) => void;
@@ -123,6 +124,99 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       tabs: newTabs,
       panes: panes.map(p =>
         p.id === activePaneId
+          ? {
+              ...p,
+              tabIds: [...p.tabIds, file.path],
+              activeTabId: file.path,
+            }
+          : p
+      ),
+    });
+  },
+
+  // Open a file in a specific pane
+  openFileInPane: async (file: ContextFile, targetPaneId: string) => {
+    const { tabs, panes } = get();
+
+    // Verify target pane exists
+    const targetPane = panes.find(p => p.id === targetPaneId);
+    if (!targetPane) return;
+
+    // Check if file is already open in any pane
+    const existingTab = tabs.get(file.path);
+    if (existingTab) {
+      // Check if it's already in the target pane
+      if (targetPane.tabIds.includes(file.path)) {
+        // Just focus it
+        set({
+          activePaneId: targetPaneId,
+          panes: panes.map(p =>
+            p.id === targetPaneId
+              ? { ...p, activeTabId: file.path }
+              : p
+          ),
+        });
+        return;
+      }
+
+      // Move the tab to the target pane
+      const sourcePane = panes.find(p => p.tabIds.includes(file.path));
+      if (sourcePane) {
+        const newSourceTabIds = sourcePane.tabIds.filter(id => id !== file.path);
+        set({
+          panes: panes.map(p => {
+            if (p.id === sourcePane.id) {
+              return {
+                ...p,
+                tabIds: newSourceTabIds,
+                activeTabId: p.activeTabId === file.path
+                  ? newSourceTabIds[0] || null
+                  : p.activeTabId,
+              };
+            }
+            if (p.id === targetPaneId) {
+              return {
+                ...p,
+                tabIds: [...p.tabIds, file.path],
+                activeTabId: file.path,
+              };
+            }
+            return p;
+          }),
+          activePaneId: targetPaneId,
+        });
+      }
+      return;
+    }
+
+    // Load file content
+    let content = '';
+    try {
+      content = await window.electronAPI.readFile(file.path);
+    } catch (error) {
+      console.error('Failed to load file:', error);
+      content = `Failed to load file: ${error}`;
+    }
+
+    // Create new tab
+    const newTab: EditorTab = {
+      id: file.path,
+      file,
+      content,
+      originalContent: content,
+      isDirty: false,
+      viewMode: 'split',
+    };
+
+    // Add tab to target pane
+    const newTabs = new Map(tabs);
+    newTabs.set(file.path, newTab);
+
+    set({
+      tabs: newTabs,
+      activePaneId: targetPaneId,
+      panes: panes.map(p =>
+        p.id === targetPaneId
           ? {
               ...p,
               tabIds: [...p.tabIds, file.path],

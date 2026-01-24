@@ -1,20 +1,24 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { ContextFile, AppSettings } from '../../shared/types';
+import { ContextFile, AppSettings, Template, SidebarSectionState } from '../../shared/types';
 import { buildFileTree, getExpandedPathsForFile } from '../utils/buildFileTree';
 import { TreeNode } from './TreeNode';
 import { GlobalConfigSection } from './GlobalConfigSection';
-import { LogoMark } from './Logo';
+import { SidebarHeader } from './sidebar/SidebarHeader';
+import { SidebarSection } from './sidebar/SidebarSection';
+import { TemplatesSection } from './sidebar/TemplatesSection';
 
 interface SidebarProps {
   files: ContextFile[];
   selectedFile: ContextFile | null;
   onSelectFile: (file: ContextFile) => void;
+  onSelectFileAlternate?: (file: ContextFile) => void;
   onScanDirectory: () => void;
   onContextMenu: (file: ContextFile, x: number, y: number) => void;
   onFolderContextMenu: (folderPath: string, folderName: string, x: number, y: number) => void;
-  onNewFile: () => void;
+  onNewFile: (preselectedTemplate?: Template, defaultDirectory?: string) => void;
   settings: AppSettings | null;
   onOpenSettings: () => void;
+  onUpdateSettings?: (settings: Partial<AppSettings>) => void;
 }
 
 /**
@@ -47,19 +51,52 @@ function getTokenColorClass(tokens: number): string {
   return 'text-red-600 dark:text-red-400';
 }
 
+// Default section state
+const defaultSectionState: SidebarSectionState = {
+  globalConfig: false,
+  templates: false,
+  projectFiles: true,
+};
+
 export function Sidebar({
   files,
   selectedFile,
   onSelectFile,
+  onSelectFileAlternate,
   onScanDirectory,
   onContextMenu,
   onFolderContextMenu,
   onNewFile,
   settings,
   onOpenSettings,
+  onUpdateSettings,
 }: SidebarProps) {
   const [toolFilter, setToolFilter] = useState<string>('all');
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+
+  // Section collapse state - initialized from settings or defaults
+  const [sectionState, setSectionState] = useState<SidebarSectionState>(() => {
+    return settings?.sidebarSections || defaultSectionState;
+  });
+
+  // Update section state when settings change
+  useEffect(() => {
+    if (settings?.sidebarSections) {
+      setSectionState(settings.sidebarSections);
+    }
+  }, [settings?.sidebarSections]);
+
+  // Toggle a section and persist to settings
+  const toggleSection = useCallback((section: keyof SidebarSectionState) => {
+    setSectionState((prev) => {
+      const next = { ...prev, [section]: !prev[section] };
+      // Persist to settings
+      if (onUpdateSettings) {
+        onUpdateSettings({ sidebarSections: next });
+      }
+      return next;
+    });
+  }, [onUpdateSettings]);
 
   // Get unique tools from files
   const availableTools = useMemo(() => {
@@ -132,88 +169,50 @@ export function Sidebar({
     setExpandedPaths(new Set());
   }, []);
 
+  // Handle creating a file from a template (from TemplatesSection or folder drop)
+  const handleCreateFromTemplate = useCallback((template: Template, directory?: string) => {
+    onNewFile(template, directory);
+  }, [onNewFile]);
+
   // Calculate total tokens (for filtered files)
   const totalTokens = filteredFiles.reduce((sum, file) => sum + (file.tokens || 0), 0);
 
+  // Actions for the Project Files section header
+  const projectFilesActions = allDirectoryPaths.size > 0 ? (
+    <div className="flex gap-1">
+      <button
+        onClick={handleExpandAll}
+        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        title="Expand all"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+      </button>
+      <button
+        onClick={handleCollapseAll}
+        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        title="Collapse all"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+        </svg>
+      </button>
+    </div>
+  ) : null;
+
   return (
     <div className="w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50 dark:bg-gray-800/50">
-      {/* Branding Header */}
-      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2">
-          <LogoMark size={28} />
-          <span className="font-semibold text-gray-800 dark:text-gray-100">Tokencentric</span>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="p-3 border-b border-gray-200 dark:border-gray-700 space-y-2">
-        <div className="flex gap-2">
-          <button
-            onClick={onScanDirectory}
-            className="flex-1 px-3 py-2 text-sm bg-brand-teal hover:bg-teal-500 text-white rounded-md transition-colors"
-          >
-            Scan Directory
-          </button>
-          <button
-            onClick={onNewFile}
-            className="px-3 py-2 text-sm bg-brand-slate hover:bg-gray-600 text-white rounded-md transition-colors"
-            title="New File (⌘N)"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-          <button
-            onClick={onOpenSettings}
-            className="px-3 py-2 text-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
-            title="Settings (⌘,)"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Tool filter dropdown */}
-        {availableTools.length > 1 && (
-          <select
-            value={toolFilter}
-            onChange={(e) => setToolFilter(e.target.value)}
-            className="w-full px-2 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
-          >
-            <option value="all">All Tools ({files.length})</option>
-            {availableTools.map((tool) => {
-              const count = files.filter((f) => f.toolId === tool.id).length;
-              return (
-                <option key={tool.id} value={tool.id}>
-                  {tool.icon} {tool.name} ({count})
-                </option>
-              );
-            })}
-          </select>
-        )}
-
-        {/* Expand/Collapse buttons */}
-        {fileTree.length > 0 && allDirectoryPaths.size > 0 && (
-          <div className="flex gap-1">
-            <button
-              onClick={handleExpandAll}
-              className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors"
-              title="Expand all directories"
-            >
-              Expand All
-            </button>
-            <button
-              onClick={handleCollapseAll}
-              className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded transition-colors"
-              title="Collapse all directories"
-            >
-              Collapse All
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Header with branding and actions */}
+      <SidebarHeader
+        onScanDirectory={onScanDirectory}
+        onNewFile={() => onNewFile()}
+        onOpenSettings={onOpenSettings}
+        toolFilter={toolFilter}
+        onToolFilterChange={setToolFilter}
+        availableTools={availableTools}
+        totalFiles={files.length}
+      />
 
       {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto">
@@ -221,10 +220,25 @@ export function Sidebar({
         <GlobalConfigSection
           selectedFile={selectedFile}
           onSelectFile={onSelectFile}
+          isExpanded={sectionState.globalConfig}
+          onToggle={() => toggleSection('globalConfig')}
         />
 
-        {/* Project Files */}
-        <div className="py-2">
+        {/* Templates Section */}
+        <TemplatesSection
+          isExpanded={sectionState.templates}
+          onToggle={() => toggleSection('templates')}
+          onCreateFromTemplate={handleCreateFromTemplate}
+        />
+
+        {/* Project Files Section */}
+        <SidebarSection
+          title="Project Files"
+          isExpanded={sectionState.projectFiles}
+          onToggle={() => toggleSection('projectFiles')}
+          badge={filteredFiles.length > 0 ? filteredFiles.length : undefined}
+          actions={projectFilesActions}
+        >
           {fileTree.length === 0 ? (
             <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
               No files found.
@@ -232,29 +246,26 @@ export function Sidebar({
               Click &quot;Scan Directory&quot; to find context files.
             </div>
           ) : (
-            <>
-              <div className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-800/30">
-                Project Files
-              </div>
-              <div className="tree-root px-1 py-1">
-                {fileTree.map((node) => (
-                  <TreeNode
-                    key={node.path}
-                    node={node}
-                    depth={0}
-                    expandedPaths={expandedPaths}
-                    selectedFile={selectedFile}
-                    settings={settings}
-                    onToggleExpand={handleToggleExpand}
-                    onSelectFile={onSelectFile}
-                    onContextMenu={onContextMenu}
-                    onFolderContextMenu={onFolderContextMenu}
-                  />
-                ))}
-              </div>
-            </>
+            <div className="tree-root px-1 py-1">
+              {fileTree.map((node) => (
+                <TreeNode
+                  key={node.path}
+                  node={node}
+                  depth={0}
+                  expandedPaths={expandedPaths}
+                  selectedFile={selectedFile}
+                  settings={settings}
+                  onToggleExpand={handleToggleExpand}
+                  onSelectFile={onSelectFile}
+                  onSelectFileAlternate={onSelectFileAlternate}
+                  onContextMenu={onContextMenu}
+                  onFolderContextMenu={onFolderContextMenu}
+                  onCreateFromTemplate={handleCreateFromTemplate}
+                />
+              ))}
+            </div>
           )}
-        </div>
+        </SidebarSection>
       </div>
 
       {/* Footer */}

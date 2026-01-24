@@ -1,4 +1,5 @@
-import { FileTreeNode, ContextFile, AppSettings } from '../../shared/types';
+import { useState } from 'react';
+import { FileTreeNode, ContextFile, AppSettings, Template } from '../../shared/types';
 import { getNodeTokenCount } from '../utils/buildFileTree';
 import { ToolBadge } from './ToolBadge';
 
@@ -10,8 +11,10 @@ interface TreeNodeProps {
   settings: AppSettings | null;
   onToggleExpand: (path: string) => void;
   onSelectFile: (file: ContextFile) => void;
+  onSelectFileAlternate?: (file: ContextFile) => void;
   onContextMenu: (file: ContextFile, x: number, y: number) => void;
   onFolderContextMenu: (folderPath: string, folderName: string, x: number, y: number) => void;
+  onCreateFromTemplate?: (template: Template, folderPath: string) => void;
 }
 
 /**
@@ -52,15 +55,49 @@ export function TreeNode({
   settings,
   onToggleExpand,
   onSelectFile,
+  onSelectFileAlternate,
   onContextMenu,
   onFolderContextMenu,
+  onCreateFromTemplate,
 }: TreeNodeProps) {
+  const [isDropTarget, setIsDropTarget] = useState(false);
   const isExpanded = expandedPaths.has(node.path);
   const tokenCount = getNodeTokenCount(node);
 
+  // Handle template drag over for directories
+  const handleDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes('application/template')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      setIsDropTarget(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only handle if leaving the element itself, not children
+    if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDropTarget(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDropTarget(false);
+
+    const templateData = e.dataTransfer.getData('application/template');
+    if (templateData && onCreateFromTemplate) {
+      try {
+        const template = JSON.parse(templateData) as Template;
+        onCreateFromTemplate(template, node.path);
+      } catch (err) {
+        console.error('Failed to parse template data:', err);
+      }
+    }
+  };
+
   if (node.isDirectory) {
     return (
-      <div className="tree-directory">
+      <div className={`tree-directory ${isDropTarget ? 'template-drop-target' : ''}`}>
         <div
           className="tree-directory-header"
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
@@ -69,6 +106,9 @@ export function TreeNode({
             e.preventDefault();
             onFolderContextMenu(node.path, node.name, e.clientX, e.clientY);
           }}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
           <span className={`tree-chevron ${isExpanded ? 'expanded' : ''}`}>
             <svg
@@ -128,8 +168,10 @@ export function TreeNode({
                 settings={settings}
                 onToggleExpand={onToggleExpand}
                 onSelectFile={onSelectFile}
+                onSelectFileAlternate={onSelectFileAlternate}
                 onContextMenu={onContextMenu}
                 onFolderContextMenu={onFolderContextMenu}
+                onCreateFromTemplate={onCreateFromTemplate}
               />
             ))}
           </div>
@@ -142,11 +184,40 @@ export function TreeNode({
   const file = node.file!;
   const isSelected = selectedFile?.id === file.id;
 
+  // Handle drag start for sidebar file
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('application/json', JSON.stringify(file));
+    e.dataTransfer.setData('text/plain', file.path);
+    e.dataTransfer.effectAllowed = 'move';
+    // Add visual feedback
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.classList.add('dragging');
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.classList.remove('dragging');
+    }
+  };
+
+  // Handle click with modifier key detection
+  const handleClick = (e: React.MouseEvent) => {
+    if ((e.metaKey || e.ctrlKey) && onSelectFileAlternate) {
+      onSelectFileAlternate(file);
+    } else {
+      onSelectFile(file);
+    }
+  };
+
   return (
     <div
       className={`tree-file ${isSelected ? 'selected' : ''}`}
       style={{ paddingLeft: `${depth * 12 + 24}px` }}
-      onClick={() => onSelectFile(file)}
+      draggable
+      onClick={handleClick}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onContextMenu={(e) => {
         e.preventDefault();
         onContextMenu(file, e.clientX, e.clientY);

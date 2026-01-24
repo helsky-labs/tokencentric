@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ContextFile, AppSettings } from '../shared/types';
+import { ContextFile, AppSettings, Template } from '../shared/types';
 import { Sidebar } from './components/Sidebar';
 import { EditorContainer } from './components/editor';
 import { StatusBar } from './components/StatusBar';
@@ -37,7 +37,7 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   // Editor store
-  const { openFile, closeActiveTab, nextTab, previousTab, tabs, panes, activePaneId } = useEditorStore();
+  const { openFile, openFileInPane, closeActiveTab, nextTab, previousTab, tabs, panes, activePaneId, splitPane } = useEditorStore();
 
   // Get selected file from active tab for backwards compatibility
   const activePane = panes.find(p => p.id === activePaneId);
@@ -51,12 +51,36 @@ function App() {
     }
   }, [openFile]);
 
+  // Handle Cmd+click to open in alternate pane
+  const handleSelectFileAlternate = useCallback((file: ContextFile) => {
+    // Find a pane that isn't the active one
+    const otherPane = panes.find(p => p.id !== activePaneId);
+    if (otherPane) {
+      // Open in the other pane
+      openFileInPane(file, otherPane.id);
+    } else {
+      // No other pane exists, create a split first
+      splitPane('vertical');
+      // The splitPane creates a new pane, but we need to get the updated pane ID
+      // Since splitPane is synchronous in its state update, we can rely on the store
+      // to have the new pane. We'll use a timeout to let the state update propagate.
+      setTimeout(() => {
+        const state = useEditorStore.getState();
+        const newPane = state.panes.find(p => p.id !== activePaneId);
+        if (newPane) {
+          openFileInPane(file, newPane.id);
+        }
+      }, 0);
+    }
+  }, [panes, activePaneId, openFileInPane, splitPane]);
+
   // File management state
   const [fileToDelete, setFileToDelete] = useState<ContextFile | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [folderContextMenu, setFolderContextMenu] = useState<FolderContextMenuState | null>(null);
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
   const [newFileDefaultDir, setNewFileDefaultDir] = useState<string | undefined>(undefined);
+  const [newFilePreselectedTemplate, setNewFilePreselectedTemplate] = useState<Template | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
@@ -223,8 +247,9 @@ function App() {
     setFolderContextMenu(null);
   };
 
-  // Open new file dialog (with optional default directory)
-  const handleOpenNewFileDialog = (defaultDir?: string) => {
+  // Open new file dialog (with optional template and default directory)
+  const handleOpenNewFileDialog = (preselectedTemplate?: Template, defaultDir?: string) => {
+    setNewFilePreselectedTemplate(preselectedTemplate || null);
     setNewFileDefaultDir(defaultDir);
     setIsNewFileDialogOpen(true);
   };
@@ -233,6 +258,7 @@ function App() {
   const handleCloseNewFileDialog = () => {
     setIsNewFileDialogOpen(false);
     setNewFileDefaultDir(undefined);
+    setNewFilePreselectedTemplate(null);
   };
 
   // Delete file handler
@@ -354,12 +380,14 @@ function App() {
               files={files}
               selectedFile={selectedFile}
               onSelectFile={handleSelectFile}
+              onSelectFileAlternate={handleSelectFileAlternate}
               onScanDirectory={handleScanDirectory}
               onContextMenu={handleContextMenu}
               onFolderContextMenu={handleFolderContextMenu}
-              onNewFile={() => handleOpenNewFileDialog()}
+              onNewFile={handleOpenNewFileDialog}
               settings={settings}
               onOpenSettings={() => setIsSettingsOpen(true)}
+              onUpdateSettings={handleSaveSettings}
             />
             <EditorContainer
               allFiles={files}
@@ -412,6 +440,7 @@ function App() {
         onCreateFile={handleCreateFile}
         settings={settings}
         defaultDirectory={newFileDefaultDir}
+        preselectedTemplate={newFilePreselectedTemplate}
       />
 
       {/* Settings dialog */}

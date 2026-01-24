@@ -131,6 +131,13 @@ export const defaultAISettings: AISettings = {
   },
 };
 
+// Sidebar section state persistence
+export interface SidebarSectionState {
+  globalConfig: boolean;  // default: false (collapsed)
+  templates: boolean;     // default: false (collapsed)
+  projectFiles: boolean;  // default: true (expanded)
+}
+
 // Editor state persistence types
 export type SplitDirection = 'horizontal' | 'vertical' | null;
 
@@ -157,6 +164,7 @@ export interface AppSettings {
   toolProfiles: ToolProfile[];
   ai?: AISettings;
   editorState?: EditorStatePersisted;
+  sidebarSections?: SidebarSectionState;
 }
 
 // IPC types

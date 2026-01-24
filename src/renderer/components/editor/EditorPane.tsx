@@ -1,11 +1,10 @@
-import { useCallback, useRef, useMemo, useState } from 'react';
+import { useCallback, useRef, useMemo, useState, DragEvent } from 'react';
 import Editor, { OnMount, loader } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import { useEditorStore, ViewMode, EditorPane as EditorPaneType } from '../../store/editorStore';
 import { EditorTabs } from './EditorTabs';
-import { Breadcrumb } from '../Breadcrumb';
-import { AIActionsToolbar } from '../AIActionsToolbar';
-import { HierarchicalCostPanel } from '../HierarchicalCostPanel';
+import { FileInfoBar } from './FileInfoBar';
+import { AIActionsPopover } from './AIActionsPopover';
 import { ContextFile, AppSettings } from '../../../shared/types';
 
 // Configure Monaco to load from CDN (more reliable in Electron)
@@ -97,9 +96,51 @@ export function EditorPane({
     setTabViewMode,
     setActiveTab,
     setActivePane,
+    openFileInPane,
   } = useEditorStore();
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isAIPopoverOpen, setIsAIPopoverOpen] = useState(false);
+  const aiButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Handle drag over for file drop from sidebar
+  const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
+    // Check if this is a file being dragged from the sidebar
+    if (e.dataTransfer.types.includes('application/json')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (!isDragOver) {
+        setIsDragOver(true);
+      }
+    }
+  }, [isDragOver]);
+
+  const handleDragLeave = useCallback((e: DragEvent<HTMLDivElement>) => {
+    // Only set drag over to false if we're leaving the pane entirely
+    const relatedTarget = e.relatedTarget as HTMLElement | null;
+    if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+      setIsDragOver(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    // Try to get file data from drag
+    const jsonData = e.dataTransfer.getData('application/json');
+    if (jsonData) {
+      try {
+        const file: ContextFile = JSON.parse(jsonData);
+        if (file && file.path) {
+          openFileInPane(file, pane.id);
+        }
+      } catch (error) {
+        console.error('Failed to parse dropped file:', error);
+      }
+    }
+  }, [openFileInPane, pane.id]);
 
   // Get tabs for this pane
   const paneTabs = useMemo(() =>
@@ -190,8 +231,11 @@ export function EditorPane({
   if (!activeTab) {
     return (
       <div
-        className={`flex-1 flex flex-col overflow-hidden ${!isActive ? 'opacity-75' : ''}`}
+        className={`flex-1 flex flex-col overflow-hidden ${!isActive ? 'opacity-75' : ''} ${isDragOver ? 'drop-target-active' : ''}`}
         onClick={handlePaneFocus}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {/* Show empty tabs bar */}
         <EditorTabs
@@ -225,10 +269,13 @@ export function EditorPane({
 
   return (
     <div
-      className={`flex-1 flex flex-col overflow-hidden ${!isActive ? 'opacity-90' : ''}`}
+      className={`flex-1 flex flex-col overflow-hidden ${!isActive ? 'opacity-90' : ''} ${isDragOver ? 'drop-target-active' : ''}`}
       onClick={handlePaneFocus}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
-      {/* Tab bar */}
+      {/* Tab bar with AI button for markdown files */}
       <EditorTabs
         paneId={pane.id}
         tabs={paneTabs}
@@ -236,93 +283,34 @@ export function EditorPane({
         onSplitHorizontal={canSplit ? onSplitHorizontal : undefined}
         onSplitVertical={canSplit ? onSplitVertical : undefined}
         onUnsplit={canUnsplit ? onUnsplit : undefined}
+        showAIButton={!!isMarkdown && !isReadOnly}
+        aiButtonRef={aiButtonRef}
+        onAIClick={() => setIsAIPopoverOpen(!isAIPopoverOpen)}
       />
 
-      {/* Breadcrumb - inheritance chain */}
-      <div className="px-4 py-1.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-        <Breadcrumb
-          selectedFile={currentFile}
-          allFiles={allFiles}
-          onSelectFile={handleSelectFile}
-        />
-      </div>
-
-      {/* Hierarchical Cost Panel - shows total context cost */}
-      <HierarchicalCostPanel
-        selectedFile={currentFile}
+      {/* Collapsible file info bar - replaces Breadcrumb, HierarchicalCostPanel, and file header */}
+      <FileInfoBar
+        file={currentFile}
         allFiles={allFiles}
         settings={settings}
+        viewMode={viewMode}
+        isDirty={isDirty}
+        isReadOnly={!!isReadOnly}
+        isSaving={isSaving}
         onSelectFile={handleSelectFile}
+        onViewModeChange={handleViewModeChange}
       />
 
-      {/* File header */}
-      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="text-sm font-medium truncate">{currentFile.name}</div>
-          {isReadOnly && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0 flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              read-only
-            </span>
-          )}
-          {!isReadOnly && isDirty && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex-shrink-0">
-              unsaved
-            </span>
-          )}
-          {isSaving && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
-              Saving...
-            </span>
-          )}
-        </div>
-
-        {/* View mode toggle - only show for markdown files */}
-        {isMarkdown && (
-          <div className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 rounded-md p-0.5">
-            <button
-              onClick={() => handleViewModeChange('editor')}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
-                viewMode === 'editor'
-                  ? 'bg-white dark:bg-gray-600 shadow-sm'
-                  : 'hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Editor
-            </button>
-            <button
-              onClick={() => handleViewModeChange('split')}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
-                viewMode === 'split'
-                  ? 'bg-white dark:bg-gray-600 shadow-sm'
-                  : 'hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Split
-            </button>
-            <button
-              onClick={() => handleViewModeChange('preview')}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
-                viewMode === 'preview'
-                  ? 'bg-white dark:bg-gray-600 shadow-sm'
-                  : 'hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
-            >
-              Preview
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* AI Actions Toolbar - only for markdown files that are not read-only */}
+      {/* AI Actions Popover - floating popover for markdown files */}
       {isMarkdown && !isReadOnly && (
-        <AIActionsToolbar
+        <AIActionsPopover
+          isOpen={isAIPopoverOpen}
+          onClose={() => setIsAIPopoverOpen(false)}
           content={content}
           projectInfo={projectDir}
           onContentGenerated={handleAIContent}
           disabled={isSaving}
+          anchorRef={aiButtonRef}
         />
       )}
 
