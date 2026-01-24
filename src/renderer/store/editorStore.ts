@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ContextFile } from '../../shared/types';
+import { ContextFile, EditorStatePersisted, SplitDirection } from '../../shared/types';
 
 export type ViewMode = 'editor' | 'preview' | 'split';
 
@@ -20,7 +20,7 @@ export interface EditorPane {
   size: number;  // percentage
 }
 
-export type SplitDirection = 'horizontal' | 'vertical' | null;
+export type { SplitDirection, EditorStatePersisted };
 
 interface EditorState {
   // State
@@ -29,7 +29,7 @@ interface EditorState {
   activePaneId: string;
   splitDirection: SplitDirection;
 
-  // Actions
+  // Tab Actions
   openFile: (file: ContextFile) => Promise<void>;
   closeTab: (tabId: string, paneId?: string) => void;
   closeOtherTabs: (tabId: string, paneId?: string) => void;
@@ -46,6 +46,17 @@ interface EditorState {
   getActiveTab: (paneId?: string) => EditorTab | null;
   getActivePane: () => EditorPane | null;
   getUnsavedTabs: (paneId?: string) => EditorTab[];
+
+  // Split View Actions
+  splitPane: (direction: SplitDirection, tabId?: string) => void;
+  unsplit: () => void;
+  setActivePane: (paneId: string) => void;
+  resizePanes: (sizes: number[]) => void;
+  moveTabToPane: (tabId: string, fromPaneId: string, toPaneId: string) => void;
+
+  // Persistence Actions
+  getPersistedState: () => EditorStatePersisted;
+  restoreState: (state: EditorStatePersisted, files: ContextFile[]) => Promise<void>;
 }
 
 // Default pane for initial state
@@ -428,5 +439,225 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     return targetPane.tabIds
       .map(id => tabs.get(id))
       .filter((tab): tab is EditorTab => tab !== undefined && tab.isDirty);
+  },
+
+  // Split the current pane
+  splitPane: (direction: SplitDirection, tabId?: string) => {
+    const { panes, activePaneId, tabs } = get();
+
+    // Already split? Don't allow more than 2 panes for now
+    if (panes.length >= 2) return;
+
+    const activePane = panes.find(p => p.id === activePaneId);
+    if (!activePane) return;
+
+    // Create new pane
+    const newPaneId = `pane-${Date.now()}`;
+    const newPane: EditorPane = {
+      id: newPaneId,
+      tabIds: [],
+      activeTabId: null,
+      size: 50,
+    };
+
+    // If a tabId is provided, move it to the new pane
+    let updatedActivePane = { ...activePane, size: 50 };
+    if (tabId && activePane.tabIds.includes(tabId)) {
+      updatedActivePane = {
+        ...updatedActivePane,
+        tabIds: activePane.tabIds.filter(id => id !== tabId),
+        activeTabId: activePane.activeTabId === tabId
+          ? activePane.tabIds.find(id => id !== tabId) || null
+          : activePane.activeTabId,
+      };
+      newPane.tabIds = [tabId];
+      newPane.activeTabId = tabId;
+    }
+
+    set({
+      panes: [updatedActivePane, newPane],
+      splitDirection: direction,
+      activePaneId: tabId ? newPaneId : activePaneId,
+    });
+  },
+
+  // Remove split and merge all tabs into one pane
+  unsplit: () => {
+    const { panes, tabs } = get();
+
+    if (panes.length <= 1) return;
+
+    // Collect all tab IDs from all panes (preserving order)
+    const allTabIds: string[] = [];
+    let activeTabId: string | null = null;
+
+    for (const pane of panes) {
+      allTabIds.push(...pane.tabIds);
+      // Use the active tab from the first pane that has one
+      if (!activeTabId && pane.activeTabId) {
+        activeTabId = pane.activeTabId;
+      }
+    }
+
+    // Reset to single pane
+    set({
+      panes: [{
+        id: 'pane-1',
+        tabIds: allTabIds,
+        activeTabId,
+        size: 100,
+      }],
+      activePaneId: 'pane-1',
+      splitDirection: null,
+    });
+  },
+
+  // Set the active pane
+  setActivePane: (paneId: string) => {
+    const { panes } = get();
+    if (panes.some(p => p.id === paneId)) {
+      set({ activePaneId: paneId });
+    }
+  },
+
+  // Resize panes (sizes should sum to 100)
+  resizePanes: (sizes: number[]) => {
+    const { panes } = get();
+    if (sizes.length !== panes.length) return;
+
+    set({
+      panes: panes.map((p, i) => ({ ...p, size: sizes[i] })),
+    });
+  },
+
+  // Move a tab from one pane to another
+  moveTabToPane: (tabId: string, fromPaneId: string, toPaneId: string) => {
+    const { panes, tabs } = get();
+
+    const fromPane = panes.find(p => p.id === fromPaneId);
+    const toPane = panes.find(p => p.id === toPaneId);
+
+    if (!fromPane || !toPane || !fromPane.tabIds.includes(tabId)) return;
+
+    // Remove from source pane
+    const newFromTabIds = fromPane.tabIds.filter(id => id !== tabId);
+    let newFromActiveTabId = fromPane.activeTabId;
+    if (fromPane.activeTabId === tabId) {
+      newFromActiveTabId = newFromTabIds[0] || null;
+    }
+
+    // Add to target pane
+    const newToTabIds = [...toPane.tabIds, tabId];
+
+    set({
+      panes: panes.map(p => {
+        if (p.id === fromPaneId) {
+          return { ...p, tabIds: newFromTabIds, activeTabId: newFromActiveTabId };
+        }
+        if (p.id === toPaneId) {
+          return { ...p, tabIds: newToTabIds, activeTabId: tabId };
+        }
+        return p;
+      }),
+      activePaneId: toPaneId,
+    });
+  },
+
+  // Get state for persistence (serializable)
+  getPersistedState: () => {
+    const { panes, activePaneId, splitDirection } = get();
+
+    return {
+      panes: panes.map(p => ({
+        id: p.id,
+        tabPaths: p.tabIds,
+        activeTabPath: p.activeTabId,
+        size: p.size,
+      })),
+      activePaneId,
+      splitDirection,
+    };
+  },
+
+  // Restore state from persistence
+  restoreState: async (state: EditorStatePersisted, files: ContextFile[]) => {
+    const newTabs = new Map<string, EditorTab>();
+    const newPanes: EditorPane[] = [];
+
+    // Create a map of files by path for quick lookup
+    const fileMap = new Map(files.map(f => [f.path, f]));
+
+    for (const paneState of state.panes) {
+      const validTabIds: string[] = [];
+
+      for (const tabPath of paneState.tabPaths) {
+        const file = fileMap.get(tabPath);
+        if (!file) continue; // Skip files that no longer exist
+
+        // Skip if already loaded
+        if (newTabs.has(tabPath)) {
+          validTabIds.push(tabPath);
+          continue;
+        }
+
+        // Load file content
+        let content = '';
+        try {
+          content = await window.electronAPI.readFile(tabPath);
+        } catch (error) {
+          console.error('Failed to restore file:', tabPath, error);
+          continue; // Skip files we can't read
+        }
+
+        const tab: EditorTab = {
+          id: tabPath,
+          file,
+          content,
+          originalContent: content,
+          isDirty: false,
+          viewMode: 'split',
+        };
+
+        newTabs.set(tabPath, tab);
+        validTabIds.push(tabPath);
+      }
+
+      // Only add pane if it has valid tabs, or it's the first pane
+      if (validTabIds.length > 0 || newPanes.length === 0) {
+        newPanes.push({
+          id: paneState.id,
+          tabIds: validTabIds,
+          activeTabId: validTabIds.includes(paneState.activeTabPath || '')
+            ? paneState.activeTabPath
+            : validTabIds[0] || null,
+          size: paneState.size,
+        });
+      }
+    }
+
+    // Ensure we have at least one pane
+    if (newPanes.length === 0) {
+      newPanes.push({
+        id: 'pane-1',
+        tabIds: [],
+        activeTabId: null,
+        size: 100,
+      });
+    }
+
+    // Validate activePaneId
+    const validActivePaneId = newPanes.some(p => p.id === state.activePaneId)
+      ? state.activePaneId
+      : newPanes[0].id;
+
+    // Only use split direction if we have multiple panes
+    const validSplitDirection = newPanes.length > 1 ? state.splitDirection : null;
+
+    set({
+      tabs: newTabs,
+      panes: newPanes,
+      activePaneId: validActivePaneId,
+      splitDirection: validSplitDirection,
+    });
   },
 }));

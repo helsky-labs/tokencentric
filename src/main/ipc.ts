@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import Store from 'electron-store';
-import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk } from '../shared/types';
+import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted } from '../shared/types';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
@@ -96,6 +96,18 @@ export function setupIpcHandlers() {
   ipcMain.handle('set-settings', (_event, settings: Partial<AppSettings>) => {
     const current = store.get('settings');
     store.set('settings', { ...current, ...settings });
+  });
+
+  // Get editor state
+  ipcMain.handle('get-editor-state', (): EditorStatePersisted | null => {
+    const settings = store.get('settings');
+    return settings.editorState || null;
+  });
+
+  // Save editor state
+  ipcMain.handle('set-editor-state', (_event, editorState: EditorStatePersisted) => {
+    const current = store.get('settings');
+    store.set('settings', { ...current, editorState });
   });
 
   // Get cached files

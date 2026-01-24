@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig, AIAction, AIStreamChunk } from '../shared/types';
+import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted } from '../shared/types';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -11,6 +11,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSettings: (): Promise<AppSettings> => ipcRenderer.invoke('get-settings'),
   setSettings: (settings: Partial<AppSettings>): Promise<void> =>
     ipcRenderer.invoke('set-settings', settings),
+
+  // Editor state persistence
+  getEditorState: (): Promise<EditorStatePersisted | null> => ipcRenderer.invoke('get-editor-state'),
+  setEditorState: (state: EditorStatePersisted): Promise<void> =>
+    ipcRenderer.invoke('set-editor-state', state),
 
   // Files
   getFiles: (): Promise<ContextFile[]> => ipcRenderer.invoke('get-files'),
@@ -126,6 +131,8 @@ declare global {
       setOnboardingComplete: () => Promise<void>;
       getSettings: () => Promise<AppSettings>;
       setSettings: (settings: Partial<AppSettings>) => Promise<void>;
+      getEditorState: () => Promise<EditorStatePersisted | null>;
+      setEditorState: (state: EditorStatePersisted) => Promise<void>;
       getFiles: () => Promise<ContextFile[]>;
       readFile: (path: string) => Promise<string>;
       writeFile: (path: string, content: string) => Promise<void>;

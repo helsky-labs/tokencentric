@@ -8,6 +8,8 @@ interface EditorTabsProps {
   paneId: string;
   tabs: EditorTabType[];
   activeTabId: string | null;
+  onSplitHorizontal?: () => void;
+  onSplitVertical?: () => void;
 }
 
 interface ContextMenuState {
@@ -21,7 +23,7 @@ interface CloseConfirmationState {
   onConfirm: () => void;
 }
 
-export function EditorTabs({ paneId, tabs, activeTabId }: EditorTabsProps) {
+export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSplitVertical }: EditorTabsProps) {
   const { setActiveTab, closeTab, closeOtherTabs, closeAllTabs, closeSavedTabs, saveTab, reorderTabs } = useEditorStore();
   const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
@@ -152,7 +154,9 @@ export function EditorTabs({ paneId, tabs, activeTabId }: EditorTabsProps) {
     setCloseConfirmation(null);
   }, [closeConfirmation, saveTab]);
 
-  if (tabs.length === 0) {
+  const showSplitButtons = onSplitHorizontal || onSplitVertical;
+
+  if (tabs.length === 0 && !showSplitButtons) {
     return null;
   }
 
@@ -200,6 +204,34 @@ export function EditorTabs({ paneId, tabs, activeTabId }: EditorTabsProps) {
           setDropTargetIndex(null);
         }}
       />
+
+      {/* Split buttons */}
+      {showSplitButtons && (
+        <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
+          {onSplitVertical && (
+            <button
+              onClick={onSplitVertical}
+              className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Split Right"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 4v16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+              </svg>
+            </button>
+          )}
+          {onSplitHorizontal && (
+            <button
+              onClick={onSplitHorizontal}
+              className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Split Down"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 9h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Tab Context Menu */}
       {contextMenu && (

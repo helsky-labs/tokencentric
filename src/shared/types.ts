@@ -131,6 +131,22 @@ export const defaultAISettings: AISettings = {
   },
 };
 
+// Editor state persistence types
+export type SplitDirection = 'horizontal' | 'vertical' | null;
+
+export interface EditorPaneState {
+  id: string;
+  tabPaths: string[];
+  activeTabPath: string | null;
+  size: number;
+}
+
+export interface EditorStatePersisted {
+  panes: EditorPaneState[];
+  activePaneId: string;
+  splitDirection: SplitDirection;
+}
+
 // Settings types
 export interface AppSettings {
   scanPaths: string[];
@@ -140,6 +156,7 @@ export interface AppSettings {
   analyticsEnabled: boolean;
   toolProfiles: ToolProfile[];
   ai?: AISettings;
+  editorState?: EditorStatePersisted;
 }
 
 // IPC types
