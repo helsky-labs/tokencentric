@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ContextFile, AppSettings } from '../../shared/types';
 import { buildFileTree, getExpandedPathsForFile } from '../utils/buildFileTree';
 import { TreeNode } from './TreeNode';
+import { GlobalConfigSection } from './GlobalConfigSection';
 
 interface SidebarProps {
   files: ContextFile[];
@@ -192,31 +193,45 @@ export function Sidebar({
         )}
       </div>
 
-      {/* File tree */}
-      <div className="flex-1 overflow-y-auto py-2">
-        {fileTree.length === 0 ? (
-          <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
-            No files found.
-            <br />
-            Click &quot;Scan Directory&quot; to find context files.
-          </div>
-        ) : (
-          <div className="tree-root">
-            {fileTree.map((node) => (
-              <TreeNode
-                key={node.path}
-                node={node}
-                depth={0}
-                expandedPaths={expandedPaths}
-                selectedFile={selectedFile}
-                settings={settings}
-                onToggleExpand={handleToggleExpand}
-                onSelectFile={onSelectFile}
-                onContextMenu={onContextMenu}
-              />
-            ))}
-          </div>
-        )}
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Global Config Section */}
+        <GlobalConfigSection
+          selectedFile={selectedFile}
+          onSelectFile={onSelectFile}
+        />
+
+        {/* Project Files */}
+        <div className="py-2">
+          {fileTree.length === 0 ? (
+            <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
+              No files found.
+              <br />
+              Click &quot;Scan Directory&quot; to find context files.
+            </div>
+          ) : (
+            <>
+              <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+                Project Files
+              </div>
+              <div className="tree-root">
+                {fileTree.map((node) => (
+                  <TreeNode
+                    key={node.path}
+                    node={node}
+                    depth={0}
+                    expandedPaths={expandedPaths}
+                    selectedFile={selectedFile}
+                    settings={settings}
+                    onToggleExpand={handleToggleExpand}
+                    onSelectFile={onSelectFile}
+                    onContextMenu={onContextMenu}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Footer */}
