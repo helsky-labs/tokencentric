@@ -1,5 +1,6 @@
 import { FileTreeNode, ContextFile, AppSettings } from '../../shared/types';
 import { getNodeTokenCount } from '../utils/buildFileTree';
+import { ToolBadge } from './ToolBadge';
 
 interface TreeNodeProps {
   node: FileTreeNode;
@@ -28,19 +29,19 @@ function formatTokenCount(tokens: number): string {
 }
 
 /**
- * Get color based on token count thresholds
- * Green: < 5,000 tokens (small, easy to manage)
- * Yellow: 5,000 - 20,000 tokens (medium, watch the size)
- * Red: > 20,000 tokens (large, consider splitting)
+ * Get Tailwind classes based on token count thresholds
+ * Green: < 4,000 tokens (fits comfortably)
+ * Yellow: 4,000 - 8,000 tokens (medium, watch the size)
+ * Red: > 8,000 tokens (large, consider splitting)
  */
-function getTokenColor(tokens: number): string {
-  if (tokens < 5000) {
-    return '#10B981'; // Green
+function getTokenColorClass(tokens: number): string {
+  if (tokens < 4000) {
+    return 'text-green-600 dark:text-green-400';
   }
-  if (tokens <= 20000) {
-    return '#F59E0B'; // Yellow
+  if (tokens <= 8000) {
+    return 'text-yellow-600 dark:text-yellow-400';
   }
-  return '#EF4444'; // Red
+  return 'text-red-600 dark:text-red-400';
 }
 
 export function TreeNode({
@@ -56,11 +57,6 @@ export function TreeNode({
 }: TreeNodeProps) {
   const isExpanded = expandedPaths.has(node.path);
   const tokenCount = getNodeTokenCount(node);
-
-  const getToolIcon = (toolId: string) => {
-    const profile = settings?.toolProfiles.find((p) => p.id === toolId);
-    return profile?.icon || '?';
-  };
 
   if (node.isDirectory) {
     return (
@@ -113,8 +109,7 @@ export function TreeNode({
           <span className="flex-1 truncate text-sm font-medium">{node.name}</span>
           {tokenCount > 0 && (
             <span
-              className="text-xs font-medium ml-1 tabular-nums opacity-60"
-              style={{ color: getTokenColor(tokenCount) }}
+              className={`text-xs font-medium ml-1 tabular-nums opacity-70 ${getTokenColorClass(tokenCount)}`}
               title={`${tokenCount.toLocaleString()} total tokens`}
             >
               {formatTokenCount(tokenCount)}
@@ -157,12 +152,11 @@ export function TreeNode({
         onContextMenu(file, e.clientX, e.clientY);
       }}
     >
-      <span className="text-base">{getToolIcon(file.toolId)}</span>
+      <ToolBadge toolId={file.toolId} />
       <span className="flex-1 truncate text-sm">{file.name}</span>
       {file.tokens !== undefined && (
         <span
-          className="text-xs font-medium ml-1 tabular-nums"
-          style={{ color: getTokenColor(file.tokens) }}
+          className={`text-xs font-medium ml-1 tabular-nums ${getTokenColorClass(file.tokens)}`}
           title={`${file.tokens.toLocaleString()} tokens`}
         >
           {formatTokenCount(file.tokens)}

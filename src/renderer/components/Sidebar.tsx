@@ -32,19 +32,19 @@ function formatTokenCount(tokens: number): string {
 }
 
 /**
- * Get color based on token count thresholds
- * Green: < 5,000 tokens (small, easy to manage)
- * Yellow: 5,000 - 20,000 tokens (medium, watch the size)
- * Red: > 20,000 tokens (large, consider splitting)
+ * Get Tailwind classes based on token count thresholds
+ * Green: < 4,000 tokens (fits comfortably)
+ * Yellow: 4,000 - 8,000 tokens (medium, watch the size)
+ * Red: > 8,000 tokens (large, consider splitting)
  */
-function getTokenColor(tokens: number): string {
-  if (tokens < 5000) {
-    return '#10B981'; // Green
+function getTokenColorClass(tokens: number): string {
+  if (tokens < 4000) {
+    return 'text-green-600 dark:text-green-400';
   }
-  if (tokens <= 20000) {
-    return '#F59E0B'; // Yellow
+  if (tokens <= 8000) {
+    return 'text-yellow-600 dark:text-yellow-400';
   }
-  return '#EF4444'; // Red
+  return 'text-red-600 dark:text-red-400';
 }
 
 export function Sidebar({
@@ -267,8 +267,7 @@ export function Sidebar({
           </span>
           {totalTokens > 0 && (
             <span
-              className="font-medium"
-              style={{ color: getTokenColor(totalTokens) }}
+              className={`font-medium ${getTokenColorClass(totalTokens)}`}
               title={`${totalTokens.toLocaleString()} total tokens`}
             >
               {formatTokenCount(totalTokens)} tokens

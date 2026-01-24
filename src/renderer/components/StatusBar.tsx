@@ -8,6 +8,19 @@ interface StatusBarProps {
   settings: AppSettings | null;
 }
 
+/**
+ * Get Tailwind classes based on token count thresholds
+ */
+function getTokenColorClass(tokens: number): string {
+  if (tokens < 4000) {
+    return 'text-green-600 dark:text-green-400';
+  }
+  if (tokens <= 8000) {
+    return 'text-yellow-600 dark:text-yellow-400';
+  }
+  return 'text-red-600 dark:text-red-400';
+}
+
 export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) {
   const [tokens, setTokens] = useState<number | null>(null);
   const [totalTokens, setTotalTokens] = useState<number | null>(null);
@@ -80,12 +93,20 @@ export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) 
           <span className="text-gray-300 dark:text-gray-600">|</span>
           {tokens !== null ? (
             <>
-              <span>This file: {tokens.toLocaleString()}</span>
+              <span>
+                This file:{' '}
+                <span className={`font-mono ${getTokenColorClass(tokens)}`}>
+                  {tokens.toLocaleString()}
+                </span>
+              </span>
               {totalTokens !== null && inheritedCount > 0 && (
                 <>
                   <span className="text-gray-300 dark:text-gray-600">|</span>
                   <span title={`Includes ${inheritedCount} inherited file${inheritedCount > 1 ? 's' : ''}`}>
-                    Total: {totalTokens.toLocaleString()}
+                    Total:{' '}
+                    <span className={`font-mono ${getTokenColorClass(totalTokens)}`}>
+                      {totalTokens.toLocaleString()}
+                    </span>
                   </span>
                 </>
               )}

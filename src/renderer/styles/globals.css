@@ -54,15 +54,15 @@
 
 /* Tree view */
 .tree-item {
-  @apply flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors;
+  @apply flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors;
 }
 
 .tree-item:hover {
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-slate-50 dark:bg-slate-800;
 }
 
 .tree-item.selected {
-  @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300;
+  @apply bg-emerald-50 dark:bg-emerald-900/20;
 }
 
 /* Tree view - directories */
@@ -71,12 +71,12 @@
 }
 
 .tree-directory-header {
-  @apply flex items-center gap-1.5 py-1 pr-2 rounded-md cursor-pointer transition-colors;
+  @apply flex items-center gap-1.5 py-1.5 pr-2 rounded-lg cursor-pointer transition-colors;
   @apply text-gray-600 dark:text-gray-400;
 }
 
 .tree-directory-header:hover {
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-slate-50 dark:bg-slate-800;
 }
 
 .tree-folder-icon {
@@ -96,15 +96,15 @@
 
 /* Tree view - files */
 .tree-file {
-  @apply flex items-center gap-2 py-1.5 pr-2 rounded-md cursor-pointer transition-colors;
+  @apply flex items-center gap-2 py-1.5 pr-2 rounded-lg cursor-pointer transition-colors;
 }
 
 .tree-file:hover {
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-slate-50 dark:bg-slate-800;
 }
 
 .tree-file.selected {
-  @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300;
+  @apply bg-emerald-50 dark:bg-emerald-900/20;
 }
 
 /* Tree children container */
@@ -153,7 +153,8 @@
 .global-config-header {
   @apply flex items-center gap-2 px-3 py-2 cursor-pointer;
   @apply text-gray-600 dark:text-gray-400;
-  @apply hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors;
+  @apply bg-purple-50/50 dark:bg-purple-900/10;
+  @apply hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors;
 }
 
 .global-config-content {
@@ -161,12 +162,12 @@
 }
 
 .global-config-item {
-  @apply flex items-center gap-2 py-1.5 pr-2 mx-1 rounded-md cursor-pointer transition-colors;
+  @apply flex items-center gap-2 py-1.5 pr-2 mx-1 rounded-lg cursor-pointer transition-colors;
   @apply text-gray-600 dark:text-gray-400;
 }
 
 .global-config-item:hover {
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-purple-50 dark:bg-purple-900/20;
 }
 
 .global-config-item.selected {
