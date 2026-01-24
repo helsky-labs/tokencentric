@@ -1,14 +1,28 @@
-import { ipcMain, dialog, shell, app } from 'electron';
+import { ipcMain, dialog, shell, app, BrowserWindow } from 'electron';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import Store from 'electron-store';
-import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig } from '../shared/types';
+import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk } from '../shared/types';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
 import { trackEvent } from './analytics';
 import { checkForUpdates, downloadUpdate, installUpdate } from './updater';
+import { AIService } from './services/ai';
+
+// AI service instance
+let aiService: AIService | null = null;
+
+function getAIService(): AIService {
+  const settings = store.get('settings');
+  if (!aiService) {
+    aiService = new AIService(settings.ai || defaultAISettings);
+  } else {
+    aiService.updateSettings(settings.ai || defaultAISettings);
+  }
+  return aiService;
+}
 
 // Tokenizer imports
 import { countTokens as countAnthropicTokens } from '@anthropic-ai/tokenizer';
@@ -497,6 +511,36 @@ export function setupIpcHandlers() {
       }
     }
   );
+
+  // AI Actions (with streaming)
+  ipcMain.handle(
+    'ai-execute',
+    async (event, action: AIAction, content: string, projectInfo?: string): Promise<void> => {
+      const service = getAIService();
+      const sender = event.sender;
+
+      await service.executeAction(action, content, projectInfo, (chunk: AIStreamChunk) => {
+        // Send chunk to renderer via the sender's webContents
+        if (!sender.isDestroyed()) {
+          sender.send('ai-stream-chunk', chunk);
+        }
+      });
+    }
+  );
+
+  // Check if AI is configured
+  ipcMain.handle('ai-is-configured', (): boolean => {
+    const service = getAIService();
+    return service.getActiveProvider() !== null;
+  });
+
+  // Get active AI provider info
+  ipcMain.handle('ai-get-active-provider', (): { provider: AIProvider; model: string } | null => {
+    const service = getAIService();
+    const active = service.getActiveProvider();
+    if (!active) return null;
+    return { provider: active.provider, model: active.config.model };
+  });
 
   // Track analytics event
   ipcMain.handle(

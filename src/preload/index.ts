@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig } from '../shared/types';
+import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig, AIAction, AIStreamChunk } from '../shared/types';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -48,6 +48,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // AI
   testAiConnection: (provider: AIProvider, config: AIProviderConfig): Promise<{ success: boolean; message: string }> =>
     ipcRenderer.invoke('test-ai-connection', provider, config),
+  aiExecute: (action: AIAction, content: string, projectInfo?: string): Promise<void> =>
+    ipcRenderer.invoke('ai-execute', action, content, projectInfo),
+  aiIsConfigured: (): Promise<boolean> =>
+    ipcRenderer.invoke('ai-is-configured'),
+  aiGetActiveProvider: (): Promise<{ provider: AIProvider; model: string } | null> =>
+    ipcRenderer.invoke('ai-get-active-provider'),
+  onAiStreamChunk: (callback: (chunk: AIStreamChunk) => void) => {
+    ipcRenderer.on('ai-stream-chunk', (_event, chunk) => callback(chunk));
+  },
+  removeAiStreamChunkListener: () => {
+    ipcRenderer.removeAllListeners('ai-stream-chunk');
+  },
 
   // Analytics
   trackEvent: (name: string, data?: Record<string, string | number | boolean>): Promise<void> =>
@@ -124,6 +136,11 @@ declare global {
       getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;
       // AI
       testAiConnection: (provider: AIProvider, config: AIProviderConfig) => Promise<{ success: boolean; message: string }>;
+      aiExecute: (action: AIAction, content: string, projectInfo?: string) => Promise<void>;
+      aiIsConfigured: () => Promise<boolean>;
+      aiGetActiveProvider: () => Promise<{ provider: AIProvider; model: string } | null>;
+      onAiStreamChunk: (callback: (chunk: AIStreamChunk) => void) => void;
+      removeAiStreamChunkListener: () => void;
       onThemeChanged: (callback: (isDark: boolean) => void) => void;
       onOpenSettings: (callback: () => void) => void;
       onNewFile: (callback: () => void) => void;
