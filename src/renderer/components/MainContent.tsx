@@ -57,9 +57,15 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
     loadFile();
   }, [selectedFile]);
 
+  // Detect if file is JSON
+  const isJson = selectedFile?.name.match(/\.json$/i);
+
+  // Detect if file should be read-only (JSON files in ~/.claude)
+  const isReadOnly = isJson && selectedFile?.path.includes('/.claude/');
+
   // Save file handler
   const handleSave = useCallback(async () => {
-    if (!selectedFile || !hasChanges || isSaving) return;
+    if (!selectedFile || !hasChanges || isSaving || isReadOnly) return;
 
     setIsSaving(true);
     try {
@@ -70,7 +76,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
     } finally {
       setIsSaving(false);
     }
-  }, [selectedFile, content, hasChanges, isSaving]);
+  }, [selectedFile, content, hasChanges, isSaving, isReadOnly]);
 
   // Listen for save-file IPC event (Cmd+S / Ctrl+S from menu)
   useEffect(() => {
@@ -121,7 +127,15 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <div className="text-sm font-medium truncate">{selectedFile.name}</div>
-          {hasChanges && (
+          {isReadOnly && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              read-only
+            </span>
+          )}
+          {!isReadOnly && hasChanges && (
             <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 flex-shrink-0">
               unsaved
             </span>
@@ -179,7 +193,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
               height="100%"
               language={isMarkdown ? 'markdown' : getLanguageFromFilename(selectedFile.name)}
               value={content}
-              onChange={(value) => setContent(value || '')}
+              onChange={(value) => !isReadOnly && setContent(value || '')}
               onMount={handleEditorMount}
               theme={isDark ? 'vs-dark' : 'vs'}
               loading={<div className="flex items-center justify-center h-full text-gray-500">Loading editor...</div>}
@@ -197,6 +211,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
                 lineDecorationsWidth: 8,
                 lineNumbersMinChars: 3,
                 padding: { top: 8, bottom: 8 },
+                readOnly: isReadOnly,
               }}
             />
           </div>
