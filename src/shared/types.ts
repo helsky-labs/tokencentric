@@ -64,6 +64,61 @@ export interface Template {
   variables: TemplateVariable[];
 }
 
+// AI Provider types
+export type AIProvider = 'anthropic' | 'openai' | 'ollama';
+
+export interface AIProviderConfig {
+  enabled: boolean;
+  apiKey?: string; // Not stored for ollama
+  baseUrl?: string; // For ollama or custom endpoints
+  model: string;
+}
+
+export interface AISettings {
+  defaultProvider: AIProvider;
+  providers: {
+    anthropic: AIProviderConfig;
+    openai: AIProviderConfig;
+    ollama: AIProviderConfig;
+  };
+}
+
+export type AIAction = 'generate' | 'improve' | 'summarize';
+
+export interface AIRequest {
+  action: AIAction;
+  content?: string; // Current file content (for improve/summarize)
+  projectPath?: string; // Project root (for generate)
+  targetTool?: string; // Which tool format to generate (claude, cursor, etc.)
+}
+
+export interface AIStreamChunk {
+  type: 'text' | 'done' | 'error';
+  content: string;
+}
+
+// Default AI settings
+export const defaultAISettings: AISettings = {
+  defaultProvider: 'anthropic',
+  providers: {
+    anthropic: {
+      enabled: false,
+      apiKey: '',
+      model: 'claude-sonnet-4-20250514',
+    },
+    openai: {
+      enabled: false,
+      apiKey: '',
+      model: 'gpt-4o',
+    },
+    ollama: {
+      enabled: false,
+      baseUrl: 'http://localhost:11434',
+      model: 'llama3.2',
+    },
+  },
+};
+
 // Settings types
 export interface AppSettings {
   scanPaths: string[];
@@ -72,6 +127,7 @@ export interface AppSettings {
   editorFontSize: number;
   analyticsEnabled: boolean;
   toolProfiles: ToolProfile[];
+  ai?: AISettings;
 }
 
 // IPC types

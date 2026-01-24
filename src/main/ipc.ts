@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import Store from 'electron-store';
-import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType } from '../shared/types';
+import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings } from '../shared/types';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
 import { trackEvent } from './analytics';
 import { checkForUpdates, downloadUpdate, installUpdate } from './updater';
@@ -32,6 +32,7 @@ const store = new Store<{ settings: AppSettings; files: ContextFile[]; hasComple
       editorFontSize: 14,
       analyticsEnabled: true,
       toolProfiles: defaultToolProfiles,
+      ai: defaultAISettings,
     },
     files: [],
     hasCompletedOnboarding: false,
