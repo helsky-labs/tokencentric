@@ -180,3 +180,101 @@
 .global-config-children {
   @apply overflow-hidden;
 }
+
+/* AI Actions Toolbar */
+.ai-toolbar {
+  @apply flex items-center justify-between gap-3 px-4 py-2;
+  @apply bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20;
+  @apply border-b border-purple-200 dark:border-purple-800/50;
+}
+
+.ai-toolbar-disabled {
+  @apply bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700;
+}
+
+.ai-toolbar-message {
+  @apply text-sm text-gray-500 dark:text-gray-400;
+}
+
+.ai-toolbar-buttons {
+  @apply flex items-center gap-2;
+}
+
+.ai-btn {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.ai-btn-action {
+  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700;
+  @apply text-gray-700 dark:text-gray-300;
+  @apply hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-700;
+  @apply hover:text-purple-700 dark:hover:text-purple-300;
+}
+
+.ai-btn-primary {
+  @apply bg-purple-600 dark:bg-purple-700 text-white;
+  @apply hover:bg-purple-700 dark:hover:bg-purple-600;
+}
+
+.ai-btn-secondary {
+  @apply bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300;
+  @apply hover:bg-gray-200 dark:hover:bg-gray-700;
+}
+
+.ai-icon {
+  @apply w-4 h-4;
+}
+
+.ai-toolbar-provider {
+  @apply text-xs text-gray-500 dark:text-gray-400;
+}
+
+/* AI Preview mode */
+.ai-toolbar-preview {
+  @apply flex-col items-stretch;
+  @apply max-h-96;
+}
+
+.ai-toolbar-header {
+  @apply flex items-center justify-between mb-2;
+}
+
+.ai-toolbar-status {
+  @apply flex items-center gap-2 text-sm font-medium text-purple-700 dark:text-purple-300;
+}
+
+.ai-preview-content {
+  @apply flex-1 overflow-auto bg-white dark:bg-gray-900 rounded-md p-3 mb-2;
+  @apply border border-gray-200 dark:border-gray-700;
+  max-height: 300px;
+}
+
+.ai-preview-content pre {
+  @apply text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono;
+}
+
+.ai-toolbar-actions {
+  @apply flex items-center gap-2 pt-2 border-t border-gray-200 dark:border-gray-700;
+}
+
+/* AI Error */
+.ai-toolbar-error {
+  @apply bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50;
+}
+
+.ai-error-message {
+  @apply text-sm text-red-600 dark:text-red-400;
+}
+
+/* AI Spinner */
+.ai-spinner {
+  @apply w-4 h-4 border-2 border-purple-300 dark:border-purple-700 border-t-purple-600 dark:border-t-purple-400 rounded-full;
+  animation: ai-spin 0.8s linear infinite;
+}
+
+@keyframes ai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
