@@ -48,8 +48,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // AI
   testAiConnection: (provider: AIProvider, config: AIProviderConfig): Promise<{ success: boolean; message: string }> =>
     ipcRenderer.invoke('test-ai-connection', provider, config),
-  aiExecute: (action: AIAction, content: string, projectInfo?: string): Promise<void> =>
-    ipcRenderer.invoke('ai-execute', action, content, projectInfo),
+  aiExecute: (action: AIAction, content: string, projectInfo?: string, additionalInstructions?: string): Promise<void> =>
+    ipcRenderer.invoke('ai-execute', action, content, projectInfo, additionalInstructions),
   aiIsConfigured: (): Promise<boolean> =>
     ipcRenderer.invoke('ai-is-configured'),
   aiGetActiveProvider: (): Promise<{ provider: AIProvider; model: string } | null> =>
@@ -136,7 +136,7 @@ declare global {
       getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;
       // AI
       testAiConnection: (provider: AIProvider, config: AIProviderConfig) => Promise<{ success: boolean; message: string }>;
-      aiExecute: (action: AIAction, content: string, projectInfo?: string) => Promise<void>;
+      aiExecute: (action: AIAction, content: string, projectInfo?: string, additionalInstructions?: string) => Promise<void>;
       aiIsConfigured: () => Promise<boolean>;
       aiGetActiveProvider: () => Promise<{ provider: AIProvider; model: string } | null>;
       onAiStreamChunk: (callback: (chunk: AIStreamChunk) => void) => void;

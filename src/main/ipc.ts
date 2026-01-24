@@ -515,11 +515,11 @@ export function setupIpcHandlers() {
   // AI Actions (with streaming)
   ipcMain.handle(
     'ai-execute',
-    async (event, action: AIAction, content: string, projectInfo?: string): Promise<void> => {
+    async (event, action: AIAction, content: string, projectInfo?: string, additionalInstructions?: string): Promise<void> => {
       const service = getAIService();
       const sender = event.sender;
 
-      await service.executeAction(action, content, projectInfo, (chunk: AIStreamChunk) => {
+      await service.executeAction(action, content, projectInfo, additionalInstructions, (chunk: AIStreamChunk) => {
         // Send chunk to renderer via the sender's webContents
         if (!sender.isDestroyed()) {
           sender.send('ai-stream-chunk', chunk);

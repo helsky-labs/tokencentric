@@ -44,15 +44,27 @@ Guidelines:
 };
 
 // User prompts for different actions
-function getUserPrompt(action: AIAction, content: string, projectInfo?: string): string {
+function getUserPrompt(action: AIAction, content: string, projectInfo?: string, additionalInstructions?: string): string {
+  let basePrompt = '';
+
   switch (action) {
     case 'generate':
-      return `Generate a context file for the following project structure:\n\n${projectInfo || 'No project info provided'}\n\nCreate a comprehensive CLAUDE.md file.`;
+      basePrompt = `Generate a context file for the following project structure:\n\n${projectInfo || 'No project info provided'}\n\nCreate a comprehensive CLAUDE.md file.`;
+      break;
     case 'improve':
-      return `Improve the following context file:\n\n${content}\n\nMake it more comprehensive and useful for AI assistants. Return the improved version.`;
+      basePrompt = `Improve the following context file:\n\n${content}\n\nMake it more comprehensive and useful for AI assistants. Return the improved version.`;
+      break;
     case 'summarize':
-      return `Summarize the following context file while keeping essential information:\n\n${content}\n\nReturn a more concise version that reduces token usage.`;
+      basePrompt = `Summarize the following context file while keeping essential information:\n\n${content}\n\nReturn a more concise version that reduces token usage.`;
+      break;
   }
+
+  // Append additional instructions if provided
+  if (additionalInstructions) {
+    basePrompt += `\n\n## Additional Instructions:\n${additionalInstructions}`;
+  }
+
+  return basePrompt;
 }
 
 // Abstract interface for AI providers
@@ -244,6 +256,7 @@ export class AIService {
     action: AIAction,
     content: string,
     projectInfo: string | undefined,
+    additionalInstructions: string | undefined,
     onChunk: (chunk: AIStreamChunk) => void
   ): Promise<void> {
     const active = this.getActiveProvider();
@@ -257,7 +270,7 @@ export class AIService {
     try {
       const client = createClient(provider, config);
       const systemPrompt = SYSTEM_PROMPTS[action];
-      const userPrompt = getUserPrompt(action, content, projectInfo);
+      const userPrompt = getUserPrompt(action, content, projectInfo, additionalInstructions);
 
       await client.streamChat(systemPrompt, userPrompt, onChunk);
     } catch (error) {

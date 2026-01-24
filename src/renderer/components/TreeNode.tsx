@@ -10,6 +10,7 @@ interface TreeNodeProps {
   onToggleExpand: (path: string) => void;
   onSelectFile: (file: ContextFile) => void;
   onContextMenu: (file: ContextFile, x: number, y: number) => void;
+  onFolderContextMenu: (folderPath: string, folderName: string, x: number, y: number) => void;
 }
 
 /**
@@ -51,6 +52,7 @@ export function TreeNode({
   onToggleExpand,
   onSelectFile,
   onContextMenu,
+  onFolderContextMenu,
 }: TreeNodeProps) {
   const isExpanded = expandedPaths.has(node.path);
   const tokenCount = getNodeTokenCount(node);
@@ -67,6 +69,10 @@ export function TreeNode({
           className="tree-directory-header"
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
           onClick={() => onToggleExpand(node.path)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            onFolderContextMenu(node.path, node.name, e.clientX, e.clientY);
+          }}
         >
           <span className={`tree-chevron ${isExpanded ? 'expanded' : ''}`}>
             <svg
@@ -128,6 +134,7 @@ export function TreeNode({
                 onToggleExpand={onToggleExpand}
                 onSelectFile={onSelectFile}
                 onContextMenu={onContextMenu}
+                onFolderContextMenu={onFolderContextMenu}
               />
             ))}
           </div>

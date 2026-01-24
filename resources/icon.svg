@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A78BFA;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#grad1)"/>
+
+  <!-- Inner ring representing "centric" -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="8"/>
+
+  <!-- Document shape -->
+  <rect x="160" y="120" width="192" height="240" rx="16" fill="white"/>
+
+  <!-- Document fold -->
+  <path d="M304 120 L352 168 L304 168 Z" fill="#E5E7EB"/>
+
+  <!-- Token lines (representing code/text) -->
+  <rect x="192" y="180" width="80" height="12" rx="4" fill="url(#grad2)"/>
+  <rect x="192" y="208" width="128" height="12" rx="4" fill="#CBD5E1"/>
+  <rect x="192" y="236" width="100" height="12" rx="4" fill="#CBD5E1"/>
+  <rect x="192" y="264" width="64" height="12" rx="4" fill="url(#grad2)"/>
+  <rect x="192" y="292" width="112" height="12" rx="4" fill="#CBD5E1"/>
+  <rect x="192" y="320" width="88" height="12" rx="4" fill="#CBD5E1"/>
+
+  <!-- Token count badge -->
+  <circle cx="352" cy="360" r="48" fill="white"/>
+  <circle cx="352" cy="360" r="40" fill="url(#grad1)"/>
+  <text x="352" y="368" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="bold" fill="white" text-anchor="middle">T</text>
+</svg>

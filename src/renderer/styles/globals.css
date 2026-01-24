@@ -183,9 +183,35 @@
 
 /* AI Actions Toolbar */
 .ai-toolbar {
-  @apply flex items-center justify-between gap-3 px-4 py-2;
+  @apply flex flex-col gap-2 px-4 py-2;
   @apply bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20;
   @apply border-b border-purple-200 dark:border-purple-800/50;
+}
+
+/* AI Instructions Section */
+.ai-instructions-section {
+  @apply w-full;
+}
+
+.ai-instructions-toggle {
+  @apply flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 cursor-pointer;
+  @apply hover:text-purple-600 dark:hover:text-purple-400 transition-colors;
+}
+
+.ai-icon-small {
+  @apply w-3 h-3;
+}
+
+.ai-instructions-badge {
+  @apply ml-1 px-1.5 py-0.5 text-xs font-medium rounded-full;
+  @apply bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300;
+}
+
+.ai-instructions-input {
+  @apply w-full mt-2 px-3 py-2 text-sm rounded-md resize-none;
+  @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700;
+  @apply text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500;
+  @apply focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-600;
 }
 
 .ai-toolbar-disabled {

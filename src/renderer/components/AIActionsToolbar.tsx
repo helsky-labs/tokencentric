@@ -23,6 +23,8 @@ export function AIActionsToolbar({
   const [currentAction, setCurrentAction] = useState<AIAction | null>(null);
   const [streamedContent, setStreamedContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [additionalInstructions, setAdditionalInstructions] = useState('');
 
   useEffect(() => {
     checkConfiguration();
@@ -72,7 +74,7 @@ export function AIActionsToolbar({
     setStreamedContent('');
     setError(null);
 
-    await window.electronAPI.aiExecute(action, content, projectInfo);
+    await window.electronAPI.aiExecute(action, content, projectInfo, additionalInstructions || undefined);
   };
 
   const handleApply = () => {
@@ -157,6 +159,40 @@ export function AIActionsToolbar({
 
   return (
     <div className="ai-toolbar">
+      {/* Additional instructions toggle and input */}
+      <div className="ai-instructions-section">
+        <button
+          className="ai-instructions-toggle"
+          onClick={() => setShowInstructions(!showInstructions)}
+          title="Add custom instructions to the AI prompt"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="ai-icon-small"
+          >
+            <path d={showInstructions ? "M19 9l-7 7-7-7" : "M9 5l7 7-7 7"} />
+          </svg>
+          <span>Additional instructions</span>
+          {additionalInstructions && !showInstructions && (
+            <span className="ai-instructions-badge" title="Custom instructions set">
+              1
+            </span>
+          )}
+        </button>
+        {showInstructions && (
+          <textarea
+            className="ai-instructions-input"
+            value={additionalInstructions}
+            onChange={(e) => setAdditionalInstructions(e.target.value)}
+            placeholder="Add custom instructions for the AI (e.g., 'Focus on TypeScript best practices' or 'Include examples for each section')"
+            rows={2}
+          />
+        )}
+      </div>
+
       <div className="ai-toolbar-buttons">
         <button
           className="ai-btn ai-btn-action"

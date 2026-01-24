@@ -12,6 +12,7 @@ interface NewFileDialogProps {
   onClose: () => void;
   onCreateFile: (dirPath: string, fileName: string, toolId: string, content: string) => void;
   settings: AppSettings | null;
+  defaultDirectory?: string;
 }
 
 // Default file names for each tool
@@ -25,7 +26,7 @@ const toolDefaultFiles: Record<string, string> = {
 
 type Step = 'template' | 'details';
 
-export function NewFileDialog({ isOpen, onClose, onCreateFile, settings }: NewFileDialogProps) {
+export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, defaultDirectory }: NewFileDialogProps) {
   const [step, setStep] = useState<Step>('template');
   const [dirPath, setDirPath] = useState('');
   const [selectedTool, setSelectedTool] = useState('');
@@ -54,7 +55,7 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings }: NewFi
   useEffect(() => {
     if (isOpen) {
       setStep('template');
-      setDirPath('');
+      setDirPath(defaultDirectory || '');
       setSelectedTool(enabledTools[0]?.id || 'claude');
       setFileName(enabledTools[0] ? toolDefaultFiles[enabledTools[0].id] || 'CLAUDE.md' : 'CLAUDE.md');
       setError('');
@@ -62,7 +63,7 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings }: NewFi
       setVariableValues({});
       setShowPreview(false);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultDirectory]);
 
   // Update filename when tool changes
   useEffect(() => {

@@ -6,6 +6,7 @@ import { StatusBar } from './components/StatusBar';
 import { EmptyState } from './components/EmptyState';
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
 import { ContextMenu, ContextMenuAction } from './components/ContextMenu';
+import { FolderContextMenu, FolderContextMenuAction } from './components/FolderContextMenu';
 import { NewFileDialog } from './components/NewFileDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { AboutDialog } from './components/AboutDialog';
@@ -16,6 +17,13 @@ import { UpdateNotification } from './components/UpdateNotification';
 
 interface ContextMenuState {
   file: ContextFile;
+  x: number;
+  y: number;
+}
+
+interface FolderContextMenuState {
+  folderPath: string;
+  folderName: string;
   x: number;
   y: number;
 }
@@ -31,7 +39,9 @@ function App() {
   // File management state
   const [fileToDelete, setFileToDelete] = useState<ContextFile | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [folderContextMenu, setFolderContextMenu] = useState<FolderContextMenuState | null>(null);
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
+  const [newFileDefaultDir, setNewFileDefaultDir] = useState<string | undefined>(undefined);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
@@ -155,6 +165,37 @@ function App() {
     setContextMenu(null);
   };
 
+  // Folder context menu handler
+  const handleFolderContextMenu = (folderPath: string, folderName: string, x: number, y: number) => {
+    setFolderContextMenu({ folderPath, folderName, x, y });
+  };
+
+  // Folder context menu action handler
+  const handleFolderContextMenuAction = async (action: FolderContextMenuAction, folderPath: string) => {
+    switch (action) {
+      case 'add-file':
+        setNewFileDefaultDir(folderPath);
+        setIsNewFileDialogOpen(true);
+        break;
+      case 'reveal':
+        await window.electronAPI.showInFolder(folderPath);
+        break;
+    }
+    setFolderContextMenu(null);
+  };
+
+  // Open new file dialog (with optional default directory)
+  const handleOpenNewFileDialog = (defaultDir?: string) => {
+    setNewFileDefaultDir(defaultDir);
+    setIsNewFileDialogOpen(true);
+  };
+
+  // Close new file dialog
+  const handleCloseNewFileDialog = () => {
+    setIsNewFileDialogOpen(false);
+    setNewFileDefaultDir(undefined);
+  };
+
   // Delete file handler
   const handleDeleteFile = async () => {
     if (!fileToDelete) return;
@@ -276,6 +317,8 @@ function App() {
               onSelectFile={setSelectedFile}
               onScanDirectory={handleScanDirectory}
               onContextMenu={handleContextMenu}
+              onFolderContextMenu={handleFolderContextMenu}
+              onNewFile={() => handleOpenNewFileDialog()}
               settings={settings}
               onOpenSettings={() => setIsSettingsOpen(true)}
             />
@@ -288,14 +331,14 @@ function App() {
             />
           </>
         ) : (
-          <EmptyState onScanDirectory={handleScanDirectory} />
+          <EmptyState onScanDirectory={handleScanDirectory} onNewFile={() => handleOpenNewFileDialog()} />
         )}
       </div>
 
       {/* Status bar */}
       <StatusBar selectedFile={selectedFile} settings={settings} />
 
-      {/* Context menu */}
+      {/* File context menu */}
       {contextMenu && (
         <ContextMenu
           x={contextMenu.x}
@@ -303,6 +346,18 @@ function App() {
           file={contextMenu.file}
           onAction={handleContextMenuAction}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Folder context menu */}
+      {folderContextMenu && (
+        <FolderContextMenu
+          x={folderContextMenu.x}
+          y={folderContextMenu.y}
+          folderPath={folderContextMenu.folderPath}
+          folderName={folderContextMenu.folderName}
+          onAction={handleFolderContextMenuAction}
+          onClose={() => setFolderContextMenu(null)}
         />
       )}
 
@@ -316,9 +371,10 @@ function App() {
       {/* New file dialog */}
       <NewFileDialog
         isOpen={isNewFileDialogOpen}
-        onClose={() => setIsNewFileDialogOpen(false)}
+        onClose={handleCloseNewFileDialog}
         onCreateFile={handleCreateFile}
         settings={settings}
+        defaultDirectory={newFileDefaultDir}
       />
 
       {/* Settings dialog */}
