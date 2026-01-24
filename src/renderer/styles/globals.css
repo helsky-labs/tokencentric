@@ -144,3 +144,39 @@
 .breadcrumb-current {
   @apply font-medium text-gray-700 dark:text-gray-300 flex-shrink-0;
 }
+
+/* Global Config Section */
+.global-config-section {
+  @apply border-b border-gray-200 dark:border-gray-700;
+}
+
+.global-config-header {
+  @apply flex items-center gap-2 px-3 py-2 cursor-pointer;
+  @apply text-gray-600 dark:text-gray-400;
+  @apply hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors;
+}
+
+.global-config-content {
+  @apply pb-2;
+}
+
+.global-config-item {
+  @apply flex items-center gap-2 py-1.5 pr-2 mx-1 rounded-md cursor-pointer transition-colors;
+  @apply text-gray-600 dark:text-gray-400;
+}
+
+.global-config-item:hover {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.global-config-item.selected {
+  @apply bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300;
+}
+
+.global-config-item.read-only {
+  @apply opacity-80;
+}
+
+.global-config-children {
+  @apply overflow-hidden;
+}
