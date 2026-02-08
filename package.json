@@ -1,10 +1,18 @@
 {
   "name": "tokencentric",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Manage AI coding assistant context files",
   "main": "dist/main/index.js",
   "author": "Helsky Labs",
   "license": "MIT",
+  "homepage": "https://tokencentric.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/helsky-labs/tokencentric.git"
+  },
+  "bugs": {
+    "url": "https://github.com/helsky-labs/tokencentric/issues"
+  },
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:main\" \"npm run dev:preload\" \"npm run dev:renderer\"",
@@ -74,8 +82,13 @@
       "dist/**/*",
       "resources/**/*"
     ],
+    "afterSign": "scripts/notarize.js",
     "mac": {
       "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "resources/entitlements.mac.plist",
+      "entitlementsInherit": "resources/entitlements.mac.plist",
       "target": [
         "dmg",
         "zip"

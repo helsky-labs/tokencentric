@@ -122,14 +122,20 @@ export function createMenu() {
         {
           label: 'Report Issue',
           click: () => {
-            shell.openExternal('https://github.com/helrabelo/tokencentric/issues');
+            shell.openExternal('https://github.com/helsky-labs/tokencentric/issues');
           },
         },
         { type: 'separator' },
         {
-          label: 'Buy Me a Coffee',
+          label: 'Privacy Policy',
           click: () => {
-            shell.openExternal('https://buymeacoffee.com/helrabelo');
+            shell.openExternal('https://tokencentric.app/privacy');
+          },
+        },
+        {
+          label: 'Support',
+          click: () => {
+            shell.openExternal('https://tokencentric.app/#support');
           },
         },
       ],

@@ -117,6 +117,15 @@ function App() {
           theme: loadedSettings.theme,
           filesCount: loadedFiles.length,
         });
+
+        // Background re-scan: refresh cached files to pick up changes since last session
+        if (loadedFiles.length > 0) {
+          window.electronAPI.rescanCachedPaths().then((freshFiles) => {
+            setFiles(freshFiles);
+          }).catch((err) => {
+            console.error('Background rescan failed:', err);
+          });
+        }
       } catch (error) {
         console.error('Failed to initialize:', error);
       } finally {

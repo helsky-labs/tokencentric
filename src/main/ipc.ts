@@ -110,9 +110,133 @@ export function setupIpcHandlers() {
     store.set('settings', { ...current, editorState });
   });
 
-  // Get cached files
-  ipcMain.handle('get-files', () => {
-    return store.get('files');
+  // Get cached files (validates they still exist on disk)
+  ipcMain.handle('get-files', async () => {
+    const files = store.get('files');
+    const validFiles: ContextFile[] = [];
+
+    for (const file of files) {
+      try {
+        await fs.access(file.path);
+        validFiles.push(file);
+      } catch {
+        // File no longer exists on disk, skip it
+      }
+    }
+
+    // Update cache if stale entries were removed
+    if (validFiles.length !== files.length) {
+      store.set('files', validFiles);
+    }
+
+    return validFiles;
+  });
+
+  // Re-scan all previously scanned directories (for startup refresh)
+  ipcMain.handle('rescan-cached-paths', async () => {
+    const settings = store.get('settings');
+    const cachedFiles = store.get('files');
+
+    if (cachedFiles.length === 0) return [];
+
+    // Derive unique root scan directories from cached file paths
+    // Group files by their top-level scanned directory
+    const scanRoots = new Set<string>();
+    for (const file of cachedFiles) {
+      // Walk up from the file path to find a reasonable root
+      // Use the deepest common ancestor that contains context files
+      const parts = file.path.split('/');
+      // Heuristic: scan root is likely 2-4 levels above the file
+      // For /Users/x/code/project/CLAUDE.md -> /Users/x/code/project
+      // For /Users/x/code/project/subdir/CLAUDE.md -> /Users/x/code/project
+      const dirPath = parts.slice(0, -1).join('/');
+      scanRoots.add(dirPath);
+    }
+
+    // Deduplicate: remove child paths if a parent is already in the set
+    const roots = Array.from(scanRoots).sort((a, b) => a.length - b.length);
+    const dedupedRoots: string[] = [];
+    for (const root of roots) {
+      const isChild = dedupedRoots.some(parent => root.startsWith(parent + '/'));
+      if (!isChild) {
+        dedupedRoots.push(root);
+      }
+    }
+
+    // Re-scan all roots
+    const allFiles: ContextFile[] = [];
+    const toolProfileMap = new Map<string, ToolProfile>();
+    for (const profile of settings.toolProfiles) {
+      toolProfileMap.set(profile.id, profile);
+    }
+
+    async function scanDir(dir: string) {
+      try {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+
+          if (settings.exclusions.some((ex) => entry.name === ex || fullPath.includes(`/${ex}/`))) {
+            continue;
+          }
+
+          if (entry.isDirectory()) {
+            await scanDir(fullPath);
+          } else if (entry.isFile()) {
+            for (const profile of settings.toolProfiles) {
+              if (!profile.enabled) continue;
+
+              const matches = profile.patterns.some((pattern) => {
+                if (pattern.includes('/')) {
+                  return fullPath.endsWith(pattern);
+                }
+                return entry.name.toLowerCase() === pattern.toLowerCase();
+              });
+
+              if (matches) {
+                const stats = await fs.stat(fullPath);
+                allFiles.push({
+                  id: fullPath,
+                  path: fullPath,
+                  name: entry.name,
+                  toolId: profile.id,
+                  lastModified: stats.mtimeMs,
+                  size: stats.size,
+                });
+                break;
+              }
+            }
+          }
+        }
+      } catch {
+        // Skip directories we can't read
+      }
+    }
+
+    for (const root of dedupedRoots) {
+      try {
+        await fs.access(root);
+        await scanDir(root);
+      } catch {
+        // Skip roots that no longer exist
+      }
+    }
+
+    // Count tokens for all files
+    for (const file of allFiles) {
+      try {
+        const content = await fs.readFile(file.path, 'utf-8');
+        const profile = toolProfileMap.get(file.toolId);
+        const tokenizer = profile?.tokenizer || 'openai';
+        file.tokens = countTokensForContent(content, tokenizer);
+      } catch {
+        file.tokens = Math.ceil(file.size / 4);
+      }
+    }
+
+    store.set('files', allFiles);
+    return allFiles;
   });
 
   // Read file

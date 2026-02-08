@@ -4,9 +4,9 @@
 
 A free desktop app for managing AI coding assistant context files. Scan your projects, edit context files, and track token counts across Claude Code, Cursor, GitHub Copilot, Windsurf, and more.
 
-[![Download](https://img.shields.io/github/v/release/helrabelo/tokencentric?label=Download&style=for-the-badge)](https://github.com/helrabelo/tokencentric/releases)
+[![Download](https://img.shields.io/github/v/release/helsky-labs/tokencentric?label=Download&style=for-the-badge)](https://github.com/helsky-labs/tokencentric/releases)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![Support via PIX](https://img.shields.io/badge/Support%20via%20PIX-00D4AA?style=for-the-badge)](https://tokencentric.dev/#support)
+[![Support via PIX](https://img.shields.io/badge/Support%20via%20PIX-00D4AA?style=for-the-badge)](https://tokencentric.app/#support)
 
 ---
 
@@ -82,14 +82,14 @@ Download the latest release for your platform:
 
 | Platform | Download |
 |----------|----------|
-| **macOS** | [Download .dmg](https://github.com/helrabelo/tokencentric/releases/latest) |
-| **Windows** | [Download .exe](https://github.com/helrabelo/tokencentric/releases/latest) |
+| **macOS** | [Download .dmg](https://github.com/helsky-labs/tokencentric/releases/latest) |
+| **Windows** | [Download .exe](https://github.com/helsky-labs/tokencentric/releases/latest) |
 
 ### Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/helrabelo/tokencentric.git
+git clone https://github.com/helsky-labs/tokencentric.git
 cd tokencentric
 
 # Install dependencies

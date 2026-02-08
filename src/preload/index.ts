@@ -24,6 +24,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('write-file', path, content),
   scanDirectory: (path: string): Promise<ContextFile[]> =>
     ipcRenderer.invoke('scan-directory', path),
+  rescanCachedPaths: (): Promise<ContextFile[]> =>
+    ipcRenderer.invoke('rescan-cached-paths'),
 
   // Tokens
   countTokens: (content: string, tokenizer: TokenizerType): Promise<number> =>
@@ -137,6 +139,7 @@ declare global {
       readFile: (path: string) => Promise<string>;
       writeFile: (path: string, content: string) => Promise<void>;
       scanDirectory: (path: string) => Promise<ContextFile[]>;
+      rescanCachedPaths: () => Promise<ContextFile[]>;
       countTokens: (content: string, tokenizer: TokenizerType) => Promise<number>;
       countTokensBatch: (filePaths: string[], tokenizer: TokenizerType) => Promise<Record<string, number>>;
       showInFolder: (path: string) => Promise<void>;
