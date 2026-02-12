@@ -1055,6 +1055,142 @@ export function setupIpcHandlers() {
       }
     }
   );
+
+  // ============================================================
+  // Claude Config Dashboard (Phase 4)
+  // ============================================================
+
+  // Read ~/.claude/settings.json (plugins, hooks)
+  ipcMain.handle(
+    'claude:get-settings',
+    async (): Promise<Record<string, unknown>> => {
+      const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
+      try {
+        const content = await fs.readFile(settingsPath, 'utf-8');
+        return JSON.parse(content);
+      } catch {
+        return {};
+      }
+    }
+  );
+
+  // Merge-write to ~/.claude/settings.json (never overwrites full file)
+  ipcMain.handle(
+    'claude:write-settings',
+    async (_event, partial: Record<string, unknown>): Promise<void> => {
+      const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
+      let current: Record<string, unknown> = {};
+      try {
+        const content = await fs.readFile(settingsPath, 'utf-8');
+        current = JSON.parse(content);
+      } catch {
+        // File doesn't exist yet, start fresh
+      }
+      const merged = { ...current, ...partial };
+      await fs.writeFile(settingsPath, JSON.stringify(merged, null, 2) + '\n', 'utf-8');
+    }
+  );
+
+  // Read ~/.claude/settings.local.json (permissions)
+  ipcMain.handle(
+    'claude:get-permissions',
+    async (): Promise<Record<string, unknown>> => {
+      const permPath = path.join(os.homedir(), '.claude', 'settings.local.json');
+      try {
+        const content = await fs.readFile(permPath, 'utf-8');
+        return JSON.parse(content);
+      } catch {
+        return {};
+      }
+    }
+  );
+
+  // Merge-write to ~/.claude/settings.local.json
+  ipcMain.handle(
+    'claude:write-permissions',
+    async (_event, partial: Record<string, unknown>): Promise<void> => {
+      const permPath = path.join(os.homedir(), '.claude', 'settings.local.json');
+      let current: Record<string, unknown> = {};
+      try {
+        const content = await fs.readFile(permPath, 'utf-8');
+        current = JSON.parse(content);
+      } catch {
+        // File doesn't exist yet
+      }
+      const merged = { ...current, ...partial };
+      await fs.writeFile(permPath, JSON.stringify(merged, null, 2) + '\n', 'utf-8');
+    }
+  );
+
+  // Read MCP servers from ~/.claude.json (all projects)
+  ipcMain.handle(
+    'claude:get-mcp-servers',
+    async (): Promise<Record<string, Record<string, unknown>>> => {
+      const claudeJsonPath = path.join(os.homedir(), '.claude.json');
+      try {
+        const content = await fs.readFile(claudeJsonPath, 'utf-8');
+        const data = JSON.parse(content);
+        const projects = data.projects || {};
+        const result: Record<string, Record<string, unknown>> = {};
+        for (const [projectPath, projectData] of Object.entries(projects)) {
+          const pd = projectData as Record<string, unknown>;
+          if (pd.mcpServers && typeof pd.mcpServers === 'object' && Object.keys(pd.mcpServers as object).length > 0) {
+            result[projectPath] = pd.mcpServers as Record<string, unknown>;
+          }
+        }
+        return result;
+      } catch {
+        return {};
+      }
+    }
+  );
+
+  // Write/update a single MCP server in a project (read-merge-write, only touches projects.*.mcpServers)
+  ipcMain.handle(
+    'claude:write-mcp-server',
+    async (_event, projectPath: string, serverName: string, serverConfig: Record<string, unknown>): Promise<void> => {
+      const claudeJsonPath = path.join(os.homedir(), '.claude.json');
+      const content = await fs.readFile(claudeJsonPath, 'utf-8');
+      const data = JSON.parse(content);
+      if (!data.projects) data.projects = {};
+      if (!data.projects[projectPath]) data.projects[projectPath] = {};
+      if (!data.projects[projectPath].mcpServers) data.projects[projectPath].mcpServers = {};
+      data.projects[projectPath].mcpServers[serverName] = serverConfig;
+      await fs.writeFile(claudeJsonPath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+    }
+  );
+
+  // Delete a single MCP server from a project
+  ipcMain.handle(
+    'claude:delete-mcp-server',
+    async (_event, projectPath: string, serverName: string): Promise<void> => {
+      const claudeJsonPath = path.join(os.homedir(), '.claude.json');
+      const content = await fs.readFile(claudeJsonPath, 'utf-8');
+      const data = JSON.parse(content);
+      if (data.projects?.[projectPath]?.mcpServers?.[serverName]) {
+        delete data.projects[projectPath].mcpServers[serverName];
+        // Clean up empty mcpServers object
+        if (Object.keys(data.projects[projectPath].mcpServers).length === 0) {
+          delete data.projects[projectPath].mcpServers;
+        }
+        await fs.writeFile(claudeJsonPath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+      }
+    }
+  );
+
+  // Read ~/.claude/keybindings.json
+  ipcMain.handle(
+    'claude:get-keybindings',
+    async (): Promise<Record<string, unknown> | null> => {
+      const kbPath = path.join(os.homedir(), '.claude', 'keybindings.json');
+      try {
+        const content = await fs.readFile(kbPath, 'utf-8');
+        return JSON.parse(content);
+      } catch {
+        return null;
+      }
+    }
+  );
 }
 
 // Setup updater-specific IPC handlers (separate to avoid circular dependency issues)

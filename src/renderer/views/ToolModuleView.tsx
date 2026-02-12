@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ToolModule, ConfigArea, ConfigItem } from '../../shared/types';
 import { ClaudeCommandsArea } from '../modules/claude/ClaudeCommandsArea';
 import { ClaudeAgentsArea } from '../modules/claude/ClaudeAgentsArea';
+import { ClaudeConfigDashboard } from '../modules/claude/ClaudeConfigDashboard';
 
 interface ToolModuleViewProps {
   module: ToolModule;
@@ -88,15 +89,7 @@ function ModuleAreaContent({ moduleId, area, isDark }: ModuleAreaContentProps) {
       return <ClaudeAgentsArea isDark={isDark} />;
     }
     if (area.id === 'settings') {
-      return (
-        <div className="flex-1 flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
-          <div className="text-center">
-            <div className="text-4xl mb-3">⚙️</div>
-            <div className="text-lg font-medium">Settings & Config</div>
-            <div className="text-sm mt-1">Coming in Phase 4</div>
-          </div>
-        </div>
-      );
+      return <ClaudeConfigDashboard isDark={isDark} />;
     }
   }
 

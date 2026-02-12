@@ -99,6 +99,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   claudeGetDepartments: (): Promise<string[]> =>
     ipcRenderer.invoke('claude:get-departments'),
 
+  // Claude Config Dashboard (Phase 4)
+  claudeGetSettings: (): Promise<Record<string, unknown>> =>
+    ipcRenderer.invoke('claude:get-settings'),
+  claudeWriteSettings: (partial: Record<string, unknown>): Promise<void> =>
+    ipcRenderer.invoke('claude:write-settings', partial),
+  claudeGetPermissions: (): Promise<Record<string, unknown>> =>
+    ipcRenderer.invoke('claude:get-permissions'),
+  claudeWritePermissions: (partial: Record<string, unknown>): Promise<void> =>
+    ipcRenderer.invoke('claude:write-permissions', partial),
+  claudeGetMcpServers: (): Promise<Record<string, Record<string, unknown>>> =>
+    ipcRenderer.invoke('claude:get-mcp-servers'),
+  claudeWriteMcpServer: (projectPath: string, serverName: string, serverConfig: Record<string, unknown>): Promise<void> =>
+    ipcRenderer.invoke('claude:write-mcp-server', projectPath, serverName, serverConfig),
+  claudeDeleteMcpServer: (projectPath: string, serverName: string): Promise<void> =>
+    ipcRenderer.invoke('claude:delete-mcp-server', projectPath, serverName),
+  claudeGetKeybindings: (): Promise<Record<string, unknown> | null> =>
+    ipcRenderer.invoke('claude:get-keybindings'),
+
   // Events from main process
   onThemeChanged: (callback: (isDark: boolean) => void) => {
     ipcRenderer.on('theme-changed', (_event, isDark) => callback(isDark));
@@ -190,6 +208,15 @@ declare global {
       claudeDeleteAgent: (filePath: string) => Promise<void>;
       claudeCreateAgent: (department: string, name: string, content: string) => Promise<string>;
       claudeGetDepartments: () => Promise<string[]>;
+      // Claude Config Dashboard (Phase 4)
+      claudeGetSettings: () => Promise<Record<string, unknown>>;
+      claudeWriteSettings: (partial: Record<string, unknown>) => Promise<void>;
+      claudeGetPermissions: () => Promise<Record<string, unknown>>;
+      claudeWritePermissions: (partial: Record<string, unknown>) => Promise<void>;
+      claudeGetMcpServers: () => Promise<Record<string, Record<string, unknown>>>;
+      claudeWriteMcpServer: (projectPath: string, serverName: string, serverConfig: Record<string, unknown>) => Promise<void>;
+      claudeDeleteMcpServer: (projectPath: string, serverName: string) => Promise<void>;
+      claudeGetKeybindings: () => Promise<Record<string, unknown> | null>;
       // Global config
       getGlobalConfigPath: () => Promise<string>;
       getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;
