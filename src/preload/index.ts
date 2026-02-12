@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted, ToolModule, ConfigItem } from '../shared/types';
+import { StarterPackMeta } from '../shared/builtinPacks';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -117,6 +118,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   claudeGetKeybindings: (): Promise<Record<string, unknown> | null> =>
     ipcRenderer.invoke('claude:get-keybindings'),
 
+  // Starter Packs (Phase 5)
+  getStarterPacks: (): Promise<StarterPackMeta[]> =>
+    ipcRenderer.invoke('get-starter-packs'),
+  installStarterPack: (packId: string, selectedFiles: string[], overwriteExisting: boolean): Promise<{ installed: string[]; skipped: string[]; errors: string[] }> =>
+    ipcRenderer.invoke('install-starter-pack', packId, selectedFiles, overwriteExisting),
+  exportStarterPack: (options: { name: string; description: string; includeCommands: boolean; includeAgents: boolean; includeSettings: boolean }): Promise<string> =>
+    ipcRenderer.invoke('export-starter-pack', options),
+  importStarterPack: (): Promise<StarterPackMeta | null> =>
+    ipcRenderer.invoke('import-starter-pack'),
+
   // Events from main process
   onThemeChanged: (callback: (isDark: boolean) => void) => {
     ipcRenderer.on('theme-changed', (_event, isDark) => callback(isDark));
@@ -217,6 +228,11 @@ declare global {
       claudeWriteMcpServer: (projectPath: string, serverName: string, serverConfig: Record<string, unknown>) => Promise<void>;
       claudeDeleteMcpServer: (projectPath: string, serverName: string) => Promise<void>;
       claudeGetKeybindings: () => Promise<Record<string, unknown> | null>;
+      // Starter Packs (Phase 5)
+      getStarterPacks: () => Promise<StarterPackMeta[]>;
+      installStarterPack: (packId: string, selectedFiles: string[], overwriteExisting: boolean) => Promise<{ installed: string[]; skipped: string[]; errors: string[] }>;
+      exportStarterPack: (options: { name: string; description: string; includeCommands: boolean; includeAgents: boolean; includeSettings: boolean }) => Promise<string>;
+      importStarterPack: () => Promise<StarterPackMeta | null>;
       // Global config
       getGlobalConfigPath: () => Promise<string>;
       getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;

@@ -11,6 +11,7 @@ import { useEditorStore } from './store/editorStore';
 import { ContextFilesView } from './views/ContextFilesView';
 import { AppTabBar } from './components/AppTabBar';
 import { ToolModuleView } from './views/ToolModuleView';
+import { StarterPacksView } from './views/StarterPacksView';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
@@ -214,13 +215,7 @@ function App() {
       )}
 
       {activeView === 'starter-packs' && (
-        <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
-          <div className="text-center">
-            <div className="text-4xl mb-3">📦</div>
-            <div className="text-lg font-medium">Starter Packs</div>
-            <div className="text-sm mt-1">Coming soon</div>
-          </div>
-        </div>
+        <StarterPacksView isDark={isDark} />
       )}
 
       {/* Settings dialog */}

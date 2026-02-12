@@ -3,7 +3,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import Store from 'electron-store';
-import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted, ToolModule, ConfigArea, ConfigItem } from '../shared/types';
+import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted, ToolModule, ConfigArea, ConfigItem, StarterPack } from '../shared/types';
+import { builtinPacks, StarterPackMeta } from '../shared/builtinPacks';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
@@ -1189,6 +1190,212 @@ export function setupIpcHandlers() {
       } catch {
         return null;
       }
+    }
+  );
+
+  // ============================================================
+  // Starter Packs (Phase 5)
+  // ============================================================
+
+  // List all available starter packs (built-in + user-imported)
+  ipcMain.handle(
+    'get-starter-packs',
+    async (): Promise<StarterPackMeta[]> => {
+      // For now, return built-in packs only
+      // User-imported packs could be stored in electron-store or a local directory
+      return builtinPacks;
+    }
+  );
+
+  // Install a starter pack: writes selected files, handles conflicts
+  ipcMain.handle(
+    'install-starter-pack',
+    async (
+      _event,
+      packId: string,
+      selectedFiles: string[], // filenames to install (subset of pack files)
+      overwriteExisting: boolean
+    ): Promise<{ installed: string[]; skipped: string[]; errors: string[] }> => {
+      const packMeta = builtinPacks.find((p) => p.id === packId);
+      if (!packMeta) throw new Error(`Pack "${packId}" not found`);
+
+      const pack = packMeta.pack;
+      const installed: string[] = [];
+      const skipped: string[] = [];
+      const errors: string[] = [];
+      const claudeDir = path.join(os.homedir(), '.claude');
+
+      for (const [_toolId, toolData] of Object.entries(pack.tools)) {
+        const configFiles = toolData.configFiles || [];
+
+        for (const file of configFiles) {
+          if (selectedFiles.length > 0 && !selectedFiles.includes(file.filename)) {
+            continue;
+          }
+
+          const targetPath = path.join(claudeDir, file.filename);
+
+          try {
+            // Ensure directory exists
+            await fs.mkdir(path.dirname(targetPath), { recursive: true });
+
+            // Check for existing file
+            let exists = false;
+            try {
+              await fs.access(targetPath);
+              exists = true;
+            } catch {
+              // File doesn't exist, safe to create
+            }
+
+            if (exists && !overwriteExisting) {
+              skipped.push(file.filename);
+              continue;
+            }
+
+            await fs.writeFile(targetPath, file.content, 'utf-8');
+            installed.push(file.filename);
+          } catch (error) {
+            errors.push(`${file.filename}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }
+
+        // Apply settings if present
+        if (toolData.settings) {
+          try {
+            const settingsPath = path.join(claudeDir, 'settings.json');
+            let current: Record<string, unknown> = {};
+            try {
+              const content = await fs.readFile(settingsPath, 'utf-8');
+              current = JSON.parse(content);
+            } catch {
+              // File doesn't exist
+            }
+            const merged = { ...current, ...toolData.settings };
+            await fs.writeFile(settingsPath, JSON.stringify(merged, null, 2) + '\n', 'utf-8');
+            installed.push('settings.json (merged)');
+          } catch (error) {
+            errors.push(`settings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }
+      }
+
+      return { installed, skipped, errors };
+    }
+  );
+
+  // Export current config as a .tcpack file
+  ipcMain.handle(
+    'export-starter-pack',
+    async (
+      _event,
+      options: { name: string; description: string; includeCommands: boolean; includeAgents: boolean; includeSettings: boolean }
+    ): Promise<string> => {
+      const claudeDir = path.join(os.homedir(), '.claude');
+      const pack: StarterPack = {
+        tcpack: '1.0',
+        name: options.name,
+        description: options.description,
+        author: 'Exported from TokenCentric',
+        version: '1.0.0',
+        tools: {
+          claude: {
+            configFiles: [],
+          },
+        },
+      };
+
+      const configFiles = pack.tools.claude.configFiles!;
+
+      // Export commands
+      if (options.includeCommands) {
+        const commandsDir = path.join(claudeDir, 'commands');
+        try {
+          const entries = await fs.readdir(commandsDir);
+          for (const entry of entries) {
+            if (!entry.endsWith('.md')) continue;
+            const content = await fs.readFile(path.join(commandsDir, entry), 'utf-8');
+            configFiles.push({ filename: `commands/${entry}`, content });
+          }
+        } catch {
+          // No commands directory
+        }
+      }
+
+      // Export agents
+      if (options.includeAgents) {
+        async function scanAgents(dir: string, prefix: string) {
+          try {
+            const entries = await fs.readdir(dir, { withFileTypes: true });
+            for (const entry of entries) {
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                await scanAgents(fullPath, `${prefix}${entry.name}/`);
+              } else if (entry.name.endsWith('.md')) {
+                const content = await fs.readFile(fullPath, 'utf-8');
+                configFiles.push({ filename: `agents/${prefix}${entry.name}`, content });
+              }
+            }
+          } catch {
+            // Skip unreadable
+          }
+        }
+        await scanAgents(path.join(claudeDir, 'agents'), '');
+      }
+
+      // Export settings
+      if (options.includeSettings) {
+        try {
+          const settingsContent = await fs.readFile(path.join(claudeDir, 'settings.json'), 'utf-8');
+          pack.tools.claude.settings = JSON.parse(settingsContent);
+        } catch {
+          // No settings file
+        }
+      }
+
+      // Show save dialog
+      const result = await dialog.showSaveDialog({
+        title: 'Export Starter Pack',
+        defaultPath: `${options.name.replace(/\s+/g, '-').toLowerCase()}.tcpack`,
+        filters: [{ name: 'TokenCentric Pack', extensions: ['tcpack'] }],
+      });
+
+      if (result.canceled || !result.filePath) {
+        throw new Error('Export cancelled');
+      }
+
+      await fs.writeFile(result.filePath, JSON.stringify(pack, null, 2), 'utf-8');
+      return result.filePath;
+    }
+  );
+
+  // Import a .tcpack file via file picker
+  ipcMain.handle(
+    'import-starter-pack',
+    async (): Promise<StarterPackMeta | null> => {
+      const result = await dialog.showOpenDialog({
+        title: 'Import Starter Pack',
+        filters: [{ name: 'TokenCentric Pack', extensions: ['tcpack'] }],
+        properties: ['openFile'],
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+
+      const content = await fs.readFile(result.filePaths[0], 'utf-8');
+      const pack = JSON.parse(content) as StarterPack;
+
+      // Basic validation
+      if (!pack.tcpack || !pack.name || !pack.tools) {
+        throw new Error('Invalid .tcpack file format');
+      }
+
+      return {
+        id: `imported-${Date.now()}`,
+        builtin: false,
+        pack,
+      };
     }
   );
 }
