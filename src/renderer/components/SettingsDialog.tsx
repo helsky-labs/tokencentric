@@ -93,6 +93,7 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
       },
     }));
     setHasChanges(true);
+    window.electronAPI.trackEvent('tool_profile_toggled', { provider, enabled });
   };
 
   const handleAiApiKeyChange = (provider: AIProvider, apiKey: string) => {
@@ -143,6 +144,7 @@ export function SettingsDialog({ isOpen, onClose, settings, onSaveSettings }: Se
       defaultProvider: provider,
     }));
     setHasChanges(true);
+    window.electronAPI.trackEvent('ai_provider_selected', { provider });
   };
 
   const handleTestConnection = async (provider: AIProvider) => {

@@ -16,10 +16,12 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
     onScanDirectory();
     setHasScanned(true);
     setStep('ready');
+    window.electronAPI.trackEvent('onboarding_step', { step: 'ready', step_number: 3 });
   };
 
   const handleSkipScan = () => {
     setStep('ready');
+    window.electronAPI.trackEvent('onboarding_step', { step: 'ready_skipped', step_number: 3 });
   };
 
   const handleCreateFile = () => {
@@ -110,7 +112,10 @@ export function WelcomeScreen({ onComplete, onScanDirectory, onCreateFile }: Wel
               </div>
 
               <button
-                onClick={() => setStep('scan')}
+                onClick={() => {
+                  setStep('scan');
+                  window.electronAPI.trackEvent('onboarding_step', { step: 'scan', step_number: 2 });
+                }}
                 className="w-full px-6 py-3 text-lg font-medium text-white bg-brand-teal hover:bg-teal-500 rounded-lg transition-colors"
               >
                 Get Started

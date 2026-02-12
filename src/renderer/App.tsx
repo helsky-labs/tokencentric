@@ -48,6 +48,7 @@ function App() {
   const handleSelectFile = useCallback((file: ContextFile | null) => {
     if (file) {
       openFile(file);
+      window.electronAPI.trackEvent('file_opened', { toolId: file.toolId });
     }
   }, [openFile]);
 
@@ -151,6 +152,7 @@ function App() {
     // Listen for open settings command (Cmd+,)
     window.electronAPI.onOpenSettings(() => {
       setIsSettingsOpen(true);
+      window.electronAPI.trackEvent('settings_opened');
     });
 
     // Listen for show about command (from menu)
@@ -308,6 +310,9 @@ function App() {
         toolId,
         usedTemplate: !!content,
       });
+      if (content) {
+        window.electronAPI.trackEvent('template_used', { toolId });
+      }
     } catch (error) {
       console.error('Failed to create file:', error);
       toast.error('Failed to create file', error instanceof Error ? error.message : 'Unknown error');
@@ -336,6 +341,7 @@ function App() {
   const handleCompleteOnboarding = async () => {
     await window.electronAPI.setOnboardingComplete();
     setShowWelcome(false);
+    window.electronAPI.trackEvent('onboarding_completed');
   };
 
   if (isLoading) {

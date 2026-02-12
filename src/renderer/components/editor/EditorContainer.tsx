@@ -92,10 +92,12 @@ export function EditorContainer({ allFiles, settings, isDark }: EditorContainerP
   // Split handlers
   const handleSplitHorizontal = useCallback(() => {
     splitPane('vertical'); // vertical split = side by side
+    window.electronAPI.trackEvent('split_pane_used', { direction: 'vertical' });
   }, [splitPane]);
 
   const handleSplitVertical = useCallback(() => {
     splitPane('horizontal'); // horizontal split = top/bottom
+    window.electronAPI.trackEvent('split_pane_used', { direction: 'horizontal' });
   }, [splitPane]);
 
   // Resize handler

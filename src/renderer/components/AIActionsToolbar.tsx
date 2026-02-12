@@ -74,6 +74,7 @@ export function AIActionsToolbar({
     setStreamedContent('');
     setError(null);
 
+    window.electronAPI.trackEvent('ai_action_used', { action });
     await window.electronAPI.aiExecute(action, content, projectInfo, additionalInstructions || undefined);
   };
 

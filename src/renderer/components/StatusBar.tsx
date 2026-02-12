@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ContextFile, AppSettings } from '../../shared/types';
 import { getInheritanceChainWithTokens, calculateTotalTokens } from '../utils/findInheritanceChain';
 
@@ -25,6 +25,7 @@ export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) 
   const [tokens, setTokens] = useState<number | null>(null);
   const [totalTokens, setTotalTokens] = useState<number | null>(null);
   const [inheritedCount, setInheritedCount] = useState<number>(0);
+  const thresholdTracked = useRef<string | null>(null);
 
   useEffect(() => {
     async function loadTokenInfo() {
@@ -48,6 +49,13 @@ export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) 
         const total = calculateTotalTokens(chain);
         setTotalTokens(total);
         setInheritedCount(chain.length - 1); // Exclude current file
+
+        // Track when token threshold is hit (fire once per file)
+        const effectiveTokens = total || count;
+        if (effectiveTokens > 8000 && thresholdTracked.current !== selectedFile.path) {
+          thresholdTracked.current = selectedFile.path;
+          window.electronAPI.trackEvent('token_threshold_hit', { threshold: effectiveTokens > 100000 ? '100k' : '8k' });
+        }
       } catch (error) {
         setTokens(null);
         setTotalTokens(null);

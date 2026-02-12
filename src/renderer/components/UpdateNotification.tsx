@@ -50,6 +50,7 @@ export function UpdateNotification() {
   };
 
   const handleInstall = () => {
+    window.electronAPI.trackEvent('update_installed', { version: updateInfo?.version });
     window.electronAPI.installUpdate();
   };
 

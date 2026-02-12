@@ -175,12 +175,13 @@ export function EditorPane({
     setIsSaving(true);
     try {
       await saveTab(activeTab.id);
+      window.electronAPI.trackEvent('file_saved', { toolId: selectedFile?.toolId });
     } catch (error) {
       console.error('Failed to save file:', error);
     } finally {
       setIsSaving(false);
     }
-  }, [activeTab, isDirty, isSaving, isReadOnly, saveTab]);
+  }, [activeTab, isDirty, isSaving, isReadOnly, saveTab, selectedFile?.toolId]);
 
   // Handle editor mount
   const handleEditorMount: OnMount = (editor) => {
