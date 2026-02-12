@@ -766,11 +766,30 @@ export function setupIpcHandlers() {
   // Tool Module System (v2.0)
   // ============================================================
 
-  // Detect if Claude Code is installed/configured
+  // Tool detection helpers
   async function detectClaude(): Promise<boolean> {
     try {
-      const claudeDir = path.join(os.homedir(), '.claude');
-      await fs.access(claudeDir);
+      await fs.access(path.join(os.homedir(), '.claude'));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function detectCursor(): Promise<boolean> {
+    try {
+      // Cursor stores config at ~/.cursor/
+      await fs.access(path.join(os.homedir(), '.cursor'));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function detectCopilot(): Promise<boolean> {
+    try {
+      // GitHub Copilot config at ~/.config/github-copilot/
+      await fs.access(path.join(os.homedir(), '.config', 'github-copilot'));
       return true;
     } catch {
       return false;
@@ -779,40 +798,78 @@ export function setupIpcHandlers() {
 
   // Get registered tool modules with detection status
   ipcMain.handle('get-tool-modules', async (): Promise<ToolModule[]> => {
-    const claudeDetected = await detectClaude();
+    const [claudeDetected, cursorDetected, copilotDetected] = await Promise.all([
+      detectClaude(),
+      detectCursor(),
+      detectCopilot(),
+    ]);
 
-    const claudeModule: ToolModule = {
-      id: 'claude',
-      name: 'Claude Code',
-      icon: '🟠',
-      color: '#D97706',
-      detected: claudeDetected,
-      configAreas: [
-        {
-          id: 'commands',
-          name: 'Commands',
-          description: 'Custom slash commands for Claude Code',
-          type: 'file-list',
-          icon: '⚡',
-        },
-        {
-          id: 'agents',
-          name: 'Agents',
-          description: 'Agent definitions organized by department',
-          type: 'file-list',
-          icon: '🤖',
-        },
-        {
-          id: 'settings',
-          name: 'Settings & Config',
-          description: 'Settings, hooks, permissions, MCP servers',
-          type: 'dashboard',
-          icon: '⚙️',
-        },
-      ],
-    };
+    const modules: ToolModule[] = [
+      {
+        id: 'claude',
+        name: 'Claude Code',
+        icon: '🟠',
+        color: '#D97706',
+        detected: claudeDetected,
+        configAreas: [
+          {
+            id: 'commands',
+            name: 'Commands',
+            description: 'Custom slash commands for Claude Code',
+            type: 'file-list',
+            icon: '⚡',
+          },
+          {
+            id: 'agents',
+            name: 'Agents',
+            description: 'Agent definitions organized by department',
+            type: 'file-list',
+            icon: '🤖',
+          },
+          {
+            id: 'settings',
+            name: 'Settings & Config',
+            description: 'Settings, hooks, permissions, MCP servers',
+            type: 'dashboard',
+            icon: '⚙️',
+          },
+        ],
+      },
+      {
+        id: 'cursor',
+        name: 'Cursor',
+        icon: '🔵',
+        color: '#3B82F6',
+        detected: cursorDetected,
+        configAreas: [
+          {
+            id: 'rules',
+            name: 'Rules',
+            description: 'Cursor rules and .cursorrules files',
+            type: 'file-list',
+            icon: '📋',
+          },
+        ],
+      },
+      {
+        id: 'copilot',
+        name: 'GitHub Copilot',
+        icon: '⚫',
+        color: '#6E7681',
+        detected: copilotDetected,
+        configAreas: [
+          {
+            id: 'instructions',
+            name: 'Instructions',
+            description: 'Copilot instructions and .github/copilot-instructions.md',
+            type: 'file-list',
+            icon: '📝',
+          },
+        ],
+      },
+    ];
 
-    return [claudeModule];
+    return modules;
   });
 
   // Get config items for a tool module's config area (uses shared configReader)

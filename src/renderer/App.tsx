@@ -12,6 +12,8 @@ import { ContextFilesView } from './views/ContextFilesView';
 import { AppTabBar } from './components/AppTabBar';
 import { ToolModuleView } from './views/ToolModuleView';
 import { StarterPacksView } from './views/StarterPacksView';
+import { GlobalSearch } from './components/GlobalSearch';
+import { ConfigItem } from '../shared/types';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
@@ -28,6 +30,7 @@ function App() {
   // Dialog state (shared across views)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Editor store (for keyboard shortcuts)
   const { closeActiveTab, nextTab, previousTab } = useEditorStore();
@@ -107,6 +110,16 @@ function App() {
     window.electronAPI.onCloseTab?.(() => closeActiveTab());
     window.electronAPI.onNextTab?.(() => nextTab());
     window.electronAPI.onPreviousTab?.(() => previousTab());
+
+    // Global search (Cmd+P)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [closeActiveTab, nextTab, previousTab]);
 
   const handleScanDirectory = async () => {
@@ -153,6 +166,12 @@ function App() {
     setActiveModuleId(moduleId || null);
   };
 
+  const handleSearchSelect = (item: ConfigItem) => {
+    // Navigate to the tool module view for this item
+    setActiveView('tool-module');
+    setActiveModuleId(item.toolId);
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-white dark:bg-gray-900">
@@ -193,7 +212,7 @@ function App() {
       <AppTabBar
         activeView={activeView}
         activeModuleId={activeModuleId}
-        toolModules={toolModules.filter((m) => m.detected)}
+        toolModules={toolModules}
         onTabSelect={handleTabSelect}
       />
 
@@ -231,6 +250,13 @@ function App() {
 
       {/* Update notification */}
       <UpdateNotification />
+
+      {/* Global search */}
+      <GlobalSearch
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelect={handleSearchSelect}
+      />
 
       {/* Toast notifications */}
       <ToastContainer toasts={toast.toasts} onDismiss={toast.dismissToast} />

@@ -28,7 +28,7 @@ export function AppTabBar({
           onClick={() => onTabSelect('context-files')}
         />
 
-        {/* Tool module tabs (shown when detected) */}
+        {/* Tool module tabs */}
         {toolModules.map((mod) => (
           <TabButton
             key={mod.id}
@@ -37,6 +37,7 @@ export function AppTabBar({
             color={mod.color}
             isActive={activeView === 'tool-module' && activeModuleId === mod.id}
             onClick={() => onTabSelect('tool-module', mod.id)}
+            dimmed={!mod.detected}
           />
         ))}
 
@@ -58,9 +59,10 @@ interface TabButtonProps {
   color?: string;
   isActive: boolean;
   onClick: () => void;
+  dimmed?: boolean;
 }
 
-function TabButton({ label, icon, isActive, onClick }: TabButtonProps) {
+function TabButton({ label, icon, isActive, onClick, dimmed }: TabButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -69,11 +71,13 @@ function TabButton({ label, icon, isActive, onClick }: TabButtonProps) {
         ${
           isActive
             ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+            : dimmed
+              ? 'text-gray-400 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
         }
       `}
     >
-      <span className="mr-1">{icon}</span>
+      <span className={`mr-1 ${dimmed ? 'opacity-50' : ''}`}>{icon}</span>
       {label}
     </button>
   );
