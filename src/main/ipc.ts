@@ -5,6 +5,18 @@ import os from 'os';
 import Store from 'electron-store';
 import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted, ToolModule, ConfigArea, ConfigItem, StarterPack } from '../shared/types';
 import { builtinPacks, StarterPackMeta } from '../shared/builtinPacks';
+import {
+  readClaudeCommands,
+  readClaudeAgents,
+  readClaudeSettings,
+  readClaudePermissions,
+  readMcpServers,
+  readDepartments,
+  parseFrontmatter as sharedParseFrontmatter,
+  getClaudeDir,
+  getClaudeJsonPath,
+  exportCurrentConfig,
+} from '../shared/configReader';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
@@ -803,174 +815,22 @@ export function setupIpcHandlers() {
     return [claudeModule];
   });
 
-  // Get config items for a tool module's config area
+  // Get config items for a tool module's config area (uses shared configReader)
   ipcMain.handle(
     'get-module-config-items',
     async (_event, toolId: string, areaId: string): Promise<ConfigItem[]> => {
       if (toolId === 'claude') {
-        const claudeDir = path.join(os.homedir(), '.claude');
-
+        const tokenizer = (content: string) => countTokensForContent(content, 'anthropic');
         if (areaId === 'commands') {
-          return await getClaudeCommands(claudeDir);
+          return await readClaudeCommands(tokenizer);
         }
         if (areaId === 'agents') {
-          return await getClaudeAgents(claudeDir);
+          return await readClaudeAgents(tokenizer);
         }
       }
       return [];
     }
   );
-
-  // Claude Commands: read ~/.claude/commands/*.md
-  async function getClaudeCommands(claudeDir: string): Promise<ConfigItem[]> {
-    const commandsDir = path.join(claudeDir, 'commands');
-    const items: ConfigItem[] = [];
-
-    try {
-      await fs.access(commandsDir);
-    } catch {
-      return items;
-    }
-
-    try {
-      const entries = await fs.readdir(commandsDir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
-
-        const fullPath = path.join(commandsDir, entry.name);
-        const content = await fs.readFile(fullPath, 'utf-8');
-        const stats = await fs.stat(fullPath);
-        const tokens = countTokensForContent(content, 'anthropic');
-        const baseName = entry.name.replace(/\.md$/, '');
-
-        // Extract phases from ## Phase N: Title
-        const phases: string[] = [];
-        const phaseRegex = /^##\s+Phase\s+\d+:\s*(.*)$/gm;
-        let match;
-        while ((match = phaseRegex.exec(content)) !== null) {
-          phases.push(match[1].trim());
-        }
-
-        items.push({
-          id: fullPath,
-          name: baseName,
-          path: fullPath,
-          toolId: 'claude',
-          category: 'command',
-          content,
-          tokens,
-          lastModified: stats.mtimeMs,
-          size: stats.size,
-          metadata: {
-            slashCommand: `/${baseName}`,
-            phases,
-            phaseCount: phases.length,
-          },
-        });
-      }
-    } catch (error) {
-      console.error('Failed to read Claude commands:', error);
-    }
-
-    return items.sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  // Claude Agents: read ~/.claude/agents/**/*.md
-  async function getClaudeAgents(claudeDir: string): Promise<ConfigItem[]> {
-    const agentsDir = path.join(claudeDir, 'agents');
-    const items: ConfigItem[] = [];
-
-    try {
-      await fs.access(agentsDir);
-    } catch {
-      return items;
-    }
-
-    async function scanAgentDir(dir: string, department?: string) {
-      try {
-        const entries = await fs.readdir(dir, { withFileTypes: true });
-
-        for (const entry of entries) {
-          const fullPath = path.join(dir, entry.name);
-
-          if (entry.isDirectory()) {
-            await scanAgentDir(fullPath, entry.name);
-          } else if (entry.isFile() && entry.name.endsWith('.md')) {
-            const content = await fs.readFile(fullPath, 'utf-8');
-            const stats = await fs.stat(fullPath);
-            const tokens = countTokensForContent(content, 'anthropic');
-            const baseName = entry.name.replace(/\.md$/, '');
-
-            // Parse YAML frontmatter
-            const frontmatter = parseFrontmatter(content);
-
-            items.push({
-              id: fullPath,
-              name: (frontmatter.name as string) || baseName,
-              path: fullPath,
-              toolId: 'claude',
-              category: 'agent',
-              content,
-              tokens,
-              lastModified: stats.mtimeMs,
-              size: stats.size,
-              metadata: {
-                department: department || 'uncategorized',
-                description: frontmatter.description || '',
-                color: frontmatter.color || '',
-                tools: frontmatter.tools || [],
-                filename: baseName,
-              },
-            });
-          }
-        }
-      } catch (error) {
-        console.error(`Failed to read agent directory: ${dir}`, error);
-      }
-    }
-
-    await scanAgentDir(agentsDir);
-    return items.sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  // Simple YAML frontmatter parser (no yaml lib dependency)
-  function parseFrontmatter(content: string): Record<string, unknown> {
-    const result: Record<string, unknown> = {};
-    const match = content.match(/^---\s*\n([\s\S]*?)\n---/);
-    if (!match) return result;
-
-    const lines = match[1].split('\n');
-    let currentKey = '';
-    let currentArray: string[] | null = null;
-
-    for (const line of lines) {
-      // Array item
-      if (line.match(/^\s+-\s+/) && currentKey) {
-        const value = line.replace(/^\s+-\s+/, '').trim();
-        if (!currentArray) {
-          currentArray = [];
-          result[currentKey] = currentArray;
-        }
-        currentArray.push(value);
-        continue;
-      }
-
-      // Key: value pair
-      const kvMatch = line.match(/^(\w+):\s*(.*)/);
-      if (kvMatch) {
-        currentArray = null;
-        currentKey = kvMatch[1];
-        const value = kvMatch[2].trim();
-        if (value) {
-          // Remove surrounding quotes if present
-          result[currentKey] = value.replace(/^["']|["']$/g, '');
-        }
-      }
-    }
-
-    return result;
-  }
 
   // Claude Commands CRUD
   ipcMain.handle(
@@ -1043,36 +903,17 @@ export function setupIpcHandlers() {
 
   ipcMain.handle(
     'claude:get-departments',
-    async (): Promise<string[]> => {
-      const agentsDir = path.join(os.homedir(), '.claude', 'agents');
-      try {
-        const entries = await fs.readdir(agentsDir, { withFileTypes: true });
-        return entries
-          .filter((e) => e.isDirectory())
-          .map((e) => e.name)
-          .sort();
-      } catch {
-        return [];
-      }
-    }
+    async (): Promise<string[]> => readDepartments()
   );
 
   // ============================================================
   // Claude Config Dashboard (Phase 4)
   // ============================================================
 
-  // Read ~/.claude/settings.json (plugins, hooks)
+  // Read ~/.claude/settings.json (plugins, hooks) - delegates to shared reader
   ipcMain.handle(
     'claude:get-settings',
-    async (): Promise<Record<string, unknown>> => {
-      const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
-      try {
-        const content = await fs.readFile(settingsPath, 'utf-8');
-        return JSON.parse(content);
-      } catch {
-        return {};
-      }
-    }
+    async (): Promise<Record<string, unknown>> => readClaudeSettings()
   );
 
   // Merge-write to ~/.claude/settings.json (never overwrites full file)
@@ -1092,18 +933,10 @@ export function setupIpcHandlers() {
     }
   );
 
-  // Read ~/.claude/settings.local.json (permissions)
+  // Read ~/.claude/settings.local.json (permissions) - delegates to shared reader
   ipcMain.handle(
     'claude:get-permissions',
-    async (): Promise<Record<string, unknown>> => {
-      const permPath = path.join(os.homedir(), '.claude', 'settings.local.json');
-      try {
-        const content = await fs.readFile(permPath, 'utf-8');
-        return JSON.parse(content);
-      } catch {
-        return {};
-      }
-    }
+    async (): Promise<Record<string, unknown>> => readClaudePermissions()
   );
 
   // Merge-write to ~/.claude/settings.local.json
@@ -1123,27 +956,10 @@ export function setupIpcHandlers() {
     }
   );
 
-  // Read MCP servers from ~/.claude.json (all projects)
+  // Read MCP servers from ~/.claude.json - delegates to shared reader
   ipcMain.handle(
     'claude:get-mcp-servers',
-    async (): Promise<Record<string, Record<string, unknown>>> => {
-      const claudeJsonPath = path.join(os.homedir(), '.claude.json');
-      try {
-        const content = await fs.readFile(claudeJsonPath, 'utf-8');
-        const data = JSON.parse(content);
-        const projects = data.projects || {};
-        const result: Record<string, Record<string, unknown>> = {};
-        for (const [projectPath, projectData] of Object.entries(projects)) {
-          const pd = projectData as Record<string, unknown>;
-          if (pd.mcpServers && typeof pd.mcpServers === 'object' && Object.keys(pd.mcpServers as object).length > 0) {
-            result[projectPath] = pd.mcpServers as Record<string, unknown>;
-          }
-        }
-        return result;
-      } catch {
-        return {};
-      }
-    }
+    async (): Promise<Record<string, Record<string, unknown>>> => readMcpServers()
   );
 
   // Write/update a single MCP server in a project (read-merge-write, only touches projects.*.mcpServers)
@@ -1284,74 +1100,14 @@ export function setupIpcHandlers() {
     }
   );
 
-  // Export current config as a .tcpack file
+  // Export current config as a .tcpack file - uses shared exportCurrentConfig
   ipcMain.handle(
     'export-starter-pack',
     async (
       _event,
       options: { name: string; description: string; includeCommands: boolean; includeAgents: boolean; includeSettings: boolean }
     ): Promise<string> => {
-      const claudeDir = path.join(os.homedir(), '.claude');
-      const pack: StarterPack = {
-        tcpack: '1.0',
-        name: options.name,
-        description: options.description,
-        author: 'Exported from TokenCentric',
-        version: '1.0.0',
-        tools: {
-          claude: {
-            configFiles: [],
-          },
-        },
-      };
-
-      const configFiles = pack.tools.claude.configFiles!;
-
-      // Export commands
-      if (options.includeCommands) {
-        const commandsDir = path.join(claudeDir, 'commands');
-        try {
-          const entries = await fs.readdir(commandsDir);
-          for (const entry of entries) {
-            if (!entry.endsWith('.md')) continue;
-            const content = await fs.readFile(path.join(commandsDir, entry), 'utf-8');
-            configFiles.push({ filename: `commands/${entry}`, content });
-          }
-        } catch {
-          // No commands directory
-        }
-      }
-
-      // Export agents
-      if (options.includeAgents) {
-        async function scanAgents(dir: string, prefix: string) {
-          try {
-            const entries = await fs.readdir(dir, { withFileTypes: true });
-            for (const entry of entries) {
-              const fullPath = path.join(dir, entry.name);
-              if (entry.isDirectory()) {
-                await scanAgents(fullPath, `${prefix}${entry.name}/`);
-              } else if (entry.name.endsWith('.md')) {
-                const content = await fs.readFile(fullPath, 'utf-8');
-                configFiles.push({ filename: `agents/${prefix}${entry.name}`, content });
-              }
-            }
-          } catch {
-            // Skip unreadable
-          }
-        }
-        await scanAgents(path.join(claudeDir, 'agents'), '');
-      }
-
-      // Export settings
-      if (options.includeSettings) {
-        try {
-          const settingsContent = await fs.readFile(path.join(claudeDir, 'settings.json'), 'utf-8');
-          pack.tools.claude.settings = JSON.parse(settingsContent);
-        } catch {
-          // No settings file
-        }
-      }
+      const pack = await exportCurrentConfig(options);
 
       // Show save dialog
       const result = await dialog.showSaveDialog({

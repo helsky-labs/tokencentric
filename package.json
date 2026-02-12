@@ -14,6 +14,9 @@
     "url": "https://github.com/helsky-labs/tokencentric/issues"
   },
   "private": true,
+  "bin": {
+    "tokencentric": "dist/cli/index.js"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev:main\" \"npm run dev:preload\" \"npm run dev:renderer\"",
     "dev:main": "tsc -p tsconfig.main.json --watch",
@@ -23,6 +26,7 @@
     "build:main": "tsc -p tsconfig.main.json",
     "build:preload": "tsc -p tsconfig.preload.json",
     "build:renderer": "vite build",
+    "build:cli": "tsc -p tsconfig.cli.json",
     "start": "electron .",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
