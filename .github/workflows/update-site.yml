@@ -1,0 +1,79 @@
+# Update TokenCentric Site on Release Publish
+#
+# When a release is published (manually from draft), this workflow:
+# 1. Checks out tokencentric-site
+# 2. Updates src/lib/version.ts with the new version
+# 3. Commits and pushes to tokencentric-site main
+# 4. Vercel auto-deploys
+#
+# Required Secrets:
+#   SITE_UPDATE_PAT - Fine-grained PAT with:
+#     - helsky-labs/tokencentric: Contents (read)
+#     - helsky-labs/tokencentric-site: Contents (read + write)
+
+name: Update Site
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to use (e.g. v2.0.0)"
+        required: true
+        type: string
+
+jobs:
+  update-site:
+    name: Update tokencentric-site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using tag=$TAG version=$VERSION"
+
+      - name: Checkout tokencentric-site
+        uses: actions/checkout@v4
+        with:
+          repository: helsky-labs/tokencentric-site
+          token: ${{ secrets.SITE_UPDATE_PAT }}
+          path: tokencentric-site
+
+      - name: Update version.ts
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          {
+            echo "export const CURRENT_VERSION = \"${VERSION}\";"
+            echo 'export const DOWNLOAD_BASE = `https://github.com/helsky-labs/tokencentric/releases/download/v${CURRENT_VERSION}`;'
+            echo 'export const MAC_DMG_URL = `${DOWNLOAD_BASE}/Tokencentric-${CURRENT_VERSION}-arm64.dmg`;'
+            echo 'export const WIN_EXE_URL = `${DOWNLOAD_BASE}/Tokencentric-Setup-${CURRENT_VERSION}.exe`;'
+          } > tokencentric-site/src/lib/version.ts
+
+      - name: Commit and push
+        working-directory: tokencentric-site
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add src/lib/version.ts
+          git status
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit (version already up to date)"
+            exit 0
+          fi
+
+          git commit -m "chore: update to TokenCentric v${VERSION}"
+          git push origin main

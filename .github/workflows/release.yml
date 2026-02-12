@@ -26,18 +26,10 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
-
-      # macOS Code Signing & Notarization (when Apple Developer is set up)
-      # Add these secrets to your repo:
-      # - APPLE_ID: Your Apple ID email
-      # - APPLE_APP_SPECIFIC_PASSWORD: App-specific password from appleid.apple.com
-      # - APPLE_TEAM_ID: Your Team ID from developer.apple.com
-      # - CSC_LINK: Base64-encoded .p12 certificate
-      # - CSC_KEY_PASSWORD: Password for the .p12 certificate
 
       - name: Release (macOS)
         if: matrix.os == 'macos-latest'
