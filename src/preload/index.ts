@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted } from '../shared/types';
+import { AppSettings, ContextFile, TokenizerType, GlobalConfigFile, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted, ToolModule, ConfigItem } from '../shared/types';
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -75,6 +75,29 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Analytics
   trackEvent: (name: string, data?: Record<string, string | number | boolean>): Promise<void> =>
     ipcRenderer.invoke('track-event', name, data),
+
+  // Tool Module System (v2.0)
+  getToolModules: (): Promise<ToolModule[]> => ipcRenderer.invoke('get-tool-modules'),
+  getModuleConfigItems: (toolId: string, areaId: string): Promise<ConfigItem[]> =>
+    ipcRenderer.invoke('get-module-config-items', toolId, areaId),
+
+  // Claude Commands CRUD
+  claudeWriteCommand: (filePath: string, content: string): Promise<void> =>
+    ipcRenderer.invoke('claude:write-command', filePath, content),
+  claudeDeleteCommand: (filePath: string): Promise<void> =>
+    ipcRenderer.invoke('claude:delete-command', filePath),
+  claudeCreateCommand: (name: string, content: string): Promise<string> =>
+    ipcRenderer.invoke('claude:create-command', name, content),
+
+  // Claude Agents CRUD
+  claudeWriteAgent: (filePath: string, content: string): Promise<void> =>
+    ipcRenderer.invoke('claude:write-agent', filePath, content),
+  claudeDeleteAgent: (filePath: string): Promise<void> =>
+    ipcRenderer.invoke('claude:delete-agent', filePath),
+  claudeCreateAgent: (department: string, name: string, content: string): Promise<string> =>
+    ipcRenderer.invoke('claude:create-agent', department, name, content),
+  claudeGetDepartments: (): Promise<string[]> =>
+    ipcRenderer.invoke('claude:get-departments'),
 
   // Events from main process
   onThemeChanged: (callback: (isDark: boolean) => void) => {
@@ -155,6 +178,18 @@ declare global {
         chrome: string;
       }>;
       trackEvent: (name: string, data?: Record<string, string | number | boolean>) => Promise<void>;
+      // Tool Module System (v2.0)
+      getToolModules: () => Promise<ToolModule[]>;
+      getModuleConfigItems: (toolId: string, areaId: string) => Promise<ConfigItem[]>;
+      // Claude Commands CRUD
+      claudeWriteCommand: (filePath: string, content: string) => Promise<void>;
+      claudeDeleteCommand: (filePath: string) => Promise<void>;
+      claudeCreateCommand: (name: string, content: string) => Promise<string>;
+      // Claude Agents CRUD
+      claudeWriteAgent: (filePath: string, content: string) => Promise<void>;
+      claudeDeleteAgent: (filePath: string) => Promise<void>;
+      claudeCreateAgent: (department: string, name: string, content: string) => Promise<string>;
+      claudeGetDepartments: () => Promise<string[]>;
       // Global config
       getGlobalConfigPath: () => Promise<string>;
       getGlobalConfigFiles: () => Promise<GlobalConfigFile[]>;

@@ -1,3 +1,63 @@
+// ============================================================
+// Module System Types (v2.0)
+// ============================================================
+
+export type AppView = 'context-files' | 'tool-module' | 'starter-packs';
+
+export interface ToolModule {
+  id: string;                    // 'claude', 'cursor', 'copilot', 'windsurf', 'openai'
+  name: string;                  // 'Claude Code'
+  icon: string;                  // tool icon
+  color: string;                 // brand color
+  configAreas: ConfigArea[];     // what config this tool has
+  detected: boolean;             // is this tool installed/configured?
+}
+
+export interface ConfigArea {
+  id: string;                    // 'commands', 'agents', 'settings'
+  name: string;                  // 'Custom Commands'
+  description: string;
+  type: 'file-list' | 'dashboard' | 'editor';
+  icon: string;
+}
+
+export interface ConfigItem {
+  id: string;
+  name: string;
+  path: string;
+  toolId: string;
+  category: string;              // 'command', 'agent', 'rule', etc.
+  content: string;
+  tokens: number;
+  lastModified: number;
+  size: number;
+  metadata: Record<string, unknown>;  // tool-specific parsed data
+}
+
+export interface StarterPack {
+  tcpack: string;                     // format version
+  name: string;
+  description: string;
+  author: string;
+  version: string;
+  tools: {
+    [toolId: string]: {
+      contextFiles?: PackFile[];
+      configFiles?: PackFile[];
+      settings?: Record<string, unknown>;
+    };
+  };
+}
+
+export interface PackFile {
+  filename: string;
+  content: string;
+}
+
+// ============================================================
+// Tool Profile Types
+// ============================================================
+
 // Tool profile types
 export type TokenizerType = 'anthropic' | 'openai';
 

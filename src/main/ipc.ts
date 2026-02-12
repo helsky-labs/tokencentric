@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import Store from 'electron-store';
-import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted } from '../shared/types';
+import { AppSettings, ContextFile, ToolProfile, TokenizerType, GlobalConfigFile, GlobalConfigFileType, defaultAISettings, AIProvider, AIProviderConfig, AIAction, AIStreamChunk, EditorStatePersisted, ToolModule, ConfigArea, ConfigItem } from '../shared/types';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { defaultToolProfiles, defaultExclusions } from '../shared/defaultProfiles';
@@ -746,6 +746,313 @@ export function setupIpcHandlers() {
         return;
       }
       await trackEvent({ name, data });
+    }
+  );
+
+  // ============================================================
+  // Tool Module System (v2.0)
+  // ============================================================
+
+  // Detect if Claude Code is installed/configured
+  async function detectClaude(): Promise<boolean> {
+    try {
+      const claudeDir = path.join(os.homedir(), '.claude');
+      await fs.access(claudeDir);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Get registered tool modules with detection status
+  ipcMain.handle('get-tool-modules', async (): Promise<ToolModule[]> => {
+    const claudeDetected = await detectClaude();
+
+    const claudeModule: ToolModule = {
+      id: 'claude',
+      name: 'Claude Code',
+      icon: '🟠',
+      color: '#D97706',
+      detected: claudeDetected,
+      configAreas: [
+        {
+          id: 'commands',
+          name: 'Commands',
+          description: 'Custom slash commands for Claude Code',
+          type: 'file-list',
+          icon: '⚡',
+        },
+        {
+          id: 'agents',
+          name: 'Agents',
+          description: 'Agent definitions organized by department',
+          type: 'file-list',
+          icon: '🤖',
+        },
+        {
+          id: 'settings',
+          name: 'Settings & Config',
+          description: 'Settings, hooks, permissions, MCP servers',
+          type: 'dashboard',
+          icon: '⚙️',
+        },
+      ],
+    };
+
+    return [claudeModule];
+  });
+
+  // Get config items for a tool module's config area
+  ipcMain.handle(
+    'get-module-config-items',
+    async (_event, toolId: string, areaId: string): Promise<ConfigItem[]> => {
+      if (toolId === 'claude') {
+        const claudeDir = path.join(os.homedir(), '.claude');
+
+        if (areaId === 'commands') {
+          return await getClaudeCommands(claudeDir);
+        }
+        if (areaId === 'agents') {
+          return await getClaudeAgents(claudeDir);
+        }
+      }
+      return [];
+    }
+  );
+
+  // Claude Commands: read ~/.claude/commands/*.md
+  async function getClaudeCommands(claudeDir: string): Promise<ConfigItem[]> {
+    const commandsDir = path.join(claudeDir, 'commands');
+    const items: ConfigItem[] = [];
+
+    try {
+      await fs.access(commandsDir);
+    } catch {
+      return items;
+    }
+
+    try {
+      const entries = await fs.readdir(commandsDir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+
+        const fullPath = path.join(commandsDir, entry.name);
+        const content = await fs.readFile(fullPath, 'utf-8');
+        const stats = await fs.stat(fullPath);
+        const tokens = countTokensForContent(content, 'anthropic');
+        const baseName = entry.name.replace(/\.md$/, '');
+
+        // Extract phases from ## Phase N: Title
+        const phases: string[] = [];
+        const phaseRegex = /^##\s+Phase\s+\d+:\s*(.*)$/gm;
+        let match;
+        while ((match = phaseRegex.exec(content)) !== null) {
+          phases.push(match[1].trim());
+        }
+
+        items.push({
+          id: fullPath,
+          name: baseName,
+          path: fullPath,
+          toolId: 'claude',
+          category: 'command',
+          content,
+          tokens,
+          lastModified: stats.mtimeMs,
+          size: stats.size,
+          metadata: {
+            slashCommand: `/${baseName}`,
+            phases,
+            phaseCount: phases.length,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to read Claude commands:', error);
+    }
+
+    return items.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // Claude Agents: read ~/.claude/agents/**/*.md
+  async function getClaudeAgents(claudeDir: string): Promise<ConfigItem[]> {
+    const agentsDir = path.join(claudeDir, 'agents');
+    const items: ConfigItem[] = [];
+
+    try {
+      await fs.access(agentsDir);
+    } catch {
+      return items;
+    }
+
+    async function scanAgentDir(dir: string, department?: string) {
+      try {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+
+          if (entry.isDirectory()) {
+            await scanAgentDir(fullPath, entry.name);
+          } else if (entry.isFile() && entry.name.endsWith('.md')) {
+            const content = await fs.readFile(fullPath, 'utf-8');
+            const stats = await fs.stat(fullPath);
+            const tokens = countTokensForContent(content, 'anthropic');
+            const baseName = entry.name.replace(/\.md$/, '');
+
+            // Parse YAML frontmatter
+            const frontmatter = parseFrontmatter(content);
+
+            items.push({
+              id: fullPath,
+              name: (frontmatter.name as string) || baseName,
+              path: fullPath,
+              toolId: 'claude',
+              category: 'agent',
+              content,
+              tokens,
+              lastModified: stats.mtimeMs,
+              size: stats.size,
+              metadata: {
+                department: department || 'uncategorized',
+                description: frontmatter.description || '',
+                color: frontmatter.color || '',
+                tools: frontmatter.tools || [],
+                filename: baseName,
+              },
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Failed to read agent directory: ${dir}`, error);
+      }
+    }
+
+    await scanAgentDir(agentsDir);
+    return items.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  // Simple YAML frontmatter parser (no yaml lib dependency)
+  function parseFrontmatter(content: string): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    const match = content.match(/^---\s*\n([\s\S]*?)\n---/);
+    if (!match) return result;
+
+    const lines = match[1].split('\n');
+    let currentKey = '';
+    let currentArray: string[] | null = null;
+
+    for (const line of lines) {
+      // Array item
+      if (line.match(/^\s+-\s+/) && currentKey) {
+        const value = line.replace(/^\s+-\s+/, '').trim();
+        if (!currentArray) {
+          currentArray = [];
+          result[currentKey] = currentArray;
+        }
+        currentArray.push(value);
+        continue;
+      }
+
+      // Key: value pair
+      const kvMatch = line.match(/^(\w+):\s*(.*)/);
+      if (kvMatch) {
+        currentArray = null;
+        currentKey = kvMatch[1];
+        const value = kvMatch[2].trim();
+        if (value) {
+          // Remove surrounding quotes if present
+          result[currentKey] = value.replace(/^["']|["']$/g, '');
+        }
+      }
+    }
+
+    return result;
+  }
+
+  // Claude Commands CRUD
+  ipcMain.handle(
+    'claude:write-command',
+    async (_event, filePath: string, content: string): Promise<void> => {
+      await fs.writeFile(filePath, content, 'utf-8');
+    }
+  );
+
+  ipcMain.handle(
+    'claude:delete-command',
+    async (_event, filePath: string): Promise<void> => {
+      await fs.unlink(filePath);
+    }
+  );
+
+  ipcMain.handle(
+    'claude:create-command',
+    async (_event, name: string, content: string): Promise<string> => {
+      const commandsDir = path.join(os.homedir(), '.claude', 'commands');
+      await fs.mkdir(commandsDir, { recursive: true });
+      const filePath = path.join(commandsDir, `${name}.md`);
+
+      try {
+        await fs.access(filePath);
+        throw new Error(`Command "${name}" already exists`);
+      } catch (e: unknown) {
+        if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
+      }
+
+      await fs.writeFile(filePath, content, 'utf-8');
+      return filePath;
+    }
+  );
+
+  // Claude Agents CRUD
+  ipcMain.handle(
+    'claude:write-agent',
+    async (_event, filePath: string, content: string): Promise<void> => {
+      await fs.writeFile(filePath, content, 'utf-8');
+    }
+  );
+
+  ipcMain.handle(
+    'claude:delete-agent',
+    async (_event, filePath: string): Promise<void> => {
+      await fs.unlink(filePath);
+    }
+  );
+
+  ipcMain.handle(
+    'claude:create-agent',
+    async (_event, department: string, name: string, content: string): Promise<string> => {
+      const agentsDir = path.join(os.homedir(), '.claude', 'agents');
+      const deptDir = path.join(agentsDir, department);
+      await fs.mkdir(deptDir, { recursive: true });
+      const filePath = path.join(deptDir, `${name}.md`);
+
+      try {
+        await fs.access(filePath);
+        throw new Error(`Agent "${name}" already exists in ${department}`);
+      } catch (e: unknown) {
+        if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
+      }
+
+      await fs.writeFile(filePath, content, 'utf-8');
+      return filePath;
+    }
+  );
+
+  ipcMain.handle(
+    'claude:get-departments',
+    async (): Promise<string[]> => {
+      const agentsDir = path.join(os.homedir(), '.claude', 'agents');
+      try {
+        const entries = await fs.readdir(agentsDir, { withFileTypes: true });
+        return entries
+          .filter((e) => e.isDirectory())
+          .map((e) => e.name)
+          .sort();
+      } catch {
+        return [];
+      }
     }
   );
 }

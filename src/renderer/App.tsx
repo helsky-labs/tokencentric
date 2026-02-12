@@ -1,33 +1,16 @@
-import { useEffect, useState, useCallback } from 'react';
-import { ContextFile, AppSettings, Template } from '../shared/types';
-import { Sidebar } from './components/Sidebar';
-import { EditorContainer } from './components/editor';
-import { StatusBar } from './components/StatusBar';
-import { EmptyState } from './components/EmptyState';
-import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
-import { ContextMenu, ContextMenuAction } from './components/ContextMenu';
-import { FolderContextMenu, FolderContextMenuAction } from './components/FolderContextMenu';
-import { NewFileDialog } from './components/NewFileDialog';
+import { useEffect, useState } from 'react';
+import { ContextFile, AppSettings, AppView, ToolModule } from '../shared/types';
 import { SettingsDialog } from './components/SettingsDialog';
 import { AboutDialog } from './components/AboutDialog';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { NewFileDialog } from './components/NewFileDialog';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer, useToast } from './components/Toast';
 import { UpdateNotification } from './components/UpdateNotification';
 import { useEditorStore } from './store/editorStore';
-
-interface ContextMenuState {
-  file: ContextFile;
-  x: number;
-  y: number;
-}
-
-interface FolderContextMenuState {
-  folderPath: string;
-  folderName: string;
-  x: number;
-  y: number;
-}
+import { ContextFilesView } from './views/ContextFilesView';
+import { AppTabBar } from './components/AppTabBar';
+import { ToolModuleView } from './views/ToolModuleView';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
@@ -36,54 +19,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
 
-  // Editor store
-  const { openFile, openFileInPane, closeActiveTab, nextTab, previousTab, tabs, panes, activePaneId, splitPane } = useEditorStore();
+  // View routing
+  const [activeView, setActiveView] = useState<AppView>('context-files');
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
+  const [toolModules, setToolModules] = useState<ToolModule[]>([]);
 
-  // Get selected file from active tab for backwards compatibility
-  const activePane = panes.find(p => p.id === activePaneId);
-  const activeTab = activePane?.activeTabId ? tabs.get(activePane.activeTabId) : null;
-  const selectedFile = activeTab?.file || null;
-
-  // Wrapper to handle file selection via the store
-  const handleSelectFile = useCallback((file: ContextFile | null) => {
-    if (file) {
-      openFile(file);
-      window.electronAPI.trackEvent('file_opened', { toolId: file.toolId });
-    }
-  }, [openFile]);
-
-  // Handle Cmd+click to open in alternate pane
-  const handleSelectFileAlternate = useCallback((file: ContextFile) => {
-    // Find a pane that isn't the active one
-    const otherPane = panes.find(p => p.id !== activePaneId);
-    if (otherPane) {
-      // Open in the other pane
-      openFileInPane(file, otherPane.id);
-    } else {
-      // No other pane exists, create a split first
-      splitPane('vertical');
-      // The splitPane creates a new pane, but we need to get the updated pane ID
-      // Since splitPane is synchronous in its state update, we can rely on the store
-      // to have the new pane. We'll use a timeout to let the state update propagate.
-      setTimeout(() => {
-        const state = useEditorStore.getState();
-        const newPane = state.panes.find(p => p.id !== activePaneId);
-        if (newPane) {
-          openFileInPane(file, newPane.id);
-        }
-      }, 0);
-    }
-  }, [panes, activePaneId, openFileInPane, splitPane]);
-
-  // File management state
-  const [fileToDelete, setFileToDelete] = useState<ContextFile | null>(null);
-  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-  const [folderContextMenu, setFolderContextMenu] = useState<FolderContextMenuState | null>(null);
-  const [isNewFileDialogOpen, setIsNewFileDialogOpen] = useState(false);
-  const [newFileDefaultDir, setNewFileDefaultDir] = useState<string | undefined>(undefined);
-  const [newFilePreselectedTemplate, setNewFilePreselectedTemplate] = useState<Template | null>(null);
+  // Dialog state (shared across views)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  // Editor store (for keyboard shortcuts)
+  const { closeActiveTab, nextTab, previousTab } = useEditorStore();
 
   // Toast notifications
   const toast = useToast();
@@ -92,40 +38,41 @@ function App() {
   useEffect(() => {
     async function init() {
       try {
-        // Check system theme
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         setIsDark(prefersDark);
 
-        // Load settings, files, and onboarding status
-        const [loadedSettings, loadedFiles, hasCompletedOnboarding] = await Promise.all([
+        const [loadedSettings, loadedFiles, hasCompletedOnboarding, modules] = await Promise.all([
           window.electronAPI.getSettings(),
           window.electronAPI.getFiles(),
           window.electronAPI.getOnboardingStatus(),
+          window.electronAPI.getToolModules(),
         ]);
 
         setSettings(loadedSettings);
         setFiles(loadedFiles);
         setShowWelcome(!hasCompletedOnboarding);
+        setToolModules(modules);
 
         // Apply theme
-        const shouldBeDark = loadedSettings.theme === 'dark' || (loadedSettings.theme === 'system' && prefersDark);
+        const shouldBeDark =
+          loadedSettings.theme === 'dark' ||
+          (loadedSettings.theme === 'system' && prefersDark);
         setIsDark(shouldBeDark);
         if (shouldBeDark) {
           document.documentElement.classList.add('dark');
         }
-        // Track app launch
+
         window.electronAPI.trackEvent('app_launch', {
           theme: loadedSettings.theme,
           filesCount: loadedFiles.length,
         });
 
-        // Background re-scan: refresh cached files to pick up changes since last session
+        // Background re-scan
         if (loadedFiles.length > 0) {
-          window.electronAPI.rescanCachedPaths().then((freshFiles) => {
-            setFiles(freshFiles);
-          }).catch((err) => {
-            console.error('Background rescan failed:', err);
-          });
+          window.electronAPI
+            .rescanCachedPaths()
+            .then((freshFiles) => setFiles(freshFiles))
+            .catch((err) => console.error('Background rescan failed:', err));
         }
       } catch (error) {
         console.error('Failed to initialize:', error);
@@ -144,36 +91,21 @@ function App() {
       }
     });
 
-    // Listen for new file command (Cmd+N)
-    window.electronAPI.onNewFile(() => {
-      setIsNewFileDialogOpen(true);
-    });
-
     // Listen for open settings command (Cmd+,)
     window.electronAPI.onOpenSettings(() => {
       setIsSettingsOpen(true);
       window.electronAPI.trackEvent('settings_opened');
     });
 
-    // Listen for show about command (from menu)
+    // Listen for show about command
     window.electronAPI.onShowAbout(() => {
       setIsAboutOpen(true);
     });
 
-    // Listen for close tab command (Cmd+W)
-    window.electronAPI.onCloseTab?.(() => {
-      closeActiveTab();
-    });
-
-    // Listen for next tab command (Cmd+Shift+])
-    window.electronAPI.onNextTab?.(() => {
-      nextTab();
-    });
-
-    // Listen for previous tab command (Cmd+Shift+[)
-    window.electronAPI.onPreviousTab?.(() => {
-      previousTab();
-    });
+    // Listen for tab commands (Cmd+W, Cmd+Shift+], Cmd+Shift+[)
+    window.electronAPI.onCloseTab?.(() => closeActiveTab());
+    window.electronAPI.onNextTab?.(() => nextTab());
+    window.electronAPI.onPreviousTab?.(() => previousTab());
   }, [closeActiveTab, nextTab, previousTab]);
 
   const handleScanDirectory = async () => {
@@ -183,10 +115,7 @@ function App() {
       try {
         const scannedFiles = await window.electronAPI.scanDirectory(path);
         setFiles(scannedFiles);
-        // Track scan completed
-        window.electronAPI.trackEvent('scan_completed', {
-          filesFound: scannedFiles.length,
-        });
+        window.electronAPI.trackEvent('scan_completed', { filesFound: scannedFiles.length });
       } catch (error) {
         console.error('Scan failed:', error);
       } finally {
@@ -195,140 +124,15 @@ function App() {
     }
   };
 
-  // Context menu handler
-  const handleContextMenu = (file: ContextFile, x: number, y: number) => {
-    setContextMenu({ file, x, y });
-  };
-
-  // Context menu action handler
-  const handleContextMenuAction = async (action: ContextMenuAction) => {
-    if (!contextMenu) return;
-
-    const file = contextMenu.file;
-
-    switch (action) {
-      case 'edit':
-        handleSelectFile(file);
-        break;
-      case 'delete':
-        setFileToDelete(file);
-        break;
-      case 'reveal':
-        await window.electronAPI.showInFolder(file.path);
-        break;
-      case 'duplicate':
-        try {
-          const newFile = await window.electronAPI.duplicateFile(file.path);
-          setFiles((prev) => [...prev, newFile]);
-          handleSelectFile(newFile);
-        } catch (error) {
-          console.error('Failed to duplicate file:', error);
-        }
-        break;
-    }
-
-    setContextMenu(null);
-  };
-
-  // Folder context menu handler
-  const handleFolderContextMenu = (folderPath: string, folderName: string, x: number, y: number) => {
-    setFolderContextMenu({ folderPath, folderName, x, y });
-  };
-
-  // Folder context menu action handler
-  const handleFolderContextMenuAction = async (action: FolderContextMenuAction, folderPath: string) => {
-    switch (action) {
-      case 'add-file':
-        setNewFileDefaultDir(folderPath);
-        setIsNewFileDialogOpen(true);
-        break;
-      case 'reveal':
-        await window.electronAPI.showInFolder(folderPath);
-        break;
-      case 'remove':
-        // Remove all files within this folder from the scan
-        setFiles((prev) => prev.filter((f) => !f.path.startsWith(folderPath + '/')));
-        // Close tabs for files in removed folder
-        if (selectedFile?.path.startsWith(folderPath + '/')) {
-          closeActiveTab();
-        }
-        toast.success('Folder removed', `Removed ${folderPath.split('/').pop()} from scan`);
-        break;
-    }
-    setFolderContextMenu(null);
-  };
-
-  // Open new file dialog (with optional template and default directory)
-  const handleOpenNewFileDialog = (preselectedTemplate?: Template, defaultDir?: string) => {
-    setNewFilePreselectedTemplate(preselectedTemplate || null);
-    setNewFileDefaultDir(defaultDir);
-    setIsNewFileDialogOpen(true);
-  };
-
-  // Close new file dialog
-  const handleCloseNewFileDialog = () => {
-    setIsNewFileDialogOpen(false);
-    setNewFileDefaultDir(undefined);
-    setNewFilePreselectedTemplate(null);
-  };
-
-  // Delete file handler
-  const handleDeleteFile = async () => {
-    if (!fileToDelete) return;
-
-    try {
-      await window.electronAPI.deleteFile(fileToDelete.path);
-      setFiles((prev) => prev.filter((f) => f.id !== fileToDelete.id));
-
-      // Close tab if deleted file was open
-      if (selectedFile?.id === fileToDelete.id) {
-        closeActiveTab();
-      }
-      toast.success('File deleted', fileToDelete.name);
-      // Track file deletion
-      window.electronAPI.trackEvent('file_deleted', {
-        toolId: fileToDelete.toolId,
-      });
-    } catch (error) {
-      console.error('Failed to delete file:', error);
-      toast.error('Failed to delete file', error instanceof Error ? error.message : 'Unknown error');
-    } finally {
-      setFileToDelete(null);
-    }
-  };
-
-  // Create new file handler
-  const handleCreateFile = async (dirPath: string, fileName: string, toolId: string, content: string) => {
-    try {
-      const newFile = await window.electronAPI.createFile(dirPath, fileName, toolId, content || undefined);
-      setFiles((prev) => [...prev, newFile]);
-      handleSelectFile(newFile);
-      setIsNewFileDialogOpen(false);
-      toast.success('File created', fileName);
-      // Track file creation (content presence indicates template usage)
-      window.electronAPI.trackEvent('file_created', {
-        toolId,
-        usedTemplate: !!content,
-      });
-      if (content) {
-        window.electronAPI.trackEvent('template_used', { toolId });
-      }
-    } catch (error) {
-      console.error('Failed to create file:', error);
-      toast.error('Failed to create file', error instanceof Error ? error.message : 'Unknown error');
-    }
-  };
-
-  // Save settings handler
   const handleSaveSettings = async (newSettings: Partial<AppSettings>) => {
     try {
       await window.electronAPI.setSettings(newSettings);
       setSettings((prev) => (prev ? { ...prev, ...newSettings } : prev));
 
-      // Apply theme change if changed
       if (newSettings.theme) {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const shouldBeDark = newSettings.theme === 'dark' || (newSettings.theme === 'system' && prefersDark);
+        const shouldBeDark =
+          newSettings.theme === 'dark' || (newSettings.theme === 'system' && prefersDark);
         setIsDark(shouldBeDark);
         document.documentElement.classList.toggle('dark', shouldBeDark);
       }
@@ -337,11 +141,15 @@ function App() {
     }
   };
 
-  // Complete onboarding
   const handleCompleteOnboarding = async () => {
     await window.electronAPI.setOnboardingComplete();
     setShowWelcome(false);
     window.electronAPI.trackEvent('onboarding_completed');
+  };
+
+  const handleTabSelect = (view: AppView, moduleId?: string) => {
+    setActiveView(view);
+    setActiveModuleId(moduleId || null);
   };
 
   if (isLoading) {
@@ -355,108 +163,65 @@ function App() {
     );
   }
 
-  // Show welcome screen for first-time users
   if (showWelcome) {
     return (
       <div className="h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-        {/* Title bar area (for macOS traffic lights) */}
         <div className="h-8 titlebar-drag bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700" />
         <div className="flex-1">
           <WelcomeScreen
             onComplete={handleCompleteOnboarding}
             onScanDirectory={handleScanDirectory}
-            onCreateFile={() => setIsNewFileDialogOpen(true)}
+            onCreateFile={() => {}}
           />
         </div>
-
-        {/* New file dialog (can be triggered from welcome screen) */}
         <NewFileDialog
-          isOpen={isNewFileDialogOpen}
-          onClose={() => setIsNewFileDialogOpen(false)}
-          onCreateFile={handleCreateFile}
+          isOpen={false}
+          onClose={() => {}}
+          onCreateFile={async () => {}}
           settings={settings}
         />
       </div>
     );
   }
 
+  const activeModule = toolModules.find((m) => m.id === activeModuleId) || null;
+
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      {/* Title bar area (for macOS traffic lights) */}
-      <div className="h-8 titlebar-drag bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center">
-        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Tokencentric</span>
-      </div>
+      {/* Title bar with tab bar */}
+      <AppTabBar
+        activeView={activeView}
+        activeModuleId={activeModuleId}
+        toolModules={toolModules.filter((m) => m.detected)}
+        onTabSelect={handleTabSelect}
+      />
 
-      {/* Main layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {files.length > 0 ? (
-          <>
-            <Sidebar
-              files={files}
-              selectedFile={selectedFile}
-              onSelectFile={handleSelectFile}
-              onSelectFileAlternate={handleSelectFileAlternate}
-              onScanDirectory={handleScanDirectory}
-              onContextMenu={handleContextMenu}
-              onFolderContextMenu={handleFolderContextMenu}
-              onNewFile={handleOpenNewFileDialog}
-              settings={settings}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-              onUpdateSettings={handleSaveSettings}
-            />
-            <EditorContainer
-              allFiles={files}
-              settings={settings}
-              isDark={isDark}
-            />
-          </>
-        ) : (
-          <EmptyState onScanDirectory={handleScanDirectory} onNewFile={() => handleOpenNewFileDialog()} />
-        )}
-      </div>
-
-      {/* Status bar */}
-      <StatusBar selectedFile={selectedFile} allFiles={files} settings={settings} />
-
-      {/* File context menu */}
-      {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          file={contextMenu.file}
-          onAction={handleContextMenuAction}
-          onClose={() => setContextMenu(null)}
+      {/* View router */}
+      {activeView === 'context-files' && (
+        <ContextFilesView
+          files={files}
+          setFiles={setFiles}
+          settings={settings}
+          isDark={isDark}
+          onScanDirectory={handleScanDirectory}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onSaveSettings={handleSaveSettings}
         />
       )}
 
-      {/* Folder context menu */}
-      {folderContextMenu && (
-        <FolderContextMenu
-          x={folderContextMenu.x}
-          y={folderContextMenu.y}
-          folderPath={folderContextMenu.folderPath}
-          folderName={folderContextMenu.folderName}
-          onAction={handleFolderContextMenuAction}
-          onClose={() => setFolderContextMenu(null)}
-        />
+      {activeView === 'tool-module' && activeModule && (
+        <ToolModuleView module={activeModule} isDark={isDark} />
       )}
 
-      {/* Delete confirmation dialog */}
-      <DeleteConfirmDialog
-        file={fileToDelete}
-        onConfirm={handleDeleteFile}
-        onCancel={() => setFileToDelete(null)}
-      />
-
-      {/* New file dialog */}
-      <NewFileDialog
-        isOpen={isNewFileDialogOpen}
-        onClose={handleCloseNewFileDialog}
-        onCreateFile={handleCreateFile}
-        settings={settings}
-        defaultDirectory={newFileDefaultDir}
-        preselectedTemplate={newFilePreselectedTemplate}
-      />
+      {activeView === 'starter-packs' && (
+        <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
+          <div className="text-center">
+            <div className="text-4xl mb-3">📦</div>
+            <div className="text-lg font-medium">Starter Packs</div>
+            <div className="text-sm mt-1">Coming soon</div>
+          </div>
+        </div>
+      )}
 
       {/* Settings dialog */}
       <SettingsDialog
@@ -467,10 +232,7 @@ function App() {
       />
 
       {/* About dialog */}
-      <AboutDialog
-        isOpen={isAboutOpen}
-        onClose={() => setIsAboutOpen(false)}
-      />
+      <AboutDialog isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
 
       {/* Update notification */}
       <UpdateNotification />
