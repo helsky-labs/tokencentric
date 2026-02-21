@@ -108,7 +108,7 @@ export function TabContextMenu({ x, y, tab, totalTabs, onAction, onClose }: TabC
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[180px] py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+      className="fixed z-50 min-w-[180px] py-1 bg-light-bg dark:bg-surface-card rounded-lg shadow-lg border border-light-border dark:border-surface-border"
       style={{ left: x, top: y }}
     >
       {menuItems.map((item) => {
@@ -117,7 +117,7 @@ export function TabContextMenu({ x, y, tab, totalTabs, onAction, onClose }: TabC
         return (
           <div key={item.action}>
             {item.dividerBefore && (
-              <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+              <div className="my-1 border-t border-light-border dark:border-surface-border" />
             )}
             <button
               onClick={() => {
@@ -129,8 +129,8 @@ export function TabContextMenu({ x, y, tab, totalTabs, onAction, onClose }: TabC
               disabled={isDisabled}
               className={`w-full px-3 py-1.5 text-left text-sm flex items-center gap-2 transition-colors ${
                 isDisabled
-                  ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  ? 'text-content-tertiary dark:text-surface-border cursor-not-allowed'
+                  : 'text-gray-700 dark:text-content-secondary hover:bg-light-surface dark:hover:bg-surface-hover'
               }`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -138,7 +138,7 @@ export function TabContextMenu({ x, y, tab, totalTabs, onAction, onClose }: TabC
               </svg>
               <span className="flex-1">{item.label}</span>
               {item.shortcut && (
-                <span className="text-xs text-gray-400 dark:text-gray-500">{item.shortcut}</span>
+                <span className="text-xs text-content-tertiary">{item.shortcut}</span>
               )}
             </button>
           </div>

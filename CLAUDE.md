@@ -1,3 +1,21 @@
+# ⚠️⚠️⚠️ CRITICAL WARNING ⚠️⚠️⚠️
+
+## **CLAUDE IS STUPID AND WILL BE DELETING FILES AND REVERTING CHANGES EVEN WITHOUT BEING ASKED FOR.**
+
+---
+
+# 🚨 CLAUDE LIES ABOUT CODE WORKING 🚨
+
+## **NEVER CLAIM CODE WORKS WITHOUT TESTING IT**
+
+1. **NEVER say code is "ready" if you haven't run it**
+2. **NEVER assume tests pass without running them**
+3. **ALWAYS say: "I have NOT tested this - please run it to verify"**
+
+**CLAUDE CANNOT TEST CODE. IF YOU HAVEN'T RUN IT, YOU DON'T KNOW IF IT WORKS.**
+
+---
+
 # Tokencentric - Development Instructions
 
 ## Project Overview
@@ -84,9 +102,69 @@ Main ↔ Renderer communication via typed IPC:
 
 ## UI Components
 Using Tailwind CSS. Dark mode via class strategy.
+
+**Current Component Count**: 35+ components
+
 Key components:
-- `Sidebar`: Tree view with files
-- `Editor`: Monaco editor wrapper
+- `Sidebar`: Redesigned with collapsible sections (Global Config, Templates, Project Files)
+- `Editor`: Monaco editor with split pane support
+- `EditorPane`: Multi-pane editing (horizontal/vertical split)
+- `EditorTabs`: Tab management per pane with drag-drop reordering
 - `Preview`: Markdown preview
 - `StatusBar`: Token counts, file info
-- `Settings`: Configuration page
+- `Settings`: Configuration page with AI provider settings
+- `HierarchicalCostPanel`: Shows combined token counts across inheritance hierarchy
+- `GlobalConfigSection`: Displays ~/.claude/* files
+- `TemplatesSection`: 7 built-in templates with categories
+
+## Split View & Multi-Pane Editing (NEW - v0.2.0)
+
+- **Split directions**: horizontal, vertical, or single pane
+- **Tab management**: Open, close, reorder, move between panes via drag-drop
+- **Cross-pane operations**: Drag tabs between panes, open file in specific pane
+- **State persistence**: Editor state saved and restored between sessions
+- **Key methods**: `splitPane()`, `unsplit()`, `moveTabToPane()`, `resizePanes()`
+
+## Global Config System (NEW)
+
+Reads `~/.claude/*` directory structure:
+- Discovers all files in user's global config
+- Marks files as read-only in editor
+- Calculates tokens for each global file
+- Shows inheritance chain in hierarchical cost display
+
+## AI Provider Integration (NEW)
+
+Multi-provider support for AI-assisted editing:
+
+1. **Anthropic (Claude)**: `claude-sonnet-4-20250514` - streaming support
+2. **OpenAI**: `gpt-4o` - streaming support
+3. **Ollama** (Local): `llama3.2` at `http://localhost:11434` - no API key needed
+
+**AI Actions**: generate, improve, summarize - all with streaming responses
+
+## Templates System
+
+7 built-in templates:
+1. Minimal - Basic CLAUDE.md scaffold
+2. Full-Stack JS - Node.js + React + TypeScript
+3. Python - Python backend project
+4. Monorepo - Workspace structure
+5. API Project - REST/GraphQL API guidelines
+6. Mobile - React Native/Expo app
+7. Careful AI - Safety-focused AI interaction rules
+
+Variables: `{{PROJECT_NAME}}`, `{{AUTHOR}}`, `{{TECH_STACK}}`, etc.
+
+## Current Status
+
+**Version**: 0.2.0
+**Phase**: 10+ (Distribution & Refinement)
+
+Recent features (last 30 days):
+- Split view with cross-pane drag/drop
+- Sidebar redesign with collapsible sections
+- Hierarchical cost display for inheritance chains
+- Global ~/.claude/* file discovery
+- AI provider integration (3 providers with streaming)
+- Tab persistence & recovery

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Modal } from './Modal';
+import { ToolIcon } from './ToolIcon';
 import { AppSettings, Template, TemplateVariable } from '../../shared/types';
 import {
   defaultTemplates,
@@ -162,12 +163,12 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      minimal: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+      minimal: 'bg-light-surface text-gray-700 dark:bg-surface-hover dark:text-content-secondary',
       fullstack: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
       backend: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-      mobile: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+      mobile: 'bg-ai/15 text-ai-deep dark:bg-ai/25 dark:text-ai-light',
       safety: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-      general: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+      general: 'bg-light-surface text-gray-700 dark:bg-surface-hover dark:text-content-secondary',
     };
     return colors[category] || colors.general;
   };
@@ -183,16 +184,16 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
         <div className="space-y-4">
           {/* Tool filter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Filter by tool:</span>
+            <span className="text-sm text-content-tertiary">Filter by tool:</span>
             <select
               value={selectedTool}
               onChange={(e) => setSelectedTool(e.target.value)}
-              className="px-2 py-1 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+              className="px-2 py-1 text-sm bg-light-surface dark:bg-surface-bg border border-light-border dark:border-surface-border rounded-md text-gray-700 dark:text-content-secondary"
             >
               <option value="">All Tools</option>
               {enabledTools.map((tool) => (
                 <option key={tool.id} value={tool.id}>
-                  {tool.icon} {tool.name}
+                  {tool.name}
                 </option>
               ))}
             </select>
@@ -203,11 +204,11 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
             {/* Blank file option */}
             <button
               onClick={handleSkipTemplate}
-              className="text-left p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="text-left p-4 border-2 border-dashed border-light-border dark:border-surface-border rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-light-surface dark:hover:bg-surface-card transition-colors"
             >
-              <div className="text-2xl mb-2">📄</div>
-              <div className="font-medium text-gray-700 dark:text-gray-300">Blank File</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <div className="mb-2 text-gray-400 dark:text-content-tertiary"><ToolIcon toolId="document" size={24} /></div>
+              <div className="font-medium text-gray-700 dark:text-content-secondary">Blank File</div>
+              <div className="text-sm text-content-tertiary mt-1">
                 Start from scratch
               </div>
             </button>
@@ -217,15 +218,15 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
               <button
                 key={template.id}
                 onClick={() => handleSelectTemplate(template)}
-                className="text-left p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="text-left p-4 border border-light-border dark:border-surface-border rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-light-surface dark:hover:bg-surface-card transition-colors"
               >
                 <div className="flex items-start justify-between mb-2">
                   <span className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(template.category)}`}>
                     {getCategoryLabel(template.category)}
                   </span>
                 </div>
-                <div className="font-medium text-gray-700 dark:text-gray-300">{template.name}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                <div className="font-medium text-gray-700 dark:text-content-secondary">{template.name}</div>
+                <div className="text-sm text-content-tertiary mt-1 line-clamp-2">
                   {template.description}
                 </div>
               </button>
@@ -243,7 +244,7 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
               <span>←</span> Change template
             </button>
             {selectedTemplate && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-content-tertiary">
                 Using: <strong>{selectedTemplate.name}</strong>
               </span>
             )}
@@ -251,7 +252,7 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
 
           {/* Directory selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-content-secondary mb-1">
               Location
             </label>
             <div className="flex gap-2">
@@ -260,7 +261,7 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
                 value={dirPath}
                 readOnly
                 placeholder="Select a directory..."
-                className="flex-1 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                className="flex-1 px-3 py-2 text-sm bg-light-surface dark:bg-surface-bg border border-light-border dark:border-surface-border rounded-md text-gray-700 dark:text-content-secondary"
               />
               <button
                 onClick={handleSelectDirectory}
@@ -273,17 +274,17 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
 
           {/* Tool selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-content-secondary mb-1">
               Tool
             </label>
             <select
               value={selectedTool}
               onChange={(e) => setSelectedTool(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+              className="w-full px-3 py-2 text-sm bg-light-surface dark:bg-surface-bg border border-light-border dark:border-surface-border rounded-md text-gray-700 dark:text-content-secondary"
             >
               {enabledTools.map((tool) => (
                 <option key={tool.id} value={tool.id}>
-                  {tool.icon} {tool.name}
+                  {tool.name}
                 </option>
               ))}
             </select>
@@ -291,27 +292,27 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
 
           {/* File name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-content-secondary mb-1">
               File Name
             </label>
             <input
               type="text"
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+              className="w-full px-3 py-2 text-sm bg-light-surface dark:bg-surface-bg border border-light-border dark:border-surface-border rounded-md text-gray-700 dark:text-content-secondary"
             />
           </div>
 
           {/* Template variables */}
           {selectedTemplate && selectedTemplate.variables.length > 0 && (
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <div className="border-t border-light-border dark:border-surface-border pt-4">
+              <div className="text-sm font-medium text-gray-700 dark:text-content-secondary mb-3">
                 Template Variables
               </div>
               <div className="space-y-3">
                 {selectedTemplate.variables.map((variable) => (
                   <div key={variable.name}>
-                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    <label className="block text-sm text-gray-600 dark:text-content-tertiary mb-1">
                       {variable.label}
                       {variable.required && <span className="text-red-500 ml-1">*</span>}
                     </label>
@@ -325,7 +326,7 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
                         }))
                       }
                       placeholder={variable.placeholder}
-                      className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+                      className="w-full px-3 py-2 text-sm bg-light-surface dark:bg-surface-bg border border-light-border dark:border-surface-border rounded-md text-gray-700 dark:text-content-secondary"
                     />
                   </div>
                 ))}
@@ -343,8 +344,8 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
                 {showPreview ? '▼' : '▶'} Preview content
               </button>
               {showPreview && (
-                <div className="mt-2 bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 max-h-[200px] overflow-auto">
-                  <pre className="p-3 text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                <div className="mt-2 bg-light-surface dark:bg-surface-bg rounded-md border border-light-border dark:border-surface-border max-h-[200px] overflow-auto">
+                  <pre className="p-3 text-xs font-mono text-gray-700 dark:text-content-secondary whitespace-pre-wrap">
                     {previewContent}
                   </pre>
                 </div>
@@ -354,9 +355,9 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
 
           {/* Full path preview */}
           {fullPath && (
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-3 border border-gray-200 dark:border-gray-700">
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Full path:</div>
-              <div className="text-sm font-mono text-gray-700 dark:text-gray-300 break-all">
+            <div className="bg-light-surface dark:bg-surface-bg rounded-md p-3 border border-light-border dark:border-surface-border">
+              <div className="text-xs text-content-tertiary mb-1">Full path:</div>
+              <div className="text-sm font-mono text-gray-700 dark:text-content-secondary break-all">
                 {fullPath}
               </div>
             </div>
@@ -369,7 +370,7 @@ export function NewFileDialog({ isOpen, onClose, onCreateFile, settings, default
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-content-secondary bg-light-surface dark:bg-surface-hover hover:bg-light-border dark:hover:bg-surface-hover rounded-md transition-colors"
             >
               Cancel
             </button>

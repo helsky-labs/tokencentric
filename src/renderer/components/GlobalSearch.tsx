@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ConfigItem } from '../../shared/types';
+import { ToolIcon } from './ToolIcon';
 
 interface GlobalSearchProps {
   isOpen: boolean;
@@ -84,12 +85,12 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" onClick={onClose}>
       <div
-        className="w-[500px] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+        className="w-[500px] bg-light-bg dark:bg-surface-card rounded-lg shadow-2xl border border-light-border dark:border-surface-border overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search input */}
-        <div className="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <span className="text-gray-400 mr-2 text-sm">🔍</span>
+        <div className="flex items-center px-4 py-3 border-b border-light-border dark:border-surface-border">
+          <ToolIcon toolId="search" size={14} className="text-gray-400 mr-2 flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -97,9 +98,9 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search commands, agents..."
-            className="flex-1 bg-transparent text-sm text-gray-900 dark:text-gray-100 outline-none placeholder-gray-400"
+            className="flex-1 bg-transparent text-sm text-gray-900 dark:text-content-primary outline-none placeholder-gray-400"
           />
-          <kbd className="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-400 rounded border border-gray-200 dark:border-gray-600">
+          <kbd className="text-[10px] px-1.5 py-0.5 bg-light-surface dark:bg-surface-hover text-gray-400 rounded border border-light-border dark:border-surface-border">
             esc
           </kbd>
         </div>
@@ -107,7 +108,7 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
         {/* Results */}
         <div className="max-h-[300px] overflow-y-auto">
           {results.length === 0 ? (
-            <div className="py-8 text-center text-xs text-gray-400 dark:text-gray-500">
+            <div className="py-8 text-center text-xs text-content-tertiary">
               {query ? 'No results found' : 'Loading...'}
             </div>
           ) : (
@@ -122,18 +123,16 @@ export function GlobalSearch({ isOpen, onClose, onSelect }: GlobalSearchProps) {
                   w-full text-left px-4 py-2 flex items-center gap-3 transition-colors
                   ${idx === selectedIndex
                     ? 'bg-blue-50 dark:bg-blue-900/20'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    : 'hover:bg-light-surface dark:hover:bg-surface-hover/50'
                   }
                 `}
               >
-                <span className="text-sm">
-                  {item.category === 'command' ? '⚡' : '🤖'}
-                </span>
+                <ToolIcon toolId={item.category === 'command' ? 'bolt' : 'robot'} size={14} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  <div className="text-sm font-medium text-gray-900 dark:text-content-primary truncate">
                     {item.name}
                   </div>
-                  <div className="text-[10px] text-gray-400 dark:text-gray-500 truncate">
+                  <div className="text-[10px] text-content-tertiary truncate">
                     {item.category === 'command'
                       ? (item.metadata.slashCommand as string)
                       : (item.metadata.department as string)

@@ -87,7 +87,7 @@ export function UpdateNotification() {
             </div>
             <button
               onClick={handleDownload}
-              className="mt-3 w-full bg-white text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 transition-colors"
+              className="mt-3 w-full bg-light-bg text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 transition-colors"
             >
               Download Update
             </button>
@@ -100,7 +100,7 @@ export function UpdateNotification() {
             <div className="mt-2">
               <div className="h-2 bg-blue-400 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-white transition-all duration-300"
+                  className="h-full bg-light-bg transition-all duration-300"
                   style={{ width: `${progress?.percent || 0}%` }}
                 />
               </div>
@@ -132,7 +132,7 @@ export function UpdateNotification() {
             </div>
             <button
               onClick={handleInstall}
-              className="mt-3 w-full bg-white text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 transition-colors"
+              className="mt-3 w-full bg-light-bg text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 transition-colors"
             >
               Restart to Update
             </button>

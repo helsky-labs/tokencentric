@@ -86,13 +86,13 @@ export function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
         </div>
 
         {/* App name and version */}
-        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Tokencentric</h3>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-content-primary">Tokencentric</h3>
         {appInfo && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Version {appInfo.version}</p>
+          <p className="text-sm text-content-tertiary mt-1">Version {appInfo.version}</p>
         )}
 
         {/* Description */}
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-4 max-w-xs">
+        <p className="text-sm text-gray-600 dark:text-content-secondary mt-4 max-w-xs">
           Manage your AI context files across all your projects. Track tokens and keep your prompts organized.
         </p>
 
@@ -102,7 +102,7 @@ export function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
             <button
               key={link.label}
               onClick={() => openLink(link.url)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 dark:text-content-secondary bg-light-surface dark:bg-surface-hover hover:bg-light-border dark:hover:bg-surface-hover rounded-md transition-colors"
             >
               {link.icon}
               {link.label}
@@ -112,8 +112,8 @@ export function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
 
         {/* System info */}
         {appInfo && (
-          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 w-full">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+          <div className="mt-6 pt-4 border-t border-light-border dark:border-surface-border w-full">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-content-tertiary">
               <span className="text-right">Electron:</span>
               <span className="text-left font-mono">{appInfo.electron}</span>
               <span className="text-right">Chrome:</span>
@@ -125,7 +125,7 @@ export function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
         )}
 
         {/* Footer */}
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-6">
+        <p className="text-xs text-content-tertiary mt-6">
           Made with love by Helsky Labs
         </p>
       </div>

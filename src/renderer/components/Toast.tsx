@@ -45,7 +45,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
 
   return (
     <div
-      className={`flex items-start gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-200 ${
+      className={`flex items-start gap-3 p-4 bg-light-bg dark:bg-surface-card rounded-lg shadow-lg border border-light-border dark:border-surface-border transition-all duration-200 ${
         isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
       }`}
     >
@@ -55,9 +55,9 @@ function Toast({ toast, onDismiss }: ToastProps) {
         {icons[toast.type]}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-gray-900 dark:text-gray-100">{toast.title}</div>
+        <div className="font-medium text-gray-900 dark:text-content-primary">{toast.title}</div>
         {toast.message && (
-          <div className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{toast.message}</div>
+          <div className="text-sm text-gray-600 dark:text-content-tertiary mt-0.5">{toast.message}</div>
         )}
       </div>
       <button
@@ -65,7 +65,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
           setIsVisible(false);
           setTimeout(() => onDismiss(toast.id), 200);
         }}
-        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-content-primary transition-colors"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -17,19 +17,19 @@ export function PackCard({ packMeta, onInstall }: PackCardProps) {
   const toolIds = Object.keys(pack.tools);
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
+    <div className="rounded-lg border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card/50 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-content-primary truncate">
               {pack.name}
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">
+              <span className="text-[10px] text-gray-400 dark:text-content-tertiary">
                 v{pack.version}
               </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">
+              <span className="text-[10px] text-gray-400 dark:text-content-tertiary">
                 by {pack.author}
               </span>
               {builtin && (
@@ -42,7 +42,7 @@ export function PackCard({ packMeta, onInstall }: PackCardProps) {
         </div>
 
         {/* Description */}
-        <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+        <p className="text-xs text-gray-600 dark:text-content-tertiary mb-3 line-clamp-2">
           {pack.description}
         </p>
 
@@ -51,12 +51,12 @@ export function PackCard({ packMeta, onInstall }: PackCardProps) {
           {toolIds.map((toolId) => (
             <span
               key={toolId}
-              className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 capitalize"
+              className="text-[10px] px-2 py-0.5 rounded-full bg-light-surface dark:bg-surface-hover text-gray-600 dark:text-content-secondary capitalize"
             >
               {toolId}
             </span>
           ))}
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto">
+          <span className="text-[10px] text-gray-400 dark:text-content-tertiary ml-auto">
             {fileCount} file{fileCount !== 1 ? 's' : ''}
             {hasSettings ? ' + settings' : ''}
           </span>

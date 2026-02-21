@@ -1,104 +1,57 @@
 interface LogoProps {
   size?: number;
   className?: string;
+  variant?: 'dark' | 'light' | 'auto';
 }
 
-// Brand colors from the actual logo
-const BRAND_SLATE = '#5B6770';
-const BRAND_SLATE_LIGHT = '#8899A6';
-const BRAND_TEAL = '#14B8A6';
+// New knot mark SVG path data
+const KNOT_PATHS = [
+  'M623.976 59.7625C626.688 59.4759 631.756 59.8565 634.516 60.2985C647.721 62.3629 659.549 69.633 667.353 80.4839C673.644 89.263 676.064 98.5749 676.437 109.265C677.287 133.354 676.939 158.475 676.947 182.57L676.89 326.723L676.85 436.579C676.963 489.482 685.148 549.199 619.482 566.962C605.63 570.71 594.58 569.998 580.533 567.529L580.258 347.172C580.218 302.055 552.732 266.816 505.922 266.57C490.743 266.491 475.509 266.544 460.326 266.59L372.793 266.572C316.756 266.2 262.578 258.58 260.663 333.229L171.213 333.11C169.675 293.19 174.535 261.772 198.54 229.007C220.597 198.579 259.131 175.268 296.8 171.326C320.616 168.833 349.441 170.454 373.974 170.451L478.727 170.45C510.399 170.677 550.255 177.8 569.102 145.596C581.464 124.47 572.421 97.9685 588.16 77.9863C598.312 65.1034 608.723 62.0099 623.976 59.7625Z',
+  'M413.71 456.444C422.549 455.307 434.188 456.281 442.967 457.287L443.481 613.942C443.514 637.647 443.224 661.424 443.814 685.105C444.251 702.624 447.951 716.646 458.89 730.409C484.079 762.104 517.191 758.923 553.283 758.971L622.939 759.012H676.906C688.241 759.012 701.267 759.967 712.318 757.951C750.813 750.94 761.557 725.292 764.487 690.974L852.522 690.998C852.813 727.3 852.044 752.891 832.873 785.323C810.739 822.758 780.614 841.039 739.22 851.903C710.682 856.559 681.448 855.053 652.692 854.891L548.895 854.543C529.975 854.486 504.651 853.401 486.852 856.777C471.329 859.732 453.353 878.539 450.585 893.937C447.66 910.776 448.379 929.445 438.612 944.326C424.236 966.225 392.474 971.35 371.163 956.704C361.147 949.815 351.338 938.545 349.684 926.312C346.483 902.664 347.704 877.956 347.796 854.122L348.127 732.15L347.452 594.01C347.425 586.36 347.239 578.547 347.376 570.945C347.892 542.448 343.488 512.898 361.07 488.133C374.366 469.403 391.465 460.284 413.71 456.444Z',
+  'M110.915 347.997C112.084 347.915 113.416 347.899 114.594 347.886C200.592 347.021 286.727 349.336 372.706 349.957L453.821 350.122C467.658 350.14 493.268 349.651 506.569 351.905C521.498 354.323 535.318 361.309 546.126 371.899C568.794 393.974 571.943 418.113 572.421 448.077L353.281 447.286C327.306 447.235 306.733 447.972 287.133 467.374C259.95 494.285 265.94 531.818 266.083 567.512L266.242 662.428C265.353 697.459 261.133 735.137 296.1 754.972C308.403 761.942 318.281 762.622 332.045 763.124L331.896 854.543C290 860.598 242.64 843.662 212.842 813.95C193.843 795.006 180.592 771.066 174.618 744.9C167.665 714.832 170.78 662.962 170.808 630.951L170.686 448.226C132.313 448.817 71.2451 458.732 64.6478 405.936C62.7526 391.829 66.6766 377.558 75.5181 366.402C85.1538 354.216 96.1714 349.794 110.915 347.997Z',
+  'M692.337 171.124L713.475 170.915C751.55 170.699 784.751 183.535 811.937 210.69C831.011 229.955 844.369 254.133 850.522 280.534C855.12 300.482 854.286 320.152 854.27 340.436L854.213 394.653L854.148 576.118C864.544 576.175 879.472 576.863 889.487 575.884C922.939 572.605 959.581 583.591 959.816 625.317C959.977 638.886 954.578 651.928 944.871 661.408C929.019 676.977 909.354 674.92 889.017 674.953L847.64 675.293C783.188 675.997 717.539 675.252 653.007 675.123L578.201 674.896C558.091 674.888 533.504 676.734 514.163 672.07C485.503 665.149 460.98 640.197 454.702 611.408C452.277 600.285 452.058 589.857 451.832 578.482L608.278 578.369C632.889 578.41 657.581 578.79 682.152 578.134C702.886 577.576 721.304 572.467 736.524 557.862C753.104 541.962 760.14 521.253 760.277 498.617C760.504 461.472 760.237 424.425 760.342 387.29C760.22 369.645 761.564 324.542 758.278 309.495C755.978 298.826 750.716 289.022 743.098 281.211C728.485 266.157 712.487 262.229 692.232 261.801L692.337 171.124Z',
+];
 
-export function Logo({ size = 32, className = '' }: LogoProps) {
+const GRADIENT_ID = 'tokencentric-teal-gradient';
+
+export function Logo({ size = 32, className = '', variant = 'auto' }: LogoProps) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox="0 0 1024 1024"
       className={className}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Outer arc - large slate arc ~300 degrees, gap at top-left (around 10-11 o'clock) */}
-      <path
-        d="M 30 15 A 40 40 0 1 1 15 35"
-        fill="none"
-        stroke={BRAND_SLATE}
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-
-      {/* Middle arc - partial arc on right side, roughly 90 degrees */}
-      <path
-        d="M 65 25 A 28 28 0 0 1 78 50"
-        fill="none"
-        stroke={BRAND_SLATE_LIGHT}
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-
-      {/* Inner arc - teal accent at bottom-left, roughly 90 degrees */}
-      <path
-        d="M 25 60 A 20 20 0 0 0 40 78"
-        fill="none"
-        stroke={BRAND_TEAL}
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-
-      {/* Center dot - slate */}
-      <circle cx="50" cy="50" r="10" fill={BRAND_SLATE} />
-
-      {/* Small accent dot - teal, at 12 o'clock position on outer arc */}
-      <circle cx="50" cy="10" r="5" fill={BRAND_TEAL} />
+      {variant !== 'dark' && (
+        <defs>
+          <linearGradient id={GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00ADB5" />
+            <stop offset="100%" stopColor="#00D9E3" />
+          </linearGradient>
+        </defs>
+      )}
+      {KNOT_PATHS.map((d, i) => (
+        <path
+          key={i}
+          d={d}
+          fill={variant === 'dark' ? '#0F0F0F' : `url(#${GRADIENT_ID})`}
+        />
+      ))}
     </svg>
   );
 }
 
-export function LogoMark({ size = 24, className = '' }: LogoProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Simplified for small sizes - same design, thicker strokes */}
-      {/* Outer arc */}
-      <path
-        d="M 30 15 A 40 40 0 1 1 15 35"
-        fill="none"
-        stroke={BRAND_SLATE}
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
-
-      {/* Inner teal arc */}
-      <path
-        d="M 25 60 A 20 20 0 0 0 40 78"
-        fill="none"
-        stroke={BRAND_TEAL}
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-
-      {/* Center dot */}
-      <circle cx="50" cy="50" r="12" fill={BRAND_SLATE} />
-
-      {/* Top accent dot */}
-      <circle cx="50" cy="10" r="6" fill={BRAND_TEAL} />
-    </svg>
-  );
+export function LogoMark({ size = 24, className = '', variant = 'auto' }: LogoProps) {
+  // Same as Logo but optimized naming for small sizes
+  return <Logo size={size} className={className} variant={variant} />;
 }
 
-// For use in places where we want the logo with text
-export function LogoWithText({ size = 32, className = '' }: LogoProps) {
+export function LogoWithText({ size = 32, className = '', variant = 'auto' }: LogoProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Logo size={size} />
-      <span
-        className="font-semibold tracking-wide"
-        style={{ color: BRAND_SLATE }}
-      >
+      <Logo size={size} variant={variant} />
+      <span className="font-semibold tracking-wide text-gray-800 dark:text-content-primary">
         TOKENCENTRIC
       </span>
     </div>

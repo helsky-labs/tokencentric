@@ -1,4 +1,5 @@
 import { AppView, ToolModule } from '../../shared/types';
+import { ToolIcon } from './ToolIcon';
 
 interface AppTabBarProps {
   activeView: AppView;
@@ -14,7 +15,7 @@ export function AppTabBar({
   onTabSelect,
 }: AppTabBarProps) {
   return (
-    <div className="h-9 titlebar-drag bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center">
+    <div className="h-9 titlebar-drag bg-light-surface dark:bg-surface-card border-b border-light-border dark:border-surface-border flex items-center">
       {/* Spacer for macOS traffic lights */}
       <div className="w-[78px] flex-shrink-0" />
 
@@ -23,7 +24,7 @@ export function AppTabBar({
         {/* Context Files tab (always shown) */}
         <TabButton
           label="Context Files"
-          icon="📄"
+          iconId="document"
           isActive={activeView === 'context-files'}
           onClick={() => onTabSelect('context-files')}
         />
@@ -33,7 +34,7 @@ export function AppTabBar({
           <TabButton
             key={mod.id}
             label={mod.name}
-            icon={mod.icon}
+            toolId={mod.id}
             color={mod.color}
             isActive={activeView === 'tool-module' && activeModuleId === mod.id}
             onClick={() => onTabSelect('tool-module', mod.id)}
@@ -44,7 +45,7 @@ export function AppTabBar({
         {/* Starter Packs tab */}
         <TabButton
           label="Starter Packs"
-          icon="📦"
+          iconId="package"
           isActive={activeView === 'starter-packs'}
           onClick={() => onTabSelect('starter-packs')}
         />
@@ -55,29 +56,32 @@ export function AppTabBar({
 
 interface TabButtonProps {
   label: string;
-  icon: string;
+  iconId?: string;
+  toolId?: string;
   color?: string;
   isActive: boolean;
   onClick: () => void;
   dimmed?: boolean;
 }
 
-function TabButton({ label, icon, isActive, onClick, dimmed }: TabButtonProps) {
+function TabButton({ label, iconId, toolId, isActive, onClick, dimmed }: TabButtonProps) {
   return (
     <button
       onClick={onClick}
       className={`
-        px-3 py-1 text-xs font-medium rounded-md transition-colors
+        px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center
         ${
           isActive
-            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+            ? 'bg-light-bg dark:bg-surface-hover text-gray-900 dark:text-content-primary shadow-sm'
             : dimmed
-              ? 'text-gray-400 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              ? 'text-content-tertiary dark:text-surface-border hover:text-gray-500 dark:hover:text-content-tertiary hover:bg-light-surface dark:hover:bg-surface-hover/50'
+              : 'text-content-tertiary hover:text-gray-700 dark:hover:text-content-secondary hover:bg-light-surface dark:hover:bg-surface-hover/50'
         }
       `}
     >
-      <span className={`mr-1 ${dimmed ? 'opacity-50' : ''}`}>{icon}</span>
+      <span className={`mr-1 ${dimmed ? 'opacity-50' : ''}`}>
+        <ToolIcon toolId={toolId || iconId || 'document'} size={14} />
+      </span>
       {label}
     </button>
   );

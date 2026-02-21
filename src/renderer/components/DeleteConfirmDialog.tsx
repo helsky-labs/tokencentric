@@ -16,15 +16,15 @@ export function DeleteConfirmDialog({ file, onConfirm, onCancel }: DeleteConfirm
   return (
     <Modal isOpen={!!file} onClose={onCancel} title="Delete File" width="sm">
       <div className="space-y-4">
-        <p className="text-gray-700 dark:text-gray-300">
+        <p className="text-gray-700 dark:text-content-secondary">
           Are you sure you want to delete this file?
         </p>
 
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-3 border border-gray-200 dark:border-gray-700">
-          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+        <div className="bg-light-surface dark:bg-surface-bg rounded-md p-3 border border-light-border dark:border-surface-border">
+          <div className="font-medium text-gray-900 dark:text-content-primary text-sm">
             {fileName}
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+          <div className="text-xs text-content-tertiary mt-1 truncate">
             {dirPath}
           </div>
         </div>
@@ -36,7 +36,7 @@ export function DeleteConfirmDialog({ file, onConfirm, onCancel }: DeleteConfirm
         <div className="flex justify-end gap-2 pt-2">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-content-secondary bg-light-surface dark:bg-surface-hover hover:bg-light-border dark:hover:bg-surface-hover rounded-md transition-colors"
           >
             Cancel
           </button>

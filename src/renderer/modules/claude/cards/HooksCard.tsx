@@ -76,10 +76,10 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Hooks</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+    <div className="rounded-lg border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card/50">
+      <div className="px-4 py-3 border-b border-light-border dark:border-surface-border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-content-primary">Hooks</h3>
+        <p className="text-xs text-gray-500 dark:text-content-tertiary mt-0.5">
           Shell commands that run on lifecycle events
         </p>
       </div>
@@ -88,7 +88,7 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
         {configuredEvents.map((event) => (
           <div key={event}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-gray-700 dark:text-content-secondary uppercase tracking-wider">
                 {event}
               </span>
               <button
@@ -101,7 +101,7 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
             {hooks[event].map((rule, ruleIdx) => (
               <div
                 key={ruleIdx}
-                className="group flex items-start gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-900/50 rounded-md mb-1.5"
+                className="group flex items-start gap-2 px-3 py-2 bg-light-surface dark:bg-surface-bg/50 rounded-md mb-1.5"
               >
                 <div className="flex-1 min-w-0">
                   {rule.matcher && (
@@ -112,7 +112,7 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
                   {rule.hooks.map((h, hi) => (
                     <code
                       key={hi}
-                      className="text-xs text-gray-700 dark:text-gray-300 block truncate"
+                      className="text-xs text-gray-700 dark:text-content-secondary block truncate"
                     >
                       {h.command}
                     </code>
@@ -133,7 +133,7 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
         {/* Unconfigured events */}
         {LIFECYCLE_EVENTS.filter((e) => !configuredEvents.includes(e)).length > 0 && (
           <div>
-            <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">
+            <div className="text-[10px] text-gray-400 dark:text-content-tertiary uppercase tracking-wider mb-1.5">
               Available Events
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -141,7 +141,7 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
                 <button
                   key={event}
                   onClick={() => startAdd(event)}
-                  className="text-[10px] px-2 py-1 rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors"
+                  className="text-[10px] px-2 py-1 rounded-md border border-dashed border-light-border dark:border-surface-border text-gray-500 dark:text-content-tertiary hover:border-blue-400 hover:text-blue-500 transition-colors"
                 >
                   + {event}
                 </button>
@@ -158,7 +158,7 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
             </div>
             <div className="space-y-2">
               <div>
-                <label className="text-[10px] text-gray-500 dark:text-gray-400 block mb-0.5">
+                <label className="text-[10px] text-gray-500 dark:text-content-tertiary block mb-0.5">
                   Matcher (optional, e.g. tool name pattern)
                 </label>
                 <input
@@ -166,11 +166,11 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
                   value={editMatcher}
                   onChange={(e) => setEditMatcher(e.target.value)}
                   placeholder="Leave empty to match all"
-                  className="w-full text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full text-xs px-2 py-1.5 rounded border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card text-gray-900 dark:text-content-primary focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 dark:text-gray-400 block mb-0.5">
+                <label className="text-[10px] text-gray-500 dark:text-content-tertiary block mb-0.5">
                   Shell command
                 </label>
                 <input
@@ -178,13 +178,13 @@ export function HooksCard({ settings, onSave }: HooksCardProps) {
                   value={editCommand}
                   onChange={(e) => setEditCommand(e.target.value)}
                   placeholder="e.g., afplay /System/Library/Sounds/Blow.aiff"
-                  className="w-full text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full text-xs px-2 py-1.5 rounded border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card text-gray-900 dark:text-content-primary font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
               <div className="flex gap-2 justify-end">
                 <button
                   onClick={() => setEditingEvent(null)}
-                  className="text-xs px-3 py-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="text-xs px-3 py-1 text-gray-500 hover:text-gray-700 dark:hover:text-content-secondary"
                 >
                   Cancel
                 </button>

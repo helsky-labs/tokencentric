@@ -77,10 +77,10 @@ export function ClaudeConfigDashboard({ isDark }: ClaudeConfigDashboardProps) {
       <div className="max-w-2xl mx-auto p-6 space-y-4">
         {/* Header */}
         <div className="mb-2">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-content-primary">
             Claude Code Configuration
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-500 dark:text-content-tertiary mt-0.5">
             Manage settings, hooks, permissions, MCP servers, and keybindings
           </p>
         </div>

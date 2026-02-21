@@ -86,7 +86,7 @@ export function SplitPaneContainer({
       <div
         onMouseDown={handleMouseDown}
         className={`
-          flex-shrink-0 bg-gray-200 dark:bg-gray-700
+          flex-shrink-0 bg-light-border dark:bg-surface-hover
           hover:bg-blue-400 dark:hover:bg-blue-600
           transition-colors
           ${isHorizontal ? 'w-1 cursor-col-resize' : 'h-1 cursor-row-resize'}

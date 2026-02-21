@@ -55,7 +55,7 @@ export function TemplatesSection({
             />
           ))}
         </div>
-        <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 italic">
+        <div className="px-3 py-2 text-xs text-content-tertiary italic">
           Drag a template to a folder to create a file
         </div>
       </SidebarSection>
@@ -70,20 +70,20 @@ export function TemplatesSection({
         {previewTemplate && (
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-content-tertiary">
                 {previewTemplate.description}
               </p>
             </div>
 
             {previewTemplate.variables.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-content-secondary mb-2">
                   Variables
                 </h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <ul className="text-sm text-gray-600 dark:text-content-tertiary space-y-1">
                   {previewTemplate.variables.map((v) => (
                     <li key={v.name} className="flex items-center gap-2">
-                      <code className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">
+                      <code className="px-1 py-0.5 bg-light-surface dark:bg-surface-card rounded text-xs">
                         {`{{${v.name}}}`}
                       </code>
                       <span>{v.label}</span>
@@ -97,20 +97,20 @@ export function TemplatesSection({
             )}
 
             <div>
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-content-secondary mb-2">
                 Content Preview
               </h4>
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 max-h-64 overflow-auto">
-                <pre className="p-3 text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              <div className="bg-light-surface dark:bg-surface-bg rounded-md border border-light-border dark:border-surface-border max-h-64 overflow-auto">
+                <pre className="p-3 text-xs font-mono text-gray-700 dark:text-content-secondary whitespace-pre-wrap">
                   {previewTemplate.content}
                 </pre>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end gap-2 pt-2 border-t border-light-border dark:border-surface-border">
               <button
                 onClick={handleClosePreview}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-content-secondary bg-light-surface dark:bg-surface-hover hover:bg-light-border dark:hover:bg-surface-hover rounded-md transition-colors"
               >
                 Close
               </button>

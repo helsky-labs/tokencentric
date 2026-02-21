@@ -174,10 +174,10 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+      <div className="h-screen flex items-center justify-center bg-light-bg dark:bg-surface-bg">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+          <div className="text-content-tertiary">Loading...</div>
         </div>
       </div>
     );
@@ -185,8 +185,8 @@ function App() {
 
   if (showWelcome) {
     return (
-      <div className="h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-        <div className="h-8 titlebar-drag bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700" />
+      <div className="h-screen flex flex-col bg-light-bg dark:bg-surface-bg text-gray-900 dark:text-content-primary">
+        <div className="h-8 titlebar-drag bg-light-surface dark:bg-surface-card border-b border-light-border dark:border-surface-border" />
         <div className="flex-1">
           <WelcomeScreen
             onComplete={handleCompleteOnboarding}
@@ -207,7 +207,7 @@ function App() {
   const activeModule = toolModules.find((m) => m.id === activeModuleId) || null;
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="h-screen flex flex-col bg-light-bg dark:bg-surface-bg text-gray-900 dark:text-content-primary">
       {/* Title bar with tab bar */}
       <AppTabBar
         activeView={activeView}

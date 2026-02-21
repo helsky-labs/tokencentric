@@ -89,7 +89,7 @@ export function EditorTab({
     }
     if (toolId === 'cursor') {
       return (
-        <svg className="w-3.5 h-3.5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-3.5 h-3.5 text-ai-deep" viewBox="0 0 24 24" fill="currentColor">
           <path d="M5.5 3.5L18.5 12L5.5 20.5V3.5Z" stroke="currentColor" strokeWidth="2" fill="none"/>
         </svg>
       );
@@ -122,11 +122,11 @@ export function EditorTab({
       onDrop={handleDrop}
       className={`
         group flex items-center gap-1.5 px-3 py-1.5 cursor-pointer
-        border-r border-gray-200 dark:border-gray-700
+        border-r border-light-border dark:border-surface-border
         transition-colors select-none min-w-0 max-w-[200px]
         ${isActive
-          ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100'
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-750'
+          ? 'bg-light-bg dark:bg-surface-bg text-gray-900 dark:text-content-primary'
+          : 'bg-light-surface dark:bg-surface-card text-gray-600 dark:text-content-tertiary hover:bg-light-border dark:hover:bg-surface-hover'
         }
       `}
       title={tab.file.path}
@@ -150,7 +150,7 @@ export function EditorTab({
         className={`
           flex-shrink-0 p-0.5 rounded
           ${tab.isDirty ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-          hover:bg-gray-300 dark:hover:bg-gray-600
+          hover:bg-light-border dark:hover:bg-surface-hover
           transition-opacity
         `}
         title="Close"

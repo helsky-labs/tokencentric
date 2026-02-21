@@ -36,13 +36,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       return (
         <div className="h-full flex items-center justify-center p-8">
-          <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="max-w-md w-full bg-light-bg dark:bg-surface-card rounded-lg shadow-lg border border-light-border dark:border-surface-border p-6">
             <div className="text-center">
-              <div className="text-4xl mb-4">⚠️</div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              <div className="mb-4 text-amber-500">
+                <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  <path d="M12 9v4M12 17h.01" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-content-primary mb-2">
                 Something went wrong
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-gray-600 dark:text-content-tertiary mb-4">
                 An unexpected error occurred. Please try again.
               </p>
               {this.state.error && (

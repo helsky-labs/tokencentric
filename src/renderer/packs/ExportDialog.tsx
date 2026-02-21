@@ -25,13 +25,13 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[420px]">
+      <div className="bg-light-bg dark:bg-surface-card rounded-lg shadow-xl w-[420px]">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <div className="px-4 py-3 border-b border-light-border dark:border-surface-border">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-content-primary">
             Export Starter Pack
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-500 dark:text-content-tertiary mt-0.5">
             Bundle your Claude Code config into a shareable .tcpack file
           </p>
         </div>
@@ -39,7 +39,7 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
         <div className="p-4 space-y-4">
           {/* Pack name */}
           <div>
-            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-1">
+            <label className="text-xs font-medium text-gray-700 dark:text-content-secondary block mb-1">
               Pack Name
             </label>
             <input
@@ -47,14 +47,14 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My Claude Setup"
-              className="w-full text-sm px-3 py-2 rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full text-sm px-3 py-2 rounded-md border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card text-gray-900 dark:text-content-primary focus:outline-none focus:ring-1 focus:ring-blue-500"
               autoFocus
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-1">
+            <label className="text-xs font-medium text-gray-700 dark:text-content-secondary block mb-1">
               Description (optional)
             </label>
             <textarea
@@ -62,13 +62,13 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What's included in this pack?"
               rows={2}
-              className="w-full text-sm px-3 py-2 rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full text-sm px-3 py-2 rounded-md border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card text-gray-900 dark:text-content-primary resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           {/* Include checkboxes */}
           <div>
-            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-2">
+            <label className="text-xs font-medium text-gray-700 dark:text-content-secondary block mb-2">
               Include
             </label>
             <div className="space-y-2">
@@ -77,9 +77,9 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
                   type="checkbox"
                   checked={includeCommands}
                   onChange={(e) => setIncludeCommands(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                  className="w-3.5 h-3.5 rounded border-light-border text-blue-500 focus:ring-blue-500"
                 />
-                <span className="text-xs text-gray-700 dark:text-gray-300">
+                <span className="text-xs text-gray-700 dark:text-content-secondary">
                   Commands (~/.claude/commands/)
                 </span>
               </label>
@@ -88,9 +88,9 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
                   type="checkbox"
                   checked={includeAgents}
                   onChange={(e) => setIncludeAgents(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                  className="w-3.5 h-3.5 rounded border-light-border text-blue-500 focus:ring-blue-500"
                 />
-                <span className="text-xs text-gray-700 dark:text-gray-300">
+                <span className="text-xs text-gray-700 dark:text-content-secondary">
                   Agents (~/.claude/agents/)
                 </span>
               </label>
@@ -99,9 +99,9 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
                   type="checkbox"
                   checked={includeSettings}
                   onChange={(e) => setIncludeSettings(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                  className="w-3.5 h-3.5 rounded border-light-border text-blue-500 focus:ring-blue-500"
                 />
-                <span className="text-xs text-gray-700 dark:text-gray-300">
+                <span className="text-xs text-gray-700 dark:text-content-secondary">
                   Settings (~/.claude/settings.json)
                 </span>
               </label>
@@ -110,10 +110,10 @@ export function ExportDialog({ onExport, onCancel }: ExportDialogProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-end">
+        <div className="px-4 py-3 border-t border-light-border dark:border-surface-border flex gap-2 justify-end">
           <button
             onClick={onCancel}
-            className="px-4 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+            className="px-4 py-1.5 text-xs text-gray-600 dark:text-content-tertiary hover:text-gray-800 dark:hover:text-gray-200"
           >
             Cancel
           </button>

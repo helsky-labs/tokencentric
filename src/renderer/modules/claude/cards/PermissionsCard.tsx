@@ -74,16 +74,16 @@ export function PermissionsCard({ permissions, onSave }: PermissionsCardProps) {
   ];
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Permissions</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+    <div className="rounded-lg border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card/50">
+      <div className="px-4 py-3 border-b border-light-border dark:border-surface-border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-content-primary">Permissions</h3>
+        <p className="text-xs text-gray-500 dark:text-content-tertiary mt-0.5">
           Tool permissions from ~/.claude/settings.local.json
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700">
+      <div className="flex border-b border-light-border dark:border-surface-border">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -92,7 +92,7 @@ export function PermissionsCard({ permissions, onSave }: PermissionsCardProps) {
               flex-1 px-3 py-2 text-xs font-medium transition-colors
               ${activeTab === tab.id
                 ? `border-b-2 border-blue-500 ${tab.color}`
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'text-gray-500 dark:text-content-tertiary hover:text-gray-700 dark:hover:text-content-secondary'
               }
             `}
           >
@@ -104,7 +104,7 @@ export function PermissionsCard({ permissions, onSave }: PermissionsCardProps) {
       <div className="p-4">
         {activeList.length === 0 && !adding ? (
           <div className="text-center py-4">
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
+            <p className="text-xs text-gray-400 dark:text-content-tertiary mb-2">
               No {activeTab} rules configured.
             </p>
             <button
@@ -129,16 +129,16 @@ export function PermissionsCard({ permissions, onSave }: PermissionsCardProps) {
             <div className="space-y-3 max-h-72 overflow-y-auto">
               {Object.entries(grouped).map(([tool, rules]) => (
                 <div key={tool}>
-                  <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                  <div className="text-[10px] font-semibold text-gray-500 dark:text-content-tertiary uppercase tracking-wider mb-1">
                     {tool} ({rules.length})
                   </div>
                   <div className="space-y-0.5">
                     {rules.map((rule) => (
                       <div
                         key={rule}
-                        className="group flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                        className="group flex items-center gap-2 px-2 py-1 rounded hover:bg-light-surface dark:hover:bg-surface-bg/50"
                       >
-                        <code className="text-[11px] text-gray-700 dark:text-gray-300 truncate flex-1 font-mono">
+                        <code className="text-[11px] text-gray-700 dark:text-content-secondary truncate flex-1 font-mono">
                           {extractPattern(rule)}
                         </code>
                         <button
@@ -166,7 +166,7 @@ export function PermissionsCard({ permissions, onSave }: PermissionsCardProps) {
               onChange={(e) => setNewRule(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddRule()}
               placeholder='e.g., Bash(npm run build:*)'
-              className="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="flex-1 text-xs px-2 py-1.5 rounded border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card text-gray-900 dark:text-content-primary font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
               autoFocus
             />
             <button
@@ -178,7 +178,7 @@ export function PermissionsCard({ permissions, onSave }: PermissionsCardProps) {
             </button>
             <button
               onClick={() => { setAdding(false); setNewRule(''); }}
-              className="text-xs px-2 py-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              className="text-xs px-2 py-1 text-gray-500 hover:text-gray-700 dark:hover:text-content-secondary"
             >
               Cancel
             </button>

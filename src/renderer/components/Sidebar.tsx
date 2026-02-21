@@ -182,7 +182,7 @@ export function Sidebar({
     <div className="flex gap-1">
       <button
         onClick={handleExpandAll}
-        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-content-secondary transition-colors"
         title="Expand all"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,7 +191,7 @@ export function Sidebar({
       </button>
       <button
         onClick={handleCollapseAll}
-        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-content-secondary transition-colors"
         title="Collapse all"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -202,7 +202,7 @@ export function Sidebar({
   ) : null;
 
   return (
-    <div className="w-64 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50 dark:bg-gray-800/50">
+    <div className="w-64 border-r border-light-border dark:border-surface-border flex flex-col bg-light-surface dark:bg-surface-card/50">
       {/* Header with branding and actions */}
       <SidebarHeader
         onScanDirectory={onScanDirectory}
@@ -240,7 +240,7 @@ export function Sidebar({
           actions={projectFilesActions}
         >
           {fileTree.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
+            <div className="px-4 py-8 text-center text-gray-400 dark:text-content-tertiary text-sm">
               No files found.
               <br />
               Click &quot;Scan Directory&quot; to find context files.
@@ -269,7 +269,7 @@ export function Sidebar({
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+      <div className="p-3 border-t border-light-border dark:border-surface-border text-xs text-gray-500 dark:text-content-tertiary">
         <div className="flex justify-between items-center">
           <span>
             {filteredFiles.length === files.length

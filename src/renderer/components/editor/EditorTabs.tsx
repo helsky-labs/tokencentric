@@ -185,7 +185,7 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
 
   return (
     <div
-      className="flex items-stretch bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-thin"
+      className="flex items-stretch bg-light-surface dark:bg-surface-card border-b border-light-border dark:border-surface-border overflow-x-auto scrollbar-thin"
       onDragEnd={handleDragEnd}
     >
       {tabs.map((tab, index) => (
@@ -223,11 +223,11 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
 
       {/* AI button */}
       {showAIButton && (
-        <div className="flex items-center px-1 border-l border-gray-200 dark:border-gray-700">
+        <div className="flex items-center px-1 border-l border-light-border dark:border-surface-border">
           <button
             ref={aiButtonRef}
             onClick={onAIClick}
-            className="p-1 text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded transition-colors"
+            className="p-1 text-ai hover:text-ai-deep dark:text-ai-light dark:hover:text-ai-light hover:bg-ai/15 dark:hover:bg-ai/20 rounded transition-colors"
             title="AI Actions"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -239,11 +239,11 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
 
       {/* Split buttons */}
       {showSplitButtons && (
-        <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-0.5 px-1 border-l border-light-border dark:border-surface-border">
           {onSplitVertical && (
             <button
               onClick={onSplitVertical}
-              className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              className="p-1 text-gray-500 hover:text-gray-700 dark:text-content-tertiary dark:hover:text-content-primary hover:bg-light-border dark:hover:bg-surface-hover rounded transition-colors"
               title="Split Right"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -254,7 +254,7 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
           {onSplitHorizontal && (
             <button
               onClick={onSplitHorizontal}
-              className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              className="p-1 text-gray-500 hover:text-gray-700 dark:text-content-tertiary dark:hover:text-content-primary hover:bg-light-border dark:hover:bg-surface-hover rounded transition-colors"
               title="Split Down"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -265,7 +265,7 @@ export function EditorTabs({ paneId, tabs, activeTabId, onSplitHorizontal, onSpl
           {onUnsplit && (
             <button
               onClick={onUnsplit}
-              className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              className="p-1 text-gray-500 hover:text-red-600 dark:text-content-tertiary dark:hover:text-red-400 hover:bg-light-border dark:hover:bg-surface-hover rounded transition-colors"
               title="Close Split"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

@@ -25,7 +25,7 @@ export function CloseConfirmationDialog({
       width="sm"
     >
       <div className="space-y-4">
-        <p className="text-gray-700 dark:text-gray-300">
+        <p className="text-gray-700 dark:text-content-secondary">
           {isSingleTab ? (
             <>
               <span className="font-medium">{tabName}</span> has unsaved changes.
@@ -40,7 +40,7 @@ export function CloseConfirmationDialog({
         </p>
 
         {!isSingleTab && (
-          <ul className="max-h-32 overflow-y-auto text-sm text-gray-600 dark:text-gray-400 space-y-1">
+          <ul className="max-h-32 overflow-y-auto text-sm text-gray-600 dark:text-content-tertiary space-y-1">
             {tabs.map((tab) => (
               <li key={tab.id} className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
@@ -53,7 +53,7 @@ export function CloseConfirmationDialog({
         <div className="flex justify-end gap-2 pt-2">
           <button
             onClick={() => onResult('cancel')}
-            className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+            className="px-3 py-1.5 text-sm text-gray-700 dark:text-content-secondary hover:bg-light-surface dark:hover:bg-surface-hover rounded-md transition-colors"
           >
             Cancel
           </button>

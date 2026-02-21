@@ -24,12 +24,12 @@ export function SidebarHeader({
   totalFiles,
 }: SidebarHeaderProps) {
   return (
-    <div className="border-b border-gray-200 dark:border-gray-700">
+    <div className="border-b border-light-border dark:border-surface-border">
       {/* Branding Header */}
-      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-3 border-b border-light-border dark:border-surface-border">
         <div className="flex items-center gap-2">
           <LogoMark size={28} />
-          <span className="font-semibold text-gray-800 dark:text-gray-100">Tokencentric</span>
+          <span className="font-semibold text-gray-800 dark:text-content-primary">Tokencentric</span>
         </div>
       </div>
 
@@ -38,13 +38,13 @@ export function SidebarHeader({
         <div className="flex gap-2">
           <button
             onClick={onScanDirectory}
-            className="flex-1 px-3 py-2 text-sm bg-brand-teal hover:bg-teal-500 text-white rounded-md transition-colors"
+            className="flex-1 px-3 py-2 text-sm bg-brand-teal hover:bg-brand-teal-bright text-white rounded-md transition-colors"
           >
             Scan Directory
           </button>
           <button
             onClick={onNewFile}
-            className="px-3 py-2 text-sm bg-brand-slate hover:bg-gray-600 text-white rounded-md transition-colors"
+            className="px-3 py-2 text-sm bg-surface-card hover:bg-surface-hover text-white rounded-md transition-colors"
             title="New File (Cmd+N)"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,7 +53,7 @@ export function SidebarHeader({
           </button>
           <button
             onClick={onOpenSettings}
-            className="px-3 py-2 text-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
+            className="px-3 py-2 text-sm bg-light-border dark:bg-surface-hover hover:bg-light-border dark:hover:bg-surface-hover text-gray-700 dark:text-content-secondary rounded-md transition-colors"
             title="Settings (Cmd+,)"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,12 +68,12 @@ export function SidebarHeader({
           <select
             value={toolFilter}
             onChange={(e) => onToolFilterChange(e.target.value)}
-            className="w-full px-2 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300"
+            className="w-full px-2 py-1.5 text-sm bg-light-bg dark:bg-surface-bg border border-light-border dark:border-surface-border rounded-md text-gray-700 dark:text-content-secondary"
           >
             <option value="all">All Tools ({totalFiles})</option>
             {availableTools.map((tool) => (
               <option key={tool.id} value={tool.id}>
-                {tool.icon} {tool.name}
+                {tool.name}
               </option>
             ))}
           </select>

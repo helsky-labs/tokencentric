@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ConfigItem } from '../../../shared/types';
+import { ToolIcon } from '../../components/ToolIcon';
 
 interface ClaudeAgentsAreaProps {
   isDark: boolean;
@@ -52,12 +53,12 @@ export function ClaudeAgentsArea({ isDark }: ClaudeAgentsAreaProps) {
 
   if (agents.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+      <div className="flex items-center justify-center h-full text-gray-400 dark:text-content-tertiary">
         <div className="text-center max-w-sm">
-          <div className="text-4xl mb-3">🤖</div>
+          <div className="mb-3"><ToolIcon toolId="robot" size={40} /></div>
           <div className="text-lg font-medium mb-2">No Agents Found</div>
           <div className="text-sm">
-            Agent definitions live in <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">~/.claude/agents/</code>
+            Agent definitions live in <code className="bg-light-surface dark:bg-surface-hover px-1.5 py-0.5 rounded text-xs">~/.claude/agents/</code>
           </div>
           <div className="text-sm mt-1">
             Organize agents into department subdirectories.
@@ -127,9 +128,9 @@ Add agent instructions here.
   return (
     <div className="flex h-full">
       {/* Department + agent list */}
-      <div className="w-64 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      <div className="w-64 flex-shrink-0 border-r border-light-border dark:border-surface-border flex flex-col">
+        <div className="p-3 border-b border-light-border dark:border-surface-border flex items-center justify-between">
+          <span className="text-xs font-semibold text-gray-500 dark:text-content-tertiary uppercase tracking-wider">
             Agents ({agents.length})
           </span>
           <button
@@ -142,14 +143,14 @@ Add agent instructions here.
 
         {/* Department filter */}
         {departments.length > 0 && (
-          <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-2 border-b border-light-border dark:border-surface-border">
             <div className="flex flex-wrap gap-1">
               <button
                 onClick={() => setSelectedDepartment(null)}
                 className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
                   selectedDepartment === null
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                    : 'text-gray-500 dark:text-content-tertiary hover:bg-light-surface dark:hover:bg-surface-hover/50'
                 }`}
               >
                 All
@@ -161,7 +162,7 @@ Add agent instructions here.
                   className={`text-[10px] px-2 py-0.5 rounded-full transition-colors capitalize ${
                     selectedDepartment === dept
                       ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                      : 'text-gray-500 dark:text-content-tertiary hover:bg-light-surface dark:hover:bg-surface-hover/50'
                   }`}
                 >
                   {dept}
@@ -178,11 +179,11 @@ Add agent instructions here.
               key={agent.id}
               onClick={() => setSelectedAgent(agent)}
               className={`
-                w-full text-left px-3 py-2.5 border-b border-gray-100 dark:border-gray-700/50 transition-colors
+                w-full text-left px-3 py-2.5 border-b border-light-surface dark:border-surface-border/50 transition-colors
                 ${
                   selectedAgent?.id === agent.id
                     ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-l-blue-500'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/30 border-l-2 border-l-transparent'
+                    : 'hover:bg-light-surface dark:hover:bg-surface-hover/30 border-l-2 border-l-transparent'
                 }
               `}
             >
@@ -193,20 +194,20 @@ Add agent instructions here.
                     style={{ backgroundColor: agent.metadata.color as string }}
                   />
                 )}
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                <span className="text-sm font-medium text-gray-900 dark:text-content-primary truncate">
                   {agent.name}
                 </span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto flex-shrink-0">
+                <span className="text-[10px] text-gray-400 dark:text-content-tertiary ml-auto flex-shrink-0">
                   {agent.tokens.toLocaleString()} tok
                 </span>
               </div>
               {agent.metadata.description && (
-                <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate mt-0.5 ml-4">
+                <div className="text-[10px] text-gray-500 dark:text-content-tertiary truncate mt-0.5 ml-4">
                   {agent.metadata.description as string}
                 </div>
               )}
               <div className="flex items-center gap-1 mt-0.5 ml-4">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize">
+                <span className="text-[10px] text-gray-400 dark:text-content-tertiary capitalize">
                   {agent.metadata.department as string}
                 </span>
               </div>
@@ -220,7 +221,7 @@ Add agent instructions here.
         {selectedAgent ? (
           <>
             {/* Header */}
-            <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="p-3 border-b border-light-border dark:border-surface-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {selectedAgent.metadata.color && (
                   <span
@@ -229,11 +230,11 @@ Add agent instructions here.
                   />
                 )}
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-content-primary">
                     {selectedAgent.name}
                   </h3>
                   {selectedAgent.metadata.description && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-content-tertiary">
                       {selectedAgent.metadata.description as string}
                     </div>
                   )}
@@ -257,15 +258,15 @@ Add agent instructions here.
 
             {/* Tools badges */}
             {((selectedAgent.metadata.tools as string[]) || []).length > 0 && (
-              <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+              <div className="px-3 py-2 bg-light-surface dark:bg-surface-card/50 border-b border-light-border dark:border-surface-border">
+                <div className="text-[10px] font-semibold text-gray-500 dark:text-content-tertiary uppercase tracking-wider mb-1">
                   Tools
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {((selectedAgent.metadata.tools as string[]) || []).map((tool, i) => (
                     <span
                       key={i}
-                      className="text-[10px] px-2 py-0.5 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full border border-gray-200 dark:border-gray-600"
+                      className="text-[10px] px-2 py-0.5 bg-light-bg dark:bg-surface-hover text-gray-600 dark:text-content-secondary rounded-full border border-light-border dark:border-surface-border"
                     >
                       {tool}
                     </span>
@@ -279,14 +280,14 @@ Add agent instructions here.
               data-agent-editor
               defaultValue={selectedAgent.content}
               key={selectedAgent.id}
-              className="flex-1 w-full p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
+              className="flex-1 w-full p-4 font-mono text-sm bg-light-bg dark:bg-surface-bg text-gray-900 dark:text-content-primary resize-none focus:outline-none"
               spellCheck={false}
             />
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+          <div className="flex items-center justify-center h-full text-gray-400 dark:text-content-tertiary">
             <div className="text-center">
-              <div className="text-3xl mb-2">🤖</div>
+              <div className="mb-2"><ToolIcon toolId="robot" size={30} /></div>
               <div className="text-sm">Select an agent to edit</div>
             </div>
           </div>

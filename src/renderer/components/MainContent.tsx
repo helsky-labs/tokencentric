@@ -116,7 +116,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
 
   if (!selectedFile) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
+      <div className="flex-1 flex items-center justify-center text-content-tertiary">
         <div className="text-center max-w-xs">
           <div className="text-4xl mb-3 opacity-50">
             <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,7 +124,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
             </svg>
           </div>
           <div className="font-medium mb-1">Select a file to view</div>
-          <div className="text-sm text-gray-400 dark:text-gray-500">
+          <div className="text-sm text-content-tertiary">
             Choose from the sidebar, or click{' '}
             <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium">+</span>
             {' '}to create from templates
@@ -136,7 +136,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
+      <div className="flex-1 flex items-center justify-center text-content-tertiary">
         Loading...
       </div>
     );
@@ -145,7 +145,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Breadcrumb - inheritance chain */}
-      <div className="px-4 py-1.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+      <div className="px-4 py-1.5 border-b border-light-surface dark:border-surface-card bg-light-surface/50 dark:bg-surface-card/30">
         <Breadcrumb
           selectedFile={selectedFile}
           allFiles={allFiles}
@@ -162,21 +162,21 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
       />
 
       {/* File header */}
-      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">
+      <div className="px-4 py-2 border-b border-light-border dark:border-surface-border bg-light-surface dark:bg-surface-card/50 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           {/* Close button */}
           <button
             onClick={() => onSelectFile(null)}
-            className="p-1 -ml-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-1 -ml-1 rounded hover:bg-light-border dark:hover:bg-surface-hover transition-colors"
             title="Close file (Esc)"
           >
-            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
           <div className="text-sm font-medium truncate">{selectedFile.name}</div>
           {isReadOnly && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0 flex items-center gap-1">
+            <span className="text-xs px-1.5 py-0.5 rounded bg-light-surface dark:bg-surface-hover text-content-tertiary flex-shrink-0 flex items-center gap-1">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -189,7 +189,7 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
             </span>
           )}
           {isSaving && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+            <span className="text-xs text-content-tertiary flex-shrink-0">
               Saving...
             </span>
           )}
@@ -197,13 +197,13 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
 
         {/* View mode toggle - only show for markdown files */}
         {isMarkdown && (
-          <div className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 rounded-md p-0.5">
+          <div className="flex items-center gap-1 bg-light-border dark:bg-surface-hover rounded-md p-0.5">
             <button
               onClick={() => setViewMode('editor')}
               className={`px-2 py-1 text-xs rounded transition-colors ${
                 viewMode === 'editor'
-                  ? 'bg-white dark:bg-gray-600 shadow-sm'
-                  : 'hover:bg-gray-300 dark:hover:bg-gray-600'
+                  ? 'bg-light-bg dark:bg-surface-hover shadow-sm'
+                  : 'hover:bg-light-border dark:hover:bg-surface-hover'
               }`}
             >
               Editor
@@ -212,8 +212,8 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
               onClick={() => setViewMode('split')}
               className={`px-2 py-1 text-xs rounded transition-colors ${
                 viewMode === 'split'
-                  ? 'bg-white dark:bg-gray-600 shadow-sm'
-                  : 'hover:bg-gray-300 dark:hover:bg-gray-600'
+                  ? 'bg-light-bg dark:bg-surface-hover shadow-sm'
+                  : 'hover:bg-light-border dark:hover:bg-surface-hover'
               }`}
             >
               Split
@@ -222,8 +222,8 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
               onClick={() => setViewMode('preview')}
               className={`px-2 py-1 text-xs rounded transition-colors ${
                 viewMode === 'preview'
-                  ? 'bg-white dark:bg-gray-600 shadow-sm'
-                  : 'hover:bg-gray-300 dark:hover:bg-gray-600'
+                  ? 'bg-light-bg dark:bg-surface-hover shadow-sm'
+                  : 'hover:bg-light-border dark:hover:bg-surface-hover'
               }`}
             >
               Preview
@@ -277,13 +277,13 @@ export function MainContent({ selectedFile, allFiles, onSelectFile, settings, is
 
         {/* Divider for split view */}
         {viewMode === 'split' && isMarkdown && (
-          <div className="w-px bg-gray-200 dark:bg-gray-700" />
+          <div className="w-px bg-light-border dark:bg-surface-hover" />
         )}
 
         {/* Preview pane */}
         {isMarkdown && (viewMode === 'preview' || viewMode === 'split') && (
           <div
-            className={`${viewMode === 'split' ? 'w-1/2' : 'flex-1'} overflow-auto bg-white dark:bg-gray-900 p-4`}
+            className={`${viewMode === 'split' ? 'w-1/2' : 'flex-1'} overflow-auto bg-light-bg dark:bg-surface-bg p-4`}
           >
             <article className="prose prose-sm dark:prose-invert max-w-none">
               <ReactMarkdown>{content}</ReactMarkdown>

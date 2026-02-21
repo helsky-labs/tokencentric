@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GlobalConfigFile, ContextFile } from '../../shared/types';
 import { SidebarSection } from './sidebar/SidebarSection';
+import { ToolIcon } from './ToolIcon';
 
 interface GlobalConfigSectionProps {
   onSelectFile: (file: ContextFile) => void;
@@ -79,13 +80,13 @@ export function GlobalConfigSection({
   );
 
   // Get icon for file type
-  const getFileIcon = (file: GlobalConfigFile): string => {
+  const getFileIconId = (file: GlobalConfigFile): string => {
     if (file.type === 'directory') {
-      return expandedDirs.has(file.path) ? '📂' : '📁';
+      return expandedDirs.has(file.path) ? 'folder-open' : 'folder';
     }
-    if (file.type === 'json') return '⚙️';
-    if (file.type === 'markdown') return '📝';
-    return '📄';
+    if (file.type === 'json') return 'gear';
+    if (file.type === 'markdown') return 'markdown';
+    return 'document';
   };
 
   // Render a single config item
@@ -109,12 +110,13 @@ export function GlobalConfigSection({
               </svg>
             </span>
           )}
-          <span className="text-base">{getFileIcon(file)}</span>
+          <ToolIcon toolId={getFileIconId(file)} size={14} className="flex-shrink-0" />
           <span className="flex-1 truncate text-sm">{file.name}</span>
           {file.readOnly && (
-            <span className="text-xs text-gray-400 dark:text-gray-500" title="Read-only">
-              🔒
-            </span>
+            <svg className="w-3 h-3 flex-shrink-0 text-content-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" title="Read-only">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
           )}
         </div>
         {isDir && isDirExpanded && file.children && (
@@ -145,7 +147,7 @@ export function GlobalConfigSection({
       >
         <div className="global-config-content">
           {isLoading ? (
-            <div className="px-4 py-2 text-xs text-gray-400 dark:text-gray-500">
+            <div className="px-4 py-2 text-xs text-content-tertiary">
               Loading...
             </div>
           ) : (

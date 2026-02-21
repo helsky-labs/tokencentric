@@ -86,11 +86,11 @@ export function HierarchicalCostPanel({
   }
 
   return (
-    <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/20">
+    <div className="border-b border-light-border dark:border-surface-border bg-light-surface/50 dark:bg-surface-card/20">
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-2 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
+        className="w-full px-4 py-2 flex items-center justify-between hover:bg-light-surface dark:hover:bg-surface-card/50 transition-colors"
       >
         <div className="flex items-center gap-2 text-sm">
           <svg
@@ -101,16 +101,16 @@ export function HierarchicalCostPanel({
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-          <span className="font-medium text-gray-700 dark:text-gray-300">Context Cost</span>
+          <span className="font-medium text-gray-700 dark:text-content-secondary">Context Cost</span>
           {hasInheritedFiles && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-content-tertiary">
               ({chain.length} files)
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
           {isLoading ? (
-            <span className="text-xs text-gray-500 dark:text-gray-400">Loading...</span>
+            <span className="text-xs text-content-tertiary">Loading...</span>
           ) : (
             <span className={`text-sm font-medium ${getTotalTokenColor(totalTokens)}`}>
               {formatTokens(totalTokens)} tokens total
@@ -128,7 +128,7 @@ export function HierarchicalCostPanel({
                 key={item.path}
                 className={`flex items-center gap-2 text-xs ${
                   item.file && !item.isCurrent
-                    ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded px-2 py-1 -mx-2'
+                    ? 'cursor-pointer hover:bg-light-surface dark:hover:bg-surface-card rounded px-2 py-1 -mx-2'
                     : 'px-2 py-1 -mx-2'
                 }`}
                 onClick={() => item.file && !item.isCurrent && handleFileClick(item)}
@@ -138,14 +138,14 @@ export function HierarchicalCostPanel({
                   {index === chain.length - 1 ? (
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
                   ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-light-border dark:bg-surface-border" />
                   )}
                 </div>
 
                 {/* File icon */}
                 {item.isGlobal ? (
                   <svg
-                    className="w-3.5 h-3.5 text-purple-500 flex-shrink-0"
+                    className="w-3.5 h-3.5 text-ai flex-shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -160,7 +160,7 @@ export function HierarchicalCostPanel({
                 ) : (
                   <svg
                     className={`w-3.5 h-3.5 flex-shrink-0 ${
-                      item.isCurrent ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'
+                      item.isCurrent ? 'text-blue-500' : 'text-content-tertiary'
                     }`}
                     fill="none"
                     viewBox="0 0 24 24"
@@ -179,10 +179,10 @@ export function HierarchicalCostPanel({
                 <span
                   className={`truncate flex-1 ${
                     item.isCurrent
-                      ? 'font-medium text-gray-900 dark:text-gray-100'
+                      ? 'font-medium text-gray-900 dark:text-content-primary'
                       : item.isGlobal
-                        ? 'text-purple-600 dark:text-purple-400'
-                        : 'text-gray-600 dark:text-gray-400'
+                        ? 'text-ai-deep dark:text-ai-light'
+                        : 'text-gray-600 dark:text-content-tertiary'
                   }`}
                   title={item.path}
                 >
@@ -208,8 +208,8 @@ export function HierarchicalCostPanel({
 
           {/* Summary */}
           {hasInheritedFiles && (
-            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs">
-              <span className="text-gray-500 dark:text-gray-400">
+            <div className="mt-2 pt-2 border-t border-light-border dark:border-surface-border flex items-center justify-between text-xs">
+              <span className="text-content-tertiary">
                 Total context loaded with this file
               </span>
               <span className={`font-medium ${getTotalTokenColor(totalTokens)}`}>

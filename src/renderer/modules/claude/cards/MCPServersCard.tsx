@@ -49,16 +49,16 @@ export function MCPServersCard({ servers, onDeleteServer }: MCPServersCardProps)
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">MCP Servers</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+    <div className="rounded-lg border border-light-border dark:border-surface-border bg-light-bg dark:bg-surface-card/50">
+      <div className="px-4 py-3 border-b border-light-border dark:border-surface-border">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-content-primary">MCP Servers</h3>
+        <p className="text-xs text-gray-500 dark:text-content-tertiary mt-0.5">
           {totalServers} server{totalServers !== 1 ? 's' : ''} across {projectPaths.length} project{projectPaths.length !== 1 ? 's' : ''} in ~/.claude.json
         </p>
       </div>
       <div className="p-4">
         {projectPaths.length === 0 ? (
-          <p className="text-xs text-gray-400 dark:text-gray-500">No MCP servers configured.</p>
+          <p className="text-xs text-gray-400 dark:text-content-tertiary">No MCP servers configured.</p>
         ) : (
           <div className="space-y-2">
             {projectPaths.map((projectPath) => {
@@ -69,20 +69,20 @@ export function MCPServersCard({ servers, onDeleteServer }: MCPServersCardProps)
               return (
                 <div
                   key={projectPath}
-                  className="border border-gray-100 dark:border-gray-700 rounded-md overflow-hidden"
+                  className="border border-light-surface dark:border-surface-border rounded-md overflow-hidden"
                 >
                   {/* Project header */}
                   <button
                     onClick={() => toggleProject(projectPath)}
-                    className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-light-surface dark:bg-surface-bg/50 hover:bg-light-surface dark:hover:bg-surface-bg transition-colors text-left"
                   >
                     <span className="text-[10px] text-gray-400 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
                       ▶
                     </span>
-                    <code className="text-xs text-gray-700 dark:text-gray-300 truncate flex-1 font-mono">
+                    <code className="text-xs text-gray-700 dark:text-content-secondary truncate flex-1 font-mono">
                       {shortenPath(projectPath)}
                     </code>
-                    <span className="text-[10px] text-gray-400 dark:text-gray-500 flex-shrink-0">
+                    <span className="text-[10px] text-gray-400 dark:text-content-tertiary flex-shrink-0">
                       {serverNames.length} server{serverNames.length !== 1 ? 's' : ''}
                     </span>
                   </button>
@@ -95,7 +95,7 @@ export function MCPServersCard({ servers, onDeleteServer }: MCPServersCardProps)
                         return (
                           <div key={name} className="group px-3 py-2">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              <span className="text-sm font-medium text-gray-900 dark:text-content-primary">
                                 {name}
                               </span>
                               <button
@@ -108,32 +108,32 @@ export function MCPServersCard({ servers, onDeleteServer }: MCPServersCardProps)
                             </div>
                             <div className="space-y-0.5">
                               {server.type && (
-                                <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                                  <span className="text-gray-400 dark:text-gray-500">type:</span>{' '}
+                                <div className="text-[10px] text-gray-500 dark:text-content-tertiary">
+                                  <span className="text-gray-400 dark:text-content-tertiary">type:</span>{' '}
                                   {server.type}
                                 </div>
                               )}
                               {server.command && (
-                                <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                                  <span className="text-gray-400 dark:text-gray-500">command:</span>{' '}
+                                <div className="text-[10px] text-gray-500 dark:text-content-tertiary">
+                                  <span className="text-gray-400 dark:text-content-tertiary">command:</span>{' '}
                                   <code className="font-mono">{server.command}</code>
                                 </div>
                               )}
                               {server.args && server.args.length > 0 && (
-                                <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                                  <span className="text-gray-400 dark:text-gray-500">args:</span>{' '}
+                                <div className="text-[10px] text-gray-500 dark:text-content-tertiary">
+                                  <span className="text-gray-400 dark:text-content-tertiary">args:</span>{' '}
                                   <code className="font-mono">{server.args.join(' ')}</code>
                                 </div>
                               )}
                               {server.url && (
-                                <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                                  <span className="text-gray-400 dark:text-gray-500">url:</span>{' '}
+                                <div className="text-[10px] text-gray-500 dark:text-content-tertiary">
+                                  <span className="text-gray-400 dark:text-content-tertiary">url:</span>{' '}
                                   <code className="font-mono">{server.url}</code>
                                 </div>
                               )}
                               {server.env && Object.keys(server.env).length > 0 && (
-                                <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                                  <span className="text-gray-400 dark:text-gray-500">env:</span>{' '}
+                                <div className="text-[10px] text-gray-500 dark:text-content-tertiary">
+                                  <span className="text-gray-400 dark:text-content-tertiary">env:</span>{' '}
                                   {Object.keys(server.env).join(', ')}
                                 </div>
                               )}

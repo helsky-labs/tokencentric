@@ -90,11 +90,11 @@ export function FolderContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[180px] py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+      className="fixed z-50 min-w-[180px] py-1 bg-light-bg dark:bg-surface-card rounded-lg shadow-lg border border-light-border dark:border-surface-border"
       style={{ left: x, top: y }}
     >
       {/* Folder name header */}
-      <div className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 truncate">
+      <div className="px-3 py-1.5 text-xs text-content-tertiary border-b border-light-border dark:border-surface-border truncate">
         {folderName}
       </div>
 
@@ -102,7 +102,7 @@ export function FolderContextMenu({
         <div key={item.action}>
           {/* Add divider before destructive items */}
           {item.destructive && index > 0 && (
-            <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+            <div className="my-1 border-t border-light-border dark:border-surface-border" />
           )}
           <button
             onClick={() => {
@@ -112,7 +112,7 @@ export function FolderContextMenu({
             className={`w-full px-3 py-1.5 text-left text-sm flex items-center gap-2 transition-colors ${
               item.destructive
                 ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                : 'text-gray-700 dark:text-content-secondary hover:bg-light-surface dark:hover:bg-surface-hover'
             }`}
           >
             <svg

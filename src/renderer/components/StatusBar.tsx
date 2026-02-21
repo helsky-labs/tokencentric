@@ -94,11 +94,11 @@ export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) 
   };
 
   return (
-    <div className="h-6 px-3 flex items-center gap-4 text-xs bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
+    <div className="h-6 px-3 flex items-center gap-4 text-xs bg-light-surface dark:bg-surface-card border-t border-light-border dark:border-surface-border text-gray-600 dark:text-content-tertiary">
       {selectedFile ? (
         <>
           <span>{getToolName(selectedFile.toolId)}</span>
-          <span className="text-gray-300 dark:text-gray-600">|</span>
+          <span className="text-light-border dark:text-surface-border">|</span>
           {tokens !== null ? (
             <>
               <span>
@@ -109,7 +109,7 @@ export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) 
               </span>
               {totalTokens !== null && inheritedCount > 0 && (
                 <>
-                  <span className="text-gray-300 dark:text-gray-600">|</span>
+                  <span className="text-light-border dark:text-surface-border">|</span>
                   <span title={`Includes ${inheritedCount} inherited file${inheritedCount > 1 ? 's' : ''}`}>
                     Total:{' '}
                     <span className={`font-mono ${getTokenColorClass(totalTokens)}`}>
@@ -118,7 +118,7 @@ export function StatusBar({ selectedFile, allFiles, settings }: StatusBarProps) 
                   </span>
                 </>
               )}
-              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="text-light-border dark:text-surface-border">|</span>
               <span className={getStatusColor(getModelFit(totalTokens || tokens).status)}>
                 {getModelFit(totalTokens || tokens).text}
               </span>

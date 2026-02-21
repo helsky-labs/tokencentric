@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ConfigItem } from '../../../shared/types';
+import { ToolIcon } from '../../components/ToolIcon';
 
 interface ClaudeCommandsAreaProps {
   isDark: boolean;
@@ -38,15 +39,15 @@ export function ClaudeCommandsArea({ isDark }: ClaudeCommandsAreaProps) {
 
   if (commands.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+      <div className="flex items-center justify-center h-full text-gray-400 dark:text-content-tertiary">
         <div className="text-center max-w-sm">
-          <div className="text-4xl mb-3">⚡</div>
+          <div className="mb-3"><ToolIcon toolId="bolt" size={40} /></div>
           <div className="text-lg font-medium mb-2">No Commands Found</div>
           <div className="text-sm">
-            Custom slash commands live in <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">~/.claude/commands/</code>
+            Custom slash commands live in <code className="bg-light-surface dark:bg-surface-hover px-1.5 py-0.5 rounded text-xs">~/.claude/commands/</code>
           </div>
           <div className="text-sm mt-1">
-            Create a <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs">.md</code> file to add a command.
+            Create a <code className="bg-light-surface dark:bg-surface-hover px-1.5 py-0.5 rounded text-xs">.md</code> file to add a command.
           </div>
           <button
             onClick={handleCreateCommand}
@@ -101,9 +102,9 @@ export function ClaudeCommandsArea({ isDark }: ClaudeCommandsAreaProps) {
   return (
     <div className="flex h-full">
       {/* Command list */}
-      <div className="w-64 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      <div className="w-64 flex-shrink-0 border-r border-light-border dark:border-surface-border flex flex-col">
+        <div className="p-3 border-b border-light-border dark:border-surface-border flex items-center justify-between">
+          <span className="text-xs font-semibold text-gray-500 dark:text-content-tertiary uppercase tracking-wider">
             Commands ({commands.length})
           </span>
           <button
@@ -119,19 +120,19 @@ export function ClaudeCommandsArea({ isDark }: ClaudeCommandsAreaProps) {
               key={cmd.id}
               onClick={() => setSelectedCommand(cmd)}
               className={`
-                w-full text-left px-3 py-2.5 border-b border-gray-100 dark:border-gray-700/50 transition-colors
+                w-full text-left px-3 py-2.5 border-b border-light-surface dark:border-surface-border/50 transition-colors
                 ${
                   selectedCommand?.id === cmd.id
                     ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-l-blue-500'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/30 border-l-2 border-l-transparent'
+                    : 'hover:bg-light-surface dark:hover:bg-surface-hover/30 border-l-2 border-l-transparent'
                 }
               `}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                <span className="text-sm font-medium text-gray-900 dark:text-content-primary truncate">
                   {cmd.name}
                 </span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-2 flex-shrink-0">
+                <span className="text-[10px] text-gray-400 dark:text-content-tertiary ml-2 flex-shrink-0">
                   {cmd.tokens.toLocaleString()} tok
                 </span>
               </div>
@@ -140,7 +141,7 @@ export function ClaudeCommandsArea({ isDark }: ClaudeCommandsAreaProps) {
                   {(cmd.metadata.slashCommand as string) || ''}
                 </code>
                 {(cmd.metadata.phaseCount as number) > 0 && (
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                  <span className="text-[10px] text-gray-400 dark:text-content-tertiary">
                     {cmd.metadata.phaseCount as number} phases
                   </span>
                 )}
@@ -155,9 +156,9 @@ export function ClaudeCommandsArea({ isDark }: ClaudeCommandsAreaProps) {
         {selectedCommand ? (
           <>
             {/* Header */}
-            <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="p-3 border-b border-light-border dark:border-surface-border flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-content-primary">
                   {selectedCommand.name}
                 </h3>
                 <code className="text-xs text-amber-600 dark:text-amber-400">
@@ -182,15 +183,15 @@ export function ClaudeCommandsArea({ isDark }: ClaudeCommandsAreaProps) {
 
             {/* Phase outline */}
             {((selectedCommand.metadata.phases as string[]) || []).length > 0 && (
-              <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+              <div className="px-3 py-2 bg-light-surface dark:bg-surface-card/50 border-b border-light-border dark:border-surface-border">
+                <div className="text-[10px] font-semibold text-gray-500 dark:text-content-tertiary uppercase tracking-wider mb-1">
                   Phases
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {((selectedCommand.metadata.phases as string[]) || []).map((phase, i) => (
                     <span
                       key={i}
-                      className="text-[10px] px-2 py-0.5 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full border border-gray-200 dark:border-gray-600"
+                      className="text-[10px] px-2 py-0.5 bg-light-bg dark:bg-surface-hover text-gray-600 dark:text-content-secondary rounded-full border border-light-border dark:border-surface-border"
                     >
                       {i + 1}. {phase}
                     </span>
@@ -204,14 +205,14 @@ export function ClaudeCommandsArea({ isDark }: ClaudeCommandsAreaProps) {
               data-command-editor
               defaultValue={selectedCommand.content}
               key={selectedCommand.id}
-              className="flex-1 w-full p-4 font-mono text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
+              className="flex-1 w-full p-4 font-mono text-sm bg-light-bg dark:bg-surface-bg text-gray-900 dark:text-content-primary resize-none focus:outline-none"
               spellCheck={false}
             />
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+          <div className="flex items-center justify-center h-full text-gray-400 dark:text-content-tertiary">
             <div className="text-center">
-              <div className="text-3xl mb-2">⚡</div>
+              <div className="mb-2"><ToolIcon toolId="bolt" size={30} /></div>
               <div className="text-sm">Select a command to edit</div>
             </div>
           </div>

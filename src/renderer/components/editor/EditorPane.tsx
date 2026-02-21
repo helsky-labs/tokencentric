@@ -249,7 +249,7 @@ export function EditorPane({
         />
 
         {/* Empty state */}
-        <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
+        <div className="flex-1 flex items-center justify-center text-content-tertiary">
           <div className="text-center max-w-xs">
             <div className="text-4xl mb-3 opacity-50">
               <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -257,7 +257,7 @@ export function EditorPane({
               </svg>
             </div>
             <div className="font-medium mb-1">Select a file to view</div>
-            <div className="text-sm text-gray-400 dark:text-gray-500">
+            <div className="text-sm text-content-tertiary">
               Choose from the sidebar
             </div>
           </div>
@@ -350,13 +350,13 @@ export function EditorPane({
 
         {/* Divider for split view */}
         {viewMode === 'split' && isMarkdown && (
-          <div className="w-px bg-gray-200 dark:bg-gray-700" />
+          <div className="w-px bg-light-border dark:bg-surface-hover" />
         )}
 
         {/* Preview pane */}
         {isMarkdown && (viewMode === 'preview' || viewMode === 'split') && (
           <div
-            className={`${viewMode === 'split' ? 'w-1/2' : 'flex-1'} overflow-auto bg-white dark:bg-gray-900 p-4`}
+            className={`${viewMode === 'split' ? 'w-1/2' : 'flex-1'} overflow-auto bg-light-bg dark:bg-surface-bg p-4`}
           >
             <article className="prose prose-sm dark:prose-invert max-w-none">
               <ReactMarkdown>{content}</ReactMarkdown>
