@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StarterPackMeta } from '../../../shared/builtinPacks';
 import { PackCard } from '../packs/PackCard';
+import { PackDetailModal } from '../packs/PackDetailModal';
 import { InstallPreviewDialog } from '../packs/InstallPreviewDialog';
 import { ExportDialog } from '../packs/ExportDialog';
 import { ToolIcon } from '../components/ToolIcon';
@@ -14,6 +15,7 @@ export function StarterPacksView({ isDark }: StarterPacksViewProps) {
   const [importedPacks, setImportedPacks] = useState<StarterPackMeta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [installingPack, setInstallingPack] = useState<StarterPackMeta | null>(null);
+  const [detailPack, setDetailPack] = useState<StarterPackMeta | null>(null);
   const [showExport, setShowExport] = useState(false);
   const [resultMessage, setResultMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -153,6 +155,7 @@ export function StarterPacksView({ isDark }: StarterPacksViewProps) {
               key={packMeta.id}
               packMeta={packMeta}
               onInstall={setInstallingPack}
+              onViewDetails={setDetailPack}
             />
           ))}
         </div>
@@ -165,6 +168,18 @@ export function StarterPacksView({ isDark }: StarterPacksViewProps) {
           </div>
         )}
       </div>
+
+      {/* Detail modal */}
+      {detailPack && (
+        <PackDetailModal
+          packMeta={detailPack}
+          onClose={() => setDetailPack(null)}
+          onInstall={(pm) => {
+            setDetailPack(null);
+            setInstallingPack(pm);
+          }}
+        />
+      )}
 
       {/* Install preview dialog */}
       {installingPack && (
