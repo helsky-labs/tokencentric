@@ -5,6 +5,29 @@ All notable changes to TokenCentric will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-02-26
+
+### Added
+- Starter pack detail modal with expandable prompt previews
+
+### Changed
+- Replaced emojis with SVG icons across the UI for a cleaner design system
+- Migrated from npm to pnpm
+
+## [2.0.0] - 2026-02-12
+
+### Added
+- Claude Config Dashboard with plugins, hooks, permissions, MCP servers, keybindings (Phase 4)
+- Starter Packs system with install, export, and import (Phase 5)
+- CLI companion tool with shared configReader (Phase 6)
+- Global search, token budget, and Cursor/Copilot stubs (Phase 7)
+- Tool module system with tab navigation and Claude Code module
+- Analytics events for onboarding, AI actions, and file operations
+
+### Changed
+- Standardized release pipeline
+- Version bump from 1.0.0 to 2.0.0
+
 ## [1.0.0] - 2026-02-07
 
 ### Added
