@@ -1,6 +1,6 @@
 {
   "name": "tokencentric",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Manage AI coding assistant context files",
   "main": "dist/main/index.js",
   "author": "Helsky Labs",
